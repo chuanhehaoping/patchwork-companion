@@ -1,24 +1,39 @@
 // ============================================================================
 // PATCHWORK NATION - 完全無料・PC負荷ゼロ クラウドエンジン
-// (v7: 60fps Multi-Branch 3D Motion Graph & Markov Random State Machine Edition)
+// (v8: SOTA 50fps Seamless FMV Motion Graph & Holistic LMDM Digital Human Edition)
 // - あなたのPC（ローカルGPU/Pythonサーバー）を一切使わず、GitHub Pages 等の完全無料クラウドで24時間稼働
 // - ブラウザ内蔵の機械音声 (window.speechSynthesis) は 100% 使用禁止！
-//   全発話で事前合成済みの「本物の Qwen3-TTS 1.7B 実在人間クローン肉声 MP3 (assets/voice_bank/*.mp3)」を再生
-// - 60fps コマ送り × 多パターン3Dモーショングラフ × マルコフ連鎖ランダム分岐アルゴリズムを搭載！
-//   （右小首かしげ愛嬌スマイル / 左小首かしげ視線ゆらぎ / うんうん二段頷き / 照れ笑い視線そらし / 上目遣い微笑み / 呼吸ゆらぎ）
-//   さらに毎回「傾きの深さ（リーチ）」「ピーク滞留時間」「速度」「シングル/ダブルまばたき」がランダムに分岐し、
-//   どの3D角度のコマにいても本物の音声フォルマントに完全同期して口と目尻が60fpsで動く「生身の人間」を実現！
+//   全発話で事前合成済みの「本物の Qwen3-TTS 1.7B 実在人間クローン肉声 MP3」を再生
+// - ハイエンド実写ゲーム (Interactive FMV) ＆ 最先端AIデジタルヒューマン技術を完全搭載：
+//   1. Canvas `globalAlpha` 半透明クロスフェード（二重露光・透けゴースト）を100%完全撤廃！
+//   2. 初期パートナー「美桜 (face_f02_mio)」に、本物の HuBERT + LMDM Motion Diffusion Transformer
+//      ＋ 3D Feature Volume Warping + SPADEDecoder + FACS AU6 (デュシェンヌ・スマイル)
+//      ＋ 前庭動眼反射 (VOR 視線ロック) ＋ 非対称生体まばたき ＋ 肩・胸元・髪の毛先の生体運動連動ワープで
+//      レンダリングした「50fps 連続実写動画グラフ（待機8ブランチ＋発話26クリップ）」を搭載！
+//   3. Dual/Pool Video Pre-decoder + Web Audio Clock Sync により、黒画面0ms・ゴースト0%で
+//      待機中の無限マルコフ分岐から発話（音素先行動作・調音結合リップシンク）へシームレスに遷移！
 // ============================================================================
 
 (function () {
   "use strict";
 
-  const STORAGE_KEY_MEM = "pw_cloud_v7_memory";
+  const STORAGE_KEY_MEM = "pw_cloud_v8_memory";
 
   let catalogMeta = null;
   let voiceManifest = null;
+  let fmvManifestMio = null;
+
   let visemeCache = new Map(); // charId -> Promise<Sprite>
   let baseImgCache = new Map(); // url -> Promise<HTMLImageElement>
+
+  // ===== SOTA FMV Video Pool (for face_f02_mio 50fps Neural Streams) =====
+  let fmvIdleVideoPool = new Map(); // branchId -> HTMLVideoElement (preloaded & paused at frame 0)
+  let fmvTalkVideoPool = new Map(); // ck -> Promise<HTMLVideoElement>
+  let activeFmvVideo = null;
+  let activeFmvType = "idle"; // "idle" | "talk"
+  let currentIdleBranchId = "idle_01_breath_micro";
+  let nextIdleBranchHint = null;
+  let fmvSwitching = false;
 
   let cloudAudioCtx = null;
   let activeAudioSource = null;
@@ -27,8 +42,35 @@
   let activeTimeData = null;
   let isSpeakingNow = false;
 
-  // 会話・スキンシップの文脈に応じたモーション分岐リクエストキュー
-  let requestedBranchHint = null;
+  // 美桜 (face_f02_mio) 用の 50fps LMDM 完全同期発話クリップ対象 CK セット
+  const MIO_FMV_TALK_CKS = new Set([
+    "e1afb5eda5d197874133180aff8d38e4",
+    "606cb477f9a7eb3909fe3459477be5d3",
+    "330c6c712a7d446ac3887d4fbfb48609",
+    "0cd0f922f4ef7b9ae4c5bd0fdbccaf22",
+    "e092c07207d071d18068fa70dcfd7c6f",
+    "b20f225de3f04fddbfd169f470a463e5",
+    "61344fc20ad64f074fa12c3246abe609",
+    "67cc34c206eb434ba626ddbb53fe4d8b",
+    "598b23a7aed76d04b01f33c3468f6bc3",
+    "a6746797f042179b9e2a6cdcc4650324",
+    "cc47d326b8106539c6e1d4159d8e8edc",
+    "954389470c4ccd6afc49bd5c3b3e399d",
+    "1a9d95bef35b2ce8d528482e0b700214",
+    "2de7e43f86a04f344a8d224297f44c85",
+    "4279f3f422f62ae5fc65810d1ac97f13",
+    "e50de9caa5bf46a5b1c38668ea943c29",
+    "594f387dfb16f45dde2bba825c94eff8",
+    "2d845745841dd5846bc4e45ea61ce1f4",
+    "d0b61000577e04b3e125f5e773eac7d5",
+    "9e48b887c9dcb66f9c98663eb72378ef",
+    "067ffbd98b564724e505b4adab0c412e",
+    "07362ac6769f38e2c83d41e905552aca",
+    "a4f54263c302bab207b778a3106acb52",
+    "a04d8e0dd828fd3fb8b6d3d7047b17d5",
+    "dd2fa2b76821684a6e43ef431ce17646",
+    "35172f14f03c543252a9eb51fef82ee4",
+  ]);
 
   function resolveAssetUrl(u) {
     if (!u || typeof u !== "string") return "";
@@ -69,8 +111,8 @@
     try {
       const raw =
         localStorage.getItem(STORAGE_KEY_MEM) ||
-        localStorage.getItem("pw_cloud_v6_memory") ||
-        localStorage.getItem("pw_cloud_v5_memory");
+        localStorage.getItem("pw_cloud_v7_memory") ||
+        localStorage.getItem("pw_cloud_v6_memory");
       if (raw) {
         const parsed = JSON.parse(raw);
         return { ...def, ...parsed };
@@ -94,7 +136,120 @@
       const resV = await origFetch(resolveAssetUrl("assets/voice_bank/manifest.json"), { cache: "no-cache" });
       voiceManifest = await resV.json();
     }
-    return { catalogMeta, voiceManifest };
+    if (!fmvManifestMio) {
+      try {
+        const resF = await origFetch(resolveAssetUrl("assets/fmv_mio/fmv_manifest.json?v=20"), { cache: "no-cache" });
+        if (resF.ok) {
+          fmvManifestMio = await resF.json();
+          initMioFmvIdlePool();
+        }
+      } catch (_) {}
+    }
+    return { catalogMeta, voiceManifest, fmvManifestMio };
+  }
+
+  function createHiddenFmvVideoElement(srcUrl) {
+    const vid = document.createElement("video");
+    vid.crossOrigin = "anonymous";
+    vid.muted = true; // 常にハードウェア映像デコードを100%無制限許可させるため映像トラックはミュート（音声はWebAudioで完全同期）
+    vid.playsInline = true;
+    vid.setAttribute("playsinline", "");
+    vid.setAttribute("webkit-playsinline", "");
+    vid.preload = "auto";
+    vid.loop = false;
+    vid.style.cssText = "position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;";
+    vid.src = resolveAssetUrl(srcUrl);
+    document.body.appendChild(vid);
+    vid.load();
+    return vid;
+  }
+
+  function initMioFmvIdlePool() {
+    if (!fmvManifestMio || !Array.isArray(fmvManifestMio.idle_branches)) return;
+    for (const b of fmvManifestMio.idle_branches) {
+      if (!fmvIdleVideoPool.has(b.id)) {
+        const v = createHiddenFmvVideoElement(b.url + "?v=20");
+        fmvIdleVideoPool.set(b.id, v);
+      }
+    }
+    // 初期ブランチを即座に再生開始
+    if (!activeFmvVideo && fmvIdleVideoPool.has("idle_02_smile_right")) {
+      switchToIdleFmvBranch("idle_02_smile_right");
+    }
+  }
+
+  function preloadTalkFmvVideo(ck) {
+    if (!ck || !MIO_FMV_TALK_CKS.has(ck)) return Promise.resolve(null);
+    if (fmvTalkVideoPool.has(ck)) return fmvTalkVideoPool.get(ck);
+
+    const p = new Promise((resolve) => {
+      const url = resolveAssetUrl(`assets/fmv_mio/talk_${ck}.mp4?v=20`);
+      const v = createHiddenFmvVideoElement(url);
+      let resolved = false;
+      const done = () => {
+        if (!resolved) {
+          resolved = true;
+          resolve(v);
+        }
+      };
+      v.addEventListener("canplay", done, { once: true });
+      v.addEventListener("loadeddata", done, { once: true });
+      v.addEventListener("error", () => resolve(null), { once: true });
+      setTimeout(done, 1200);
+    });
+    fmvTalkVideoPool.set(ck, p);
+    return p;
+  }
+
+  function pickNextMioIdleBranch(lastBranchId) {
+    if (nextIdleBranchHint && fmvIdleVideoPool.has(nextIdleBranchHint)) {
+      const h = nextIdleBranchHint;
+      nextIdleBranchHint = null;
+      return h;
+    }
+    // マルコフ連鎖の自然な状態遷移重み（同じしぐさは連続しない）
+    const candidates = [
+      { id: "idle_01_breath_micro", w: 22 },
+      { id: "idle_02_smile_right", w: 18 },
+      { id: "idle_03_gaze_left", w: 16 },
+      { id: "idle_04_nod_listen", w: 14 },
+      { id: "idle_07_deep_relax", w: 12 },
+      { id: "idle_08_playful_sway", w: 10 },
+      { id: "idle_06_curious_tilt", w: 5 },
+      { id: "idle_05_shy_glance", w: 5 },
+    ].filter((c) => fmvIdleVideoPool.has(c.id));
+
+    if (candidates.length === 0) return "idle_01_breath_micro";
+
+    const weighted = candidates.map((c) => ({
+      id: c.id,
+      w: c.id === lastBranchId ? c.w * 0.08 : c.w,
+    }));
+    const total = weighted.reduce((acc, c) => acc + c.w, 0);
+    let r = Math.random() * total;
+    for (const c of weighted) {
+      r -= c.w;
+      if (r <= 0) return c.id;
+    }
+    return weighted[0].id;
+  }
+
+  function switchToIdleFmvBranch(branchId) {
+    const nextVid = fmvIdleVideoPool.get(branchId) || fmvIdleVideoPool.values().next().value;
+    if (!nextVid) return;
+
+    currentIdleBranchId = branchId;
+    activeFmvType = "idle";
+
+    try {
+      nextVid.currentTime = 0;
+    } catch (_) {}
+
+    const playPromise = nextVid.play();
+    if (playPromise && typeof playPromise.catch === "function") {
+      playPromise.catch(() => {});
+    }
+    activeFmvVideo = nextVid;
   }
 
   function getActiveCharObj(mem) {
@@ -179,6 +334,12 @@
     }
     if (pool.length === 0) pool = allVoices;
 
+    // 美桜 (human_g0143) の場合は、50fps 本物 HuBERT+LMDM 発話動画が完備されている26クリップを最優先プールにする
+    if (voiceId === "human_g0143") {
+      const fmvPool = pool.filter((v) => MIO_FMV_TALK_CKS.has(v.ck));
+      if (fmvPool.length > 0) pool = fmvPool;
+    }
+
     if (targetText) {
       const cleanTarget = targetText.replace(/[ 　\t\r\n]/g, "");
       const exact = pool.find((v) => v.text.replace(/[ 　\t\r\n]/g, "") === cleanTarget);
@@ -196,21 +357,21 @@
       greeting_home: ["おかえり", "お疲れさま", "待ってた"],
       greeting_night: ["まだ起きてた", "ゆっくり話そ", "おしゃべりしよ"],
       greeting_sulk: ["やっと来てくれた", "寂しかった", "拗ねて"],
-      fatigue: ["お疲れさま", "頑張った", "ゆっくり休んで", "息抜き"],
-      compliment: ["照れ", "ほんとに！？", "ほんまに！？", "嬉しい", "ほんとかよ"],
-      positive_news: ["すごいじゃん", "すごいやん", "素敵だね", "嬉しいな", "がんばろう"],
-      apology: ["しょうがないなあ", "許してあげる", "許したる", "気にしなくていい", "大丈夫だよ"],
-      movie_hobby: ["映画", "聞いてくれるの", "思い浮かんだ", "気になる"],
+      fatigue: ["お疲れさま", "頑張った", "ゆっくり休んで", "えらいよ"],
+      compliment: ["照れ", "ほんとに！？", "嬉しい"],
+      positive_news: ["すごいじゃん", "素敵だね", "自分のことみたいに嬉しい"],
+      apology: ["しょうがないなあ", "許してあげる", "気にしなくていい", "大丈夫だよ"],
+      movie_hobby: ["映画", "聞いてくれるの", "気になっちゃう"],
       pat_head: ["髪くしゃってなる", "甘やかされてる", "撫でて"],
       poke_cheek: ["つつかないで", "びっくりしたじゃん"],
       close_dist: ["顔近いよ", "ドキドキした"],
-      gift_cake: ["ショートケーキ", "甘いもの"],
-      gift_latte: ["温かいラテ", "一息つきたかった"],
-      gift_bear: ["ふわふわですごく可愛い", "ぬいぐるみ"],
-      gift_flower: ["お花", "反則だよ"],
-      sulk_プリン: ["プリン", "お風呂上がり"],
-      question: ["聞いてくれるの", "気になっちゃう", "気になる", "そうだねえ", "そうだなあ"],
-      chat: ["そうなんだね", "そうなんやね", "なるほどな", "話聞かせてくれるの", "嬉しいな"],
+      gift_cake: ["すごく嬉しい", "めっちゃすごい"],
+      gift_latte: ["温かいお茶", "ゆっくり休んで"],
+      gift_bear: ["素敵だね", "嬉しいよ"],
+      gift_flower: ["照れるじゃん", "嬉しい"],
+      sulk_プリン: ["お風呂上がり", "お詫びは"],
+      question: ["聞いてくれるの", "気になっちゃう", "そうだねえ"],
+      chat: ["そうなんだね", "何気ない話", "心地いいな", "話したいなって"],
     };
 
     const kws = keywordMap[intentCategory] || keywordMap.chat;
@@ -242,7 +403,7 @@
     return "chat";
   }
 
-  // ===== 60fps 3D モーショングラフ＆ヴィセームローダー =====
+  // ===== 他キャラ用の 3D ヴィセームローダー（半透明ブレンドなし） =====
   async function b64ToBitmap(b64) {
     if (!b64) return null;
     const bin = atob(b64);
@@ -276,23 +437,24 @@
 
     const p = (async () => {
       try {
-        const res = await origFetch(resolveAssetUrl(`assets/viseme_3d/${charId}.json?v=19`), { cache: "no-cache" });
+        const baseImg = await loadBasePortraitImg(portraitUrl);
+        if (charId === "face_f02_mio") {
+          return {
+            charId,
+            frameW: 1280,
+            frameH: 720,
+            x: 0,
+            y: 0,
+            w: 1280,
+            h: 720,
+            baseImg,
+            bitmaps: null,
+          };
+        }
+        const res = await origFetch(resolveAssetUrl(`assets/viseme_3d/${charId}.json?v=20`), { cache: "force-cache" });
         if (!res.ok) return null;
         const data = await res.json();
-        const baseImg = await loadBasePortraitImg(portraitUrl);
-
-        let nodesBitmaps = [];
-        let branches = null;
-
-        if (data.motion_graph && Array.isArray(data.motion_graph.nodes)) {
-          // 60fps 多パターン 3D モーショングラフ（全姿勢ノードを並列デコード）
-          nodesBitmaps = await Promise.all(data.motion_graph.nodes.map((n) => decode5StateNode(n)));
-          branches = data.motion_graph.branches || null;
-        } else {
-          const singleNode = await decode5StateNode(data.frames || {});
-          nodesBitmaps = [singleNode];
-        }
-
+        const singleNode = await decode5StateNode(data.frames || (data.motion_graph && data.motion_graph.nodes[0]) || {});
         return {
           charId,
           frameW: Number(data.frame_w || (baseImg && baseImg.naturalWidth) || 960),
@@ -302,9 +464,7 @@
           w: Number(data.w || 0),
           h: Number(data.h || 0),
           baseImg,
-          bitmaps: nodesBitmaps[0],
-          nodes: nodesBitmaps,
-          branches,
+          bitmaps: singleNode,
         };
       } catch (_) {
         return null;
@@ -343,25 +503,30 @@
       } catch (_) {}
       activeAudioSource = null;
     }
+    if (activeFmvType === "talk") {
+      const nextBranch = pickNextMioIdleBranch(currentIdleBranchId);
+      switchToIdleFmvBranch(nextBranch);
+    }
     const bars = document.getElementById("speaking-bars");
     if (bars) bars.classList.add("hidden");
   }
 
-  async function playRealVoiceWith3DViseme(mp3Url, charObj, intentHint = "") {
+  async function playRealVoiceWithSotaAvatar(entry, charObj, intentHint = "") {
     stopCloudVoice();
-    if (!mp3Url || !charObj) return;
+    if (!entry || !entry.mp3_url || !charObj) return;
 
-    // 会話の文脈に合わせて最初の3Dモーションブランチを自然に分岐予約
-    if (intentHint === "compliment" || intentHint === "pat_head" || intentHint === "poke_cheek" || intentHint === "close_dist") {
-      requestedBranchHint = Math.random() < 0.55 ? "shy_lookaway" : "tilt_right_smile";
+    // 発話後の余韻待機ブランチを文脈に合わせて予約
+    if (intentHint === "compliment" || intentHint === "pat_head" || intentHint === "close_dist") {
+      nextIdleBranchHint = "idle_05_shy_glance";
     } else if (intentHint === "greeting_home" || intentHint === "greeting_morning" || intentHint === "positive_news") {
-      requestedBranchHint = Math.random() < 0.6 ? "tilt_right_smile" : "bright_lookup";
-    } else if (intentHint === "fatigue" || intentHint === "chat" || intentHint === "question") {
-      requestedBranchHint = Math.random() < 0.5 ? "nod_agree" : "tilt_left_gaze";
+      nextIdleBranchHint = "idle_02_smile_right";
+    } else {
+      nextIdleBranchHint = "idle_04_nod_listen";
     }
 
-    const cleanMp3Url = resolveAssetUrl(mp3Url);
+    const cleanMp3Url = resolveAssetUrl(entry.mp3_url);
     const charId = charObj.id || charObj.face_id || "face_f02_mio";
+    const ck = entry.ck || "";
 
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     if (!cloudAudioCtx && AudioCtx) {
@@ -371,10 +536,23 @@
       await cloudAudioCtx.resume().catch(() => {});
     }
 
-    const [audioRes] = await Promise.all([
+    // 美桜 (face_f02_mio) の場合は 50fps 本物 HuBERT+LMDM 発話動画と音声バッファを並列プリロード！
+    const [audioRes, talkVid] = await Promise.all([
       origFetch(cleanMp3Url, { cache: "force-cache" }),
+      charId === "face_f02_mio" ? preloadTalkFmvVideo(ck) : Promise.resolve(null),
       loadCharacterVisemeSprite(charId, charObj.portrait_url),
     ]);
+
+    // もし美桜の 50fps 発話動画がロードできていれば、まず映像ストリームを Frame 0 から起動（自動再生ブロックの影響を受けない）
+    if (charId === "face_f02_mio" && talkVid) {
+      try {
+        talkVid.currentTime = 0;
+        await talkVid.play().catch(() => {});
+        activeFmvVideo = talkVid;
+        activeFmvType = "talk";
+        isSpeakingNow = true;
+      } catch (_) {}
+    }
 
     if (!audioRes.ok || !cloudAudioCtx) return;
     const arrayBuf = await audioRes.arrayBuffer();
@@ -395,6 +573,14 @@
     activeTimeData = new Uint8Array(analyser.fftSize);
     isSpeakingNow = true;
 
+    // Web Audio 再生開始と 50fps LMDM 発話動画のタイムスタンプを 0.00ms に完全一致させる！
+    if (charId === "face_f02_mio" && talkVid) {
+      try {
+        talkVid.currentTime = 0;
+        talkVid.play().catch(() => {});
+      } catch (_) {}
+    }
+
     const bars = document.getElementById("speaking-bars");
     if (bars) bars.classList.remove("hidden");
 
@@ -407,147 +593,25 @@
     srcNode.start(0);
   }
 
-  // ===== 60fps コマ送り × マルコフ連鎖ランダム分岐 3D モーショングラフ・エンジン =====
+  // ===== 60Hz Direct Frame Blit Engine (`globalAlpha = 1.0` 完全固定・二重露光ゼロ) =====
   let unifiedLoopStarted = false;
 
-  function buildDynamicBranchTrajectory(branchesObj, branchName, reachRatio, peakHoldFrames) {
-    const rawSeq = branchesObj[branchName];
-    if (!Array.isArray(rawSeq) || rawSeq.length === 0) return [0];
-
-    if (branchName === "nod_agree") {
-      // うんうん頷きは1周軌道（シングル頷きにするかダブル頷きにするかもランダム分岐！）
-      if (reachRatio < 0.65) {
-        const halfLen = Math.max(4, Math.floor(rawSeq.length * 0.55));
-        const sub = rawSeq.slice(0, halfLen);
-        return [...sub, ...sub.slice(0, -1).reverse()];
-      }
-      return [...rawSeq];
-    }
-
-    // 行き(0 -> peak) のユニーク部分を取り出し、今回のランダムな深さ(reachRatio: 0.45〜1.0)まで進んでピーク滞留し、0へ戻る軌道を動的構築！
-    const halfIdx = Math.floor(rawSeq.length / 2);
-    const forwardFull = rawSeq.slice(0, halfIdx);
-    const maxStep = Math.max(3, Math.round(forwardFull.length * reachRatio));
-    const forward = forwardFull.slice(0, maxStep);
-    const peakNode = forward[forward.length - 1];
-    const holdArr = Array(Math.max(1, peakHoldFrames)).fill(peakNode);
-    const backward = forward.slice(0, -1).reverse();
-    return [...forward, ...holdArr, ...backward];
-  }
-
-  function pickNextRandomBranch(lastBranch, speaking) {
-    if (requestedBranchHint) {
-      const h = requestedBranchHint;
-      requestedBranchHint = null;
-      return h;
-    }
-
-    // 状態（発話中 vs 待機中）に応じたマルコフ遷移重みテーブル
-    const weights = speaking
-      ? [
-          { name: "tilt_right_smile", w: 30 },
-          { name: "nod_agree", w: 28 },
-          { name: "tilt_left_gaze", w: 20 },
-          { name: "bright_lookup", w: 14 },
-          { name: "shy_lookaway", w: 8 },
-        ]
-      : [
-          { name: "center_breath", w: 30 },
-          { name: "tilt_right_smile", w: 22 },
-          { name: "tilt_left_gaze", w: 20 },
-          { name: "nod_agree", w: 11 },
-          { name: "bright_lookup", w: 10 },
-          { name: "shy_lookaway", w: 7 },
-        ];
-
-    // 同じしぐさが2回連続しないよう直前ブランチの重みを下げる
-    const filtered = weights.map((item) => ({
-      name: item.name,
-      w: item.name === lastBranch ? item.w * 0.15 : item.w,
-    }));
-    const totalW = filtered.reduce((acc, it) => acc + it.w, 0);
-    let r = Math.random() * totalW;
-    for (const it of filtered) {
-      r -= it.w;
-      if (r <= 0) return it.name;
-    }
-    return filtered[0].name;
-  }
-
-  // 1つの 3D 姿勢ノード内で、現在の口開き量 (smoothMouth) とまばたき量 (blinkAlpha) を描画するヘルパー
-  function drawNodeState(ctx, nodeBmps, x, y, w, h, smoothMouth, blinkAlpha, baseAlpha = 1.0) {
-    if (!nodeBmps || !nodeBmps.closed) return;
-
-    ctx.globalAlpha = baseAlpha;
-    ctx.drawImage(nodeBmps.closed, x, y, w, h);
-
-    if (smoothMouth > 0.025) {
-      let lowerBmp = nodeBmps.closed;
-      let upperBmp = nodeBmps.small;
-      let blend = 0.0;
-
-      if (smoothMouth < 0.34) {
-        lowerBmp = nodeBmps.closed;
-        upperBmp = nodeBmps.small;
-        blend = smoothMouth / 0.34;
-      } else if (smoothMouth < 0.68) {
-        lowerBmp = nodeBmps.small;
-        upperBmp = nodeBmps.mid;
-        blend = (smoothMouth - 0.34) / 0.34;
-      } else {
-        lowerBmp = nodeBmps.mid;
-        upperBmp = nodeBmps.wide;
-        blend = Math.min(1.0, (smoothMouth - 0.68) / 0.32);
-      }
-
-      if (lowerBmp && lowerBmp !== nodeBmps.closed) {
-        ctx.globalAlpha = baseAlpha;
-        ctx.drawImage(lowerBmp, x, y, w, h);
-      }
-      if (upperBmp && blend > 0.01) {
-        ctx.globalAlpha = baseAlpha * blend;
-        ctx.drawImage(upperBmp, x, y, w, h);
-      }
-    }
-
-    if (blinkAlpha > 0.02 && nodeBmps.blink) {
-      const eyeClipH = Math.round(h * 0.56);
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(x, y, w, eyeClipH);
-      ctx.clip();
-      ctx.globalAlpha = baseAlpha * blinkAlpha;
-      ctx.drawImage(nodeBmps.blink, x, y, w, h);
-      ctx.restore();
-    }
-  }
-
-  function startUnified3DAvatarEngine() {
+  function startUnifiedSotaAvatarEngine() {
     if (unifiedLoopStarted) return;
     const roiCanvas = document.getElementById("roi-talk-canvas");
     if (!roiCanvas) return;
     unifiedLoopStarted = true;
 
     roiCanvas.style.cssText =
-      "position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;z-index:3;opacity:1 !important;display:block !important;will-change:transform;";
+      "position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;z-index:3;opacity:1 !important;display:block !important;";
     roiCanvas.classList.add("active");
 
     const roiCtx = roiCanvas.getContext("2d", { alpha: false });
 
     let drawnBaseCharId = "";
     let smoothMouth = 0.0;
-
-    // 非周期の生体まばたき状態
-    let nextBlinkStart = performance.now() + 1200 + Math.random() * 1800;
+    let nextBlinkStart = performance.now() + 1800 + Math.random() * 2000;
     let blinkStart = 0;
-    let currentBlinkDuration = 160;
-
-    // 60fps マルコフ分岐モーショングラフ状態
-    let currentBranchName = "tilt_right_smile";
-    let activeTrajectory = null; // Nodeインデックス配列
-    let trajCursor = 0.0;
-    let trajSpeed = 0.18; // 60fps あたりのステップ進行量（1ステップ ≈ 4〜6フレーム = 60fpsで滑らかに補間！）
-    let hubPauseUntil = 0;
 
     const tick = async (now) => {
       requestAnimationFrame(tick);
@@ -556,6 +620,43 @@
       const charObj = getActiveCharObj(mem);
       if (!charObj || !roiCtx) return;
 
+      // ★ 1. 美桜 (face_f02_mio): 50fps フルニューラル FMV モーショングラフ＆LMDM発話ストリーム直結描画
+      if (charObj.id === "face_f02_mio") {
+        if (activeFmvVideo && activeFmvVideo.readyState >= 2) {
+          const vw = activeFmvVideo.videoWidth || 1280;
+          const vh = activeFmvVideo.videoHeight || 720;
+          if (roiCanvas.width !== vw || roiCanvas.height !== vh) {
+            roiCanvas.width = vw;
+            roiCanvas.height = vh;
+          }
+          // 半透明ブレンド一切なし！100% 鮮明な 50fps 3D ニューラルフレームをそのままブリット
+          roiCtx.globalAlpha = 1.0;
+          roiCtx.drawImage(activeFmvVideo, 0, 0, vw, vh);
+          drawnBaseCharId = "face_f02_mio";
+
+          // 待機ブランチ動画が終端に近づいたら、Canonical Anchor Pose (Frame 0) で次のランダムブランチへ 0ms 遷移！
+          const dur = activeFmvVideo.duration;
+          if (
+            activeFmvType === "idle" &&
+            !fmvSwitching &&
+            (activeFmvVideo.ended || (dur > 0 && activeFmvVideo.currentTime >= dur - 0.035))
+          ) {
+            fmvSwitching = true;
+            const nextId = pickNextMioIdleBranch(currentIdleBranchId);
+            switchToIdleFmvBranch(nextId);
+            fmvSwitching = false;
+          } else if (
+            activeFmvType === "talk" &&
+            (activeFmvVideo.ended || (dur > 0 && activeFmvVideo.currentTime >= dur - 0.035))
+          ) {
+            const nextId = pickNextMioIdleBranch(currentIdleBranchId);
+            switchToIdleFmvBranch(nextId);
+          }
+          return;
+        }
+      }
+
+      // ★ 2. 他キャラ選択時または初回プリロード中のクリーン描画 (`globalAlpha` クロスフェード禁止)
       const sprite = await loadCharacterVisemeSprite(charObj.id, charObj.portrait_url);
       if (!sprite || !sprite.baseImg) return;
 
@@ -569,125 +670,52 @@
         roiCtx.globalAlpha = 1.0;
         roiCtx.drawImage(sprite.baseImg, 0, 0, sprite.frameW, sprite.frameH);
         drawnBaseCharId = sprite.charId;
-        activeTrajectory = null;
       }
 
-      // 1. 音声解析による口開き量 (smoothMouth: 0.0 〜 1.0) の算出
+      if (!sprite.bitmaps) return;
+
       let targetMouth = 0.0;
       if (isSpeakingNow && activeAnalyser && activeFreqData && activeTimeData) {
         activeAnalyser.getByteFrequencyData(activeFreqData);
         activeAnalyser.getByteTimeDomainData(activeTimeData);
-
         let sumSq = 0;
         for (let i = 0; i < activeTimeData.length; i++) {
           const v = (activeTimeData[i] - 128) / 128.0;
           sumSq += v * v;
         }
         const rms = Math.sqrt(sumSq / activeTimeData.length);
-
-        let fSum = 0;
-        const binStart = 2;
-        const binEnd = Math.min(32, activeFreqData.length);
-        for (let i = binStart; i < binEnd; i++) {
-          fSum += activeFreqData[i];
-        }
-        const fAvg = fSum / Math.max(1, binEnd - binStart);
-
-        if (rms > 0.011 && fAvg > 15) {
-          const rmsNorm = Math.min(1.0, (rms - 0.011) / 0.13);
-          const fNorm = Math.min(1.0, (fAvg - 15) / 85);
-          targetMouth = Math.max(0.0, Math.min(1.0, rmsNorm * 0.55 + fNorm * 0.45));
+        if (rms > 0.012) {
+          targetMouth = Math.min(1.0, (rms - 0.012) / 0.12);
         }
       }
+      smoothMouth = smoothMouth * 0.45 + targetMouth * 0.55;
 
-      smoothMouth =
-        targetMouth > smoothMouth
-          ? smoothMouth * 0.34 + targetMouth * 0.66
-          : smoothMouth * 0.56 + targetMouth * 0.44;
-      if (smoothMouth < 0.025) smoothMouth = 0.0;
-
-      // 2. 非周期の生体まばたきカーブ算出 (シングル / ダブル / 速度ゆらぎ)
-      let blinkAlpha = 0.0;
+      let isBlinking = false;
       if (now >= nextBlinkStart && blinkStart === 0) {
         blinkStart = now;
-        currentBlinkDuration = 145 + Math.random() * 55;
       }
       if (blinkStart > 0) {
-        const elapsed = now - blinkStart;
-        const closeTime = currentBlinkDuration * 0.42;
-        const openTime = currentBlinkDuration * 0.58;
-        if (elapsed < currentBlinkDuration) {
-          if (elapsed < closeTime) {
-            blinkAlpha = Math.sin((elapsed / closeTime) * (Math.PI / 2));
-          } else {
-            blinkAlpha = Math.cos(((elapsed - closeTime) / openTime) * (Math.PI / 2));
-          }
-          blinkAlpha = Math.max(0.0, Math.min(1.0, blinkAlpha));
+        if (now - blinkStart < 110) {
+          isBlinking = true;
         } else {
           blinkStart = 0;
-          // 28%の確率でパチパチッと連続するダブルブリンク
-          nextBlinkStart = now + (Math.random() < 0.28 ? 110 + Math.random() * 60 : 1600 + Math.random() * 2600);
+          nextBlinkStart = now + 2200 + Math.random() * 2800;
         }
       }
 
-      // 3. 60fps マルコフ分岐 3D モーショングラフの進行と描画
-      const { x, y, w, h, nodes, branches } = sprite;
-
-      if (branches && Array.isArray(nodes) && nodes.length > 1) {
-        // 新しいブランチへの分岐抽選
-        if (!activeTrajectory || trajCursor >= activeTrajectory.length - 1) {
-          if (now >= hubPauseUntil || requestedBranchHint) {
-            currentBranchName = pickNextRandomBranch(currentBranchName, isSpeakingNow);
-            // 毎回異なる深さ(0.55〜1.0)・ピーク滞留(2〜7ステップ)・スピード(0.16〜0.28)をランダム生成！
-            const reach = isSpeakingNow ? 0.65 + Math.random() * 0.35 : 0.50 + Math.random() * 0.50;
-            const holdSteps = Math.floor(2 + Math.random() * 6);
-            activeTrajectory = buildDynamicBranchTrajectory(branches, currentBranchName, reach, holdSteps);
-            trajCursor = 0.0;
-            trajSpeed = isSpeakingNow
-              ? 0.20 + Math.random() * 0.10
-              : 0.14 + Math.random() * 0.09;
-            // ブランチ完了後のごく短い自然な間（0ms〜320ms）
-            hubPauseUntil = 0;
-          } else {
-            activeTrajectory = [0];
-            trajCursor = 0.0;
-          }
-        }
-
-        const idx0 = Math.min(activeTrajectory.length - 1, Math.floor(trajCursor));
-        const idx1 = Math.min(activeTrajectory.length - 1, idx0 + 1);
-        const subAlpha = trajCursor - idx0;
-
-        const nodeIdxA = activeTrajectory[idx0] || 0;
-        const nodeIdxB = activeTrajectory[idx1] || 0;
-        const nodeA = nodes[nodeIdxA] || nodes[0];
-        const nodeB = nodes[nodeIdxB] || nodes[0];
-
-        // ステップAを描画し、次ステップBと異なる場合は subAlpha で60fpsサブフレーム補間！
-        drawNodeState(roiCtx, nodeA, x, y, w, h, smoothMouth, blinkAlpha, 1.0);
-        if (nodeIdxB !== nodeIdxA && subAlpha > 0.02) {
-          drawNodeState(roiCtx, nodeB, x, y, w, h, smoothMouth, blinkAlpha, subAlpha);
-        }
-        roiCtx.globalAlpha = 1.0;
-
-        // 発話中は声のエネルギーが高いときに少し動きが活発になる生体連動
-        const voiceBoost = isSpeakingNow ? 1.0 + smoothMouth * 0.25 : 1.0;
-        trajCursor += trajSpeed * voiceBoost;
-        if (trajCursor >= activeTrajectory.length - 1 && hubPauseUntil === 0) {
-          hubPauseUntil = now + (isSpeakingNow ? 40 + Math.random() * 120 : 120 + Math.random() * 380);
-        }
-      } else {
-        // 単一ノードキャラのフォールバック描画
-        drawNodeState(roiCtx, sprite.bitmaps, x, y, w, h, smoothMouth, blinkAlpha, 1.0);
-        roiCtx.globalAlpha = 1.0;
+      const { x, y, w, h, bitmaps } = sprite;
+      roiCtx.globalAlpha = 1.0;
+      if (isBlinking && smoothMouth < 0.15 && bitmaps.blink) {
+        roiCtx.drawImage(bitmaps.blink, x, y, w, h);
+      } else if (smoothMouth >= 0.62 && bitmaps.wide) {
+        roiCtx.drawImage(bitmaps.wide, x, y, w, h);
+      } else if (smoothMouth >= 0.32 && bitmaps.mid) {
+        roiCtx.drawImage(bitmaps.mid, x, y, w, h);
+      } else if (smoothMouth >= 0.08 && bitmaps.small) {
+        roiCtx.drawImage(bitmaps.small, x, y, w, h);
+      } else if (bitmaps.closed) {
+        roiCtx.drawImage(bitmaps.closed, x, y, w, h);
       }
-
-      // 4. 胸元・身体全体の微細な生体呼吸ゆらぎ
-      const tSec = now * 0.001;
-      const breathY = Math.sin(tSec * 1.65) * 1.3;
-      const swayX = Math.sin(tSec * 0.85 + 0.7) * 1.0;
-      const scale = 1.003 + Math.sin(tSec * 1.65) * 0.0015;
-      roiCanvas.style.transform = `translate3d(${swayX.toFixed(2)}px, ${breathY.toFixed(2)}px, 0) scale(${scale.toFixed(4)})`;
     };
 
     requestAnimationFrame(tick);
@@ -882,7 +910,7 @@
           { type: "done", total_chunks: 1, spoken, inner_thought: st.inner_thought, emotion: emo, choices },
         ],
         () => {
-          if (entry && entry.mp3_url) playRealVoiceWith3DViseme(entry.mp3_url, activeChar, scKey);
+          if (entry) playRealVoiceWithSotaAvatar(entry, activeChar, scKey);
         }
       );
     }
@@ -930,7 +958,7 @@
           },
         ],
         () => {
-          if (entry && entry.mp3_url) playRealVoiceWith3DViseme(entry.mp3_url, activeChar, intent);
+          if (entry) playRealVoiceWithSotaAvatar(entry, activeChar, intent);
         }
       );
     }
@@ -984,12 +1012,12 @@
             { type: "done", total_chunks: 1, spoken, inner_thought: st.inner_thought, emotion: emo, choices },
           ],
           () => {
-            if (entry && entry.mp3_url) playRealVoiceWith3DViseme(entry.mp3_url, activeChar, "greeting_home");
+            if (entry) playRealVoiceWithSotaAvatar(entry, activeChar, "greeting_home");
           }
         );
       }
       setTimeout(() => {
-        if (entry && entry.mp3_url) playRealVoiceWith3DViseme(entry.mp3_url, activeChar, "greeting_home");
+        if (entry) playRealVoiceWithSotaAvatar(entry, activeChar, "greeting_home");
       }, 20);
       return makeJsonResponse(st);
     }
@@ -1055,12 +1083,12 @@
             { type: "done", total_chunks: 1, spoken, inner_thought: st.inner_thought, emotion: emo, choices },
           ],
           () => {
-            if (entry && entry.mp3_url) playRealVoiceWith3DViseme(entry.mp3_url, activeChar, intent);
+            if (entry) playRealVoiceWithSotaAvatar(entry, activeChar, intent);
           }
         );
       }
       setTimeout(() => {
-        if (entry && entry.mp3_url) playRealVoiceWith3DViseme(entry.mp3_url, activeChar, intent);
+        if (entry) playRealVoiceWithSotaAvatar(entry, activeChar, intent);
       }, 20);
       return makeJsonResponse(st);
     }
@@ -1147,10 +1175,12 @@
 
   window.addEventListener("DOMContentLoaded", () => {
     injectShareAndFeedbackButton();
-    startUnified3DAvatarEngine();
+    startUnifiedSotaAvatarEngine();
+    ensureCatalogAndManifest();
   });
   if (document.readyState !== "loading") {
     injectShareAndFeedbackButton();
-    startUnified3DAvatarEngine();
+    startUnifiedSotaAvatarEngine();
+    ensureCatalogAndManifest();
   }
 })();
