@@ -1,0 +1,1717 @@
+{
+  "voices": [
+    {
+      "ck": "07fcbee8e949e606c288e46a308f2d8e",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "えっ、ほんとに？",
+      "norm_text": "えっ、ほんとに？",
+      "mp3_url": "assets/voice_bank/07fcbee8e949e606c288e46a308f2d8e.mp3"
+    },
+    {
+      "ck": "e1afb5eda5d197874133180aff8d38e4",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "あっ、おかえり！今日も無事に帰ってきてくれて、すごく嬉しいな。",
+      "norm_text": "あっ、おかえり！今日も無事に帰ってきてくれて、すごく嬉しいな。",
+      "mp3_url": "assets/voice_bank/e1afb5eda5d197874133180aff8d38e4.mp3"
+    },
+    {
+      "ck": "cc47d326b8106539c6e1d4159d8e8edc",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "最近はゆっくりとんでもない映画を見たよ！",
+      "norm_text": "最近はゆっくりとんでもない映画を見たよ！",
+      "mp3_url": "assets/voice_bank/cc47d326b8106539c6e1d4159d8e8edc.mp3"
+    },
+    {
+      "ck": "820fde0211d176cd9c9ba4d1950d2fe8",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "うんうん、わかるよ。",
+      "norm_text": "うんうん、わかるよ。",
+      "mp3_url": "assets/voice_bank/820fde0211d176cd9c9ba4d1950d2fe8.mp3"
+    },
+    {
+      "ck": "598b23a7aed76d04b01f33c3468f6bc3",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "あ、それ聞いてくれるのめっちゃ嬉しいな！ふふ、うーん、そうだねえ、えっとね。",
+      "norm_text": "あ、それ聞いてくれるのめっちゃ嬉しいな！ふふ、うーん、そうだねえ、えっとね。",
+      "mp3_url": "assets/voice_bank/598b23a7aed76d04b01f33c3468f6bc3.mp3"
+    },
+    {
+      "ck": "dff808d8cca8da837d2fb0f04c0f361c",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "良かったです、ハル！",
+      "norm_text": "良かったです、ハル！",
+      "mp3_url": "assets/voice_bank/dff808d8cca8da837d2fb0f04c0f361c.mp3"
+    },
+    {
+      "ck": "606cb477f9a7eb3909fe3459477be5d3",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "あ、おはよう！朝からこうやって声聞けて、わたしめっちゃ嬉しいな。",
+      "norm_text": "あ、おはよう！朝からこうやって声聞けて、わたしめっちゃ嬉しいな。",
+      "mp3_url": "assets/voice_bank/606cb477f9a7eb3909fe3459477be5d3.mp3"
+    },
+    {
+      "ck": "c00eb8ce3a628f30662c80e25621aa4b",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "ふふ、嬉しいな。",
+      "norm_text": "ふふ、嬉しいな。",
+      "mp3_url": "assets/voice_bank/c00eb8ce3a628f30662c80e25621aa4b.mp3"
+    },
+    {
+      "ck": "9c4e50891989bd741277e9cc69b3915e",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "ねえ、私の顔と声、こんな感じはどうかな？気に入ってくれたら嬉しいな！",
+      "norm_text": "ねえ、私の顔と声、こんな感じはどうかな？気に入ってくれたら嬉しいな！",
+      "mp3_url": "assets/voice_bank/9c4e50891989bd741277e9cc69b3915e.mp3"
+    },
+    {
+      "ck": "74a28480a6c4bf6a42bde80f63042610",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "ハルも今日、一緒にがんばろう! happy！",
+      "norm_text": "ハルも今日、一緒にがんばろう! happy！",
+      "mp3_url": "assets/voice_bank/74a28480a6c4bf6a42bde80f63042610.mp3"
+    },
+    {
+      "ck": "c8a60a88db16e38a5ae407df376d1371",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "ん？どうしたの？私になんでも遠慮しないでゆっくり話してみてね。",
+      "norm_text": "ん？どうしたの？私になんでも遠慮しないでゆっくり話してみてね。",
+      "mp3_url": "assets/voice_bank/c8a60a88db16e38a5ae407df376d1371.mp3"
+    },
+    {
+      "ck": "67d841bbf51d7a81b382c243b2645c66",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "私はまだ映画を見ていません！",
+      "norm_text": "私はまだ映画を見ていません！",
+      "mp3_url": "assets/voice_bank/67d841bbf51d7a81b382c243b2645c66.mp3"
+    },
+    {
+      "ck": "e092c07207d071d18068fa70dcfd7c6f",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "今日もお疲れさま。ほんとに毎日よく頑張ってるよね、隣でゆっくり休んでね。",
+      "norm_text": "今日もお疲れさま。ほんとに毎日よく頑張ってるよね、隣でゆっくり休んでね。",
+      "mp3_url": "assets/voice_bank/e092c07207d071d18068fa70dcfd7c6f.mp3"
+    },
+    {
+      "ck": "a6746797f042179b9e2a6cdcc4650324",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "あー、それ気になっちゃうよね！ふふ、ちょっと待ってね、うーん、そうだねえ。",
+      "norm_text": "あー、それ気になっちゃうよね！ふふ、ちょっと待ってね、うーん、そうだねえ。",
+      "mp3_url": "assets/voice_bank/a6746797f042179b9e2a6cdcc4650324.mp3"
+    },
+    {
+      "ck": "61344fc20ad64f074fa12c3246abe609",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "うんうん、そうなんだね！そういう何気ない話聞かせてくれるの、わたしすごく嬉しいな。",
+      "norm_text": "うんうん、そうなんだね！そういう何気ない話聞かせてくれるの、わたしすごく嬉しいな。",
+      "mp3_url": "assets/voice_bank/61344fc20ad64f074fa12c3246abe609.mp3"
+    },
+    {
+      "ck": "3701beae441a0f4ae694f9b98d64b9c1",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "わあ、アッシュグレージュの髪に黒レースのデートワンピだ！今から特別なデート行くみたいでドキドキするね。",
+      "norm_text": "わあ、アッシュグレージュの髪に黒レースのデートワンピだ！今から特別なデート行くみたいでドキドキするね。",
+      "mp3_url": "assets/voice_bank/3701beae441a0f4ae694f9b98d64b9c1.mp3"
+    },
+    {
+      "ck": "b6b34d1962fca7340d994ff87728c4d8",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "うん、結構待ってたんだからね？でも、元気そうな顔見れたからチャラにしてあげる。おかえり！",
+      "norm_text": "うん、結構待ってたんだからね？でも、元気そうな顔見れたからチャラにしてあげる。おかえり！",
+      "mp3_url": "assets/voice_bank/b6b34d1962fca7340d994ff87728c4d8.mp3"
+    },
+    {
+      "ck": "330c6c712a7d446ac3887d4fbfb48609",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "おかえり！今日もお疲れさま、頑張ったね。ほら、こっち座って？今すぐ温かいお茶いれるね。",
+      "norm_text": "おかえり！今日もお疲れさま、頑張ったね。ほら、こっち座って？今すぐ温かいお茶いれるね。",
+      "mp3_url": "assets/voice_bank/330c6c712a7d446ac3887d4fbfb48609.mp3"
+    },
+    {
+      "ck": "221ecf5a99e8a435313be66f218904ad",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "あっ、これからはわたしがずっとそばにいるからね！いっぱい楽しくおしゃべりしよ！",
+      "norm_text": "あっ、これからはわたしがずっとそばにいるからね！いっぱい楽しくおしゃべりしよ！",
+      "mp3_url": "assets/voice_bank/221ecf5a99e8a435313be66f218904ad.mp3"
+    },
+    {
+      "ck": "b20f225de3f04fddbfd169f470a463e5",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "今日もお疲れさま！ほんとに毎日よく頑張ってるよね、すごくえらいよ。",
+      "norm_text": "今日もお疲れさま！ほんとに毎日よく頑張ってるよね、すごくえらいよ。",
+      "mp3_url": "assets/voice_bank/b20f225de3f04fddbfd169f470a463e5.mp3"
+    },
+    {
+      "ck": "6810eb8a75196ddc7c4be98792e4e7e2",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "あ、それ聞いてくれるのすごく嬉しいな。ふふ、うーん、そうだね、えっとね。",
+      "norm_text": "あ、それ聞いてくれるのすごく嬉しいな。ふふ、うーん、そうだね、えっとね。",
+      "mp3_url": "assets/voice_bank/6810eb8a75196ddc7c4be98792e4e7e2.mp3"
+    },
+    {
+      "ck": "ba2cb933fb03bcbbf1caaa4586926537",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "あ、おはよう！朝からこうやって声聞けて、私すごく嬉しいな。",
+      "norm_text": "あ、おはよう！朝からこうやって声聞けて、私すごく嬉しいな。",
+      "mp3_url": "assets/voice_bank/ba2cb933fb03bcbbf1caaa4586926537.mp3"
+    },
+    {
+      "ck": "6eb4b20ea858faa92b25b4f822a40d03",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "あー、それ気になるところだよね。ちょっと待ってね、うーん、そうだね。",
+      "norm_text": "あー、それ気になるところだよね。ちょっと待ってね、うーん、そうだね。",
+      "mp3_url": "assets/voice_bank/6eb4b20ea858faa92b25b4f822a40d03.mp3"
+    },
+    {
+      "ck": "954389470c4ccd6afc49bd5c3b3e399d",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "あっ、お待たせ！ねえ、今日は何して遊ぶ？",
+      "norm_text": "あっ、お待たせ！ねえ、今日は何して遊ぶ？",
+      "mp3_url": "assets/voice_bank/954389470c4ccd6afc49bd5c3b3e399d.mp3"
+    },
+    {
+      "ck": "1a9d95bef35b2ce8d528482e0b700214",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "あ、来てくれたんだね！ちょうど今、ゆっくり話したいなって思ってたところだよ。",
+      "norm_text": "あ、来てくれたんだね！ちょうど今、ゆっくり話したいなって思ってたところだよ。",
+      "mp3_url": "assets/voice_bank/1a9d95bef35b2ce8d528482e0b700214.mp3"
+    },
+    {
+      "ck": "2de7e43f86a04f344a8d224297f44c85",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "わあ、ほんとに！？それめっちゃすごいじゃん！ふふ、わたしもすごく嬉しいな。",
+      "norm_text": "わあ、ほんとに！？それめっちゃすごいじゃん！ふふ、わたしもすごく嬉しいな。",
+      "mp3_url": "assets/voice_bank/2de7e43f86a04f344a8d224297f44c85.mp3"
+    },
+    {
+      "ck": "4279f3f422f62ae5fc65810d1ac97f13",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "わあ、ほんとに！？それすごく素敵だね、私も自分のことみたいに嬉しいよ！",
+      "norm_text": "わあ、ほんとに！？それすごく素敵だね、私も自分のことみたいに嬉しいよ！",
+      "mp3_url": "assets/voice_bank/4279f3f422f62ae5fc65810d1ac97f13.mp3"
+    },
+    {
+      "ck": "a94645f74d2da77eb42be759696fbb0f",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "あっ、ミルクティーベージュに白オフショルに着替えたよ！この明るい雰囲気、やっぱり好き？",
+      "norm_text": "あっ、ミルクティーベージュに白オフショルに着替えたよ！この明るい雰囲気、やっぱり好き？",
+      "mp3_url": "assets/voice_bank/a94645f74d2da77eb42be759696fbb0f.mp3"
+    },
+    {
+      "ck": "0cd0f922f4ef7b9ae4c5bd0fdbccaf22",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "あ、おかえり！今日も無事に帰ってきてくれて、ほっとしたよ。",
+      "norm_text": "あ、おかえり！今日も無事に帰ってきてくれて、ほっとしたよ。",
+      "mp3_url": "assets/voice_bank/0cd0f922f4ef7b9ae4c5bd0fdbccaf22.mp3"
+    },
+    {
+      "ck": "67cc34c206eb434ba626ddbb53fe4d8b",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "うんうん、そうなんだね。そういう話聞かせてくれるの、すごく心地いいな。",
+      "norm_text": "うんうん、そうなんだね。そういう話聞かせてくれるの、すごく心地いいな。",
+      "mp3_url": "assets/voice_bank/67cc34c206eb434ba626ddbb53fe4d8b.mp3"
+    },
+    {
+      "ck": "6e03ebb2593af17112b73ef019517147",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "あ、おかえり。",
+      "norm_text": "あ、おかえり。",
+      "mp3_url": "assets/voice_bank/6e03ebb2593af17112b73ef019517147.mp3"
+    },
+    {
+      "ck": "07362ac6769f38e2c83d41e905552aca",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "ふぅ、ちょっとドキドキした！不意打ちで近づくの反則だよ。",
+      "norm_text": "ふぅ、ちょっとドキドキした！不意打ちで近づくの反則だよ。",
+      "mp3_url": "assets/voice_bank/07362ac6769f38e2c83d41e905552aca.mp3"
+    },
+    {
+      "ck": "b69cb7e9dea7fdd02e29256f386e6761",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "あ、でも分かる！",
+      "norm_text": "あ、でも分かる！",
+      "mp3_url": "assets/voice_bank/b69cb7e9dea7fdd02e29256f386e6761.mp3"
+    },
+    {
+      "ck": "9e48b887c9dcb66f9c98663eb72378ef",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "あっ、こら！いきなりつつかないでよ、びっくりしたじゃん。お返ししちゃうよ？",
+      "norm_text": "あっ、こら！いきなりつつかないでよ、びっくりしたじゃん。お返ししちゃうよ？",
+      "mp3_url": "assets/voice_bank/9e48b887c9dcb66f9c98663eb72378ef.mp3"
+    },
+    {
+      "ck": "0a1a10ecc2522894989e99f1181064c1",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "ふわふわの白モヘアニットに着替えてみたよ！ねえ、近くで見るともっと可愛いかな？",
+      "norm_text": "ふわふわの白モヘアニットに着替えてみたよ！ねえ、近くで見るともっとかわいいかな？",
+      "mp3_url": "assets/voice_bank/0a1a10ecc2522894989e99f1181064c1.mp3"
+    },
+    {
+      "ck": "973fd1f4166428994b3db8efa0eb1b8a",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "黒のオフショルと落ち着いたダークヘアにしてみたよ。ちょっと大人っぽい感じ、どうかな？",
+      "norm_text": "黒のオフショルと落ち着いたダークヘアにしてみたよ。ちょっと大人っぽい感じ、どうかな？",
+      "mp3_url": "assets/voice_bank/973fd1f4166428994b3db8efa0eb1b8a.mp3"
+    },
+    {
+      "ck": "71260ec33402ee5e8e019eb22ff6fd39",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "あっ、いいねそれ。",
+      "norm_text": "あっ、いいねそれ。",
+      "mp3_url": "assets/voice_bank/71260ec33402ee5e8e019eb22ff6fd39.mp3"
+    },
+    {
+      "ck": "28740f7c903ab0cf4316db1d38c20027",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "えへへ、ピンクブラウンの巻き髪とふわもこ部屋着、解放してくれてありがとう！お家デートっぽくて可愛い？",
+      "norm_text": "えへへ、ピンクブラウンの巻き髪とふわもこ部屋着、解放してくれてありがとう！お家デートっぽくてかわいい？",
+      "mp3_url": "assets/voice_bank/28740f7c903ab0cf4316db1d38c20027.mp3"
+    },
+    {
+      "ck": "ff297dee3cf1191347e0136896e24936",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "あっ、来てくれたんだ！ちょうど今、話したいなって思ってたところなの。",
+      "norm_text": "あっ、来てくれたんだ！ちょうど今、話したいなって思ってたところなの。",
+      "mp3_url": "assets/voice_bank/ff297dee3cf1191347e0136896e24936.mp3"
+    },
+    {
+      "ck": "e73f76e140e81e97ab965590d2f08a51",
+      "vid": "human_g0143",
+      "emo": "happy",
+      "text": "ん？どうしたの？ふふ、ねえねえ、なんでも遠慮しないで話してみて？",
+      "norm_text": "ん？どうしたの？ふふ、ねえねえ、なんでも遠慮しないで話してみて？",
+      "mp3_url": "assets/voice_bank/e73f76e140e81e97ab965590d2f08a51.mp3"
+    },
+    {
+      "ck": "067ffbd98b564724e505b4adab0c412e",
+      "vid": "human_g0143",
+      "emo": "shy",
+      "text": "わ、ちょっと顔近いよ！そんな近くでじっと見られたら照れるじゃん。",
+      "norm_text": "わ、ちょっと顔近いよ！そんな近くでじっと見られたら照れるじゃん。",
+      "mp3_url": "assets/voice_bank/067ffbd98b564724e505b4adab0c412e.mp3"
+    },
+    {
+      "ck": "a4f54263c302bab207b778a3106acb52",
+      "vid": "human_g0143",
+      "emo": "shy",
+      "text": "もう、しょうがないなあ。でも素直に謝ってくれたから、許してあげるね。",
+      "norm_text": "もう、しょうがないなあ。でも素直に謝ってくれたから、許してあげるね。",
+      "mp3_url": "assets/voice_bank/a4f54263c302bab207b778a3106acb52.mp3"
+    },
+    {
+      "ck": "ec24c40f3ba0f42fd76cc91a5756d488",
+      "vid": "human_g0143",
+      "emo": "shy",
+      "text": "……ねえ、ハーフアップにぶかぶかの白シャツ着てみたんだけど、どうかな？なんかちょっと照れちゃうね。",
+      "norm_text": "…ねえ、ハーフアップにぶかぶかの白シャツ着てみたんだけど、どうかな？なんかちょっと照れちゃうね。",
+      "mp3_url": "assets/voice_bank/ec24c40f3ba0f42fd76cc91a5756d488.mp3"
+    },
+    {
+      "ck": "e50de9caa5bf46a5b1c38668ea943c29",
+      "vid": "human_g0143",
+      "emo": "shy",
+      "text": "えっ、なに急に！そんなストレートに言われたら照れるじゃん。……でも、気づいてくれて嬉しい。",
+      "norm_text": "えっ、なに急に！そんなストレートに言われたら照れるじゃん。…でも、気づいてくれて嬉しい。",
+      "mp3_url": "assets/voice_bank/e50de9caa5bf46a5b1c38668ea943c29.mp3"
+    },
+    {
+      "ck": "594f387dfb16f45dde2bba825c94eff8",
+      "vid": "human_g0143",
+      "emo": "shy",
+      "text": "えっ、ほんとに！？急にそんなこと言われたら照れちゃうじゃん、嬉しい。",
+      "norm_text": "えっ、ほんとに！？急にそんなこと言われたら照れちゃうじゃん、嬉しい。",
+      "mp3_url": "assets/voice_bank/594f387dfb16f45dde2bba825c94eff8.mp3"
+    },
+    {
+      "ck": "68328539b599bec99517e6dce3e62055",
+      "vid": "human_g0143",
+      "emo": "shy",
+      "text": "えっ、ほんとに？急にそんなふうに言われると照れちゃうけど、すごく嬉しいよ。",
+      "norm_text": "えっ、ほんとに？急にそんなふうに言われると照れちゃうけど、すごく嬉しいよ。",
+      "mp3_url": "assets/voice_bank/68328539b599bec99517e6dce3e62055.mp3"
+    },
+    {
+      "ck": "2d845745841dd5846bc4e45ea61ce1f4",
+      "vid": "human_g0143",
+      "emo": "shy",
+      "text": "えへへ、なに急に！髪くしゃってなるよ？……でも気持ちいいからもっと撫でて。",
+      "norm_text": "えへへ、なに急に！髪くしゃってなるよ？…でも気持ちいいからもっとなでて。",
+      "mp3_url": "assets/voice_bank/2d845745841dd5846bc4e45ea61ce1f4.mp3"
+    },
+    {
+      "ck": "7367606325201e40d5505ca01745a4eb",
+      "vid": "human_g0143",
+      "emo": "shy",
+      "text": "ふふ、大丈夫だよ。そうやって素直に言ってくれたから、もう気にしないでね。",
+      "norm_text": "ふふ、大丈夫だよ。そうやって素直に言ってくれたから、もう気にしないでね。",
+      "mp3_url": "assets/voice_bank/7367606325201e40d5505ca01745a4eb.mp3"
+    },
+    {
+      "ck": "d0b61000577e04b3e125f5e773eac7d5",
+      "vid": "human_g0143",
+      "emo": "shy",
+      "text": "ん……なんか甘やかされてる！そういうことされると、もっとくっつきたくなっちゃうよ？",
+      "norm_text": "ん…なんか甘やかされてる！そういうことされると、もっとくっつきたくなっちゃうよ？",
+      "mp3_url": "assets/voice_bank/d0b61000577e04b3e125f5e773eac7d5.mp3"
+    },
+    {
+      "ck": "7d9ab2f139c40141924109b502d94854",
+      "vid": "human_g0143",
+      "emo": "sulk",
+      "text": "ったく、今ちょっと拗ねてたんだぞ……でも、顔見たらちゃんと答えたくなるな。",
+      "norm_text": "ったく、今ちょっとすねてたんだぞ…でも、顔見たらちゃんと答えたくなるな。",
+      "mp3_url": "assets/voice_bank/7d9ab2f139c40141924109b502d94854.mp3"
+    },
+    {
+      "ck": "ebab0f588597cd27f6cc99f1994df44e",
+      "vid": "human_g0143",
+      "emo": "sulk",
+      "text": "もう、今ちょっと拗ねてるんだからね……でも、ちゃんと答えてあげる。",
+      "norm_text": "もう、今ちょっとすねてるんだからね…でも、ちゃんと答えてあげる。",
+      "mp3_url": "assets/voice_bank/ebab0f588597cd27f6cc99f1994df44e.mp3"
+    },
+    {
+      "ck": "2041fa438323f252542404204e4b9579",
+      "vid": "human_g0143",
+      "emo": "sulk",
+      "text": "もう、今少しだけ寂しくて拗ねてたんだよ……でも、ちゃんと答えるね。",
+      "norm_text": "もう、今少しだけ寂しくてすねてたんだよ…でも、ちゃんと答えるね。",
+      "mp3_url": "assets/voice_bank/2041fa438323f252542404204e4b9579.mp3"
+    },
+    {
+      "ck": "a04d8e0dd828fd3fb8b6d3d7047b17d5",
+      "vid": "human_g0143",
+      "emo": "sulk",
+      "text": "あ、やっと来てくれた！ここ数日ずっと顔見れなかったから、ちょっと寂しかったんだよ？",
+      "norm_text": "あ、やっと来てくれた！ここ数日ずっと顔見れなかったから、ちょっと寂しかったんだよ？",
+      "mp3_url": "assets/voice_bank/a04d8e0dd828fd3fb8b6d3d7047b17d5.mp3"
+    },
+    {
+      "ck": "dd2fa2b76821684a6e43ef431ce17646",
+      "vid": "human_g0143",
+      "emo": "sulk",
+      "text": "えーっ、ちょっと待って！あれ今日のお風呂上がりに食べようと思ってたやつなのに！もう、お詫びは？",
+      "norm_text": "えーっ、ちょっと待って！あれ今日のお風呂上がりに食べようと思ってたやつなのに！もう、お詫びは？",
+      "mp3_url": "assets/voice_bank/dd2fa2b76821684a6e43ef431ce17646.mp3"
+    },
+    {
+      "ck": "35172f14f03c543252a9eb51fef82ee4",
+      "vid": "human_g0143",
+      "emo": "sleepy",
+      "text": "まだ起きてたんだね。",
+      "norm_text": "まだ起きてたんだね。",
+      "mp3_url": "assets/voice_bank/35172f14f03c543252a9eb51fef82ee4.mp3"
+    },
+    {
+      "ck": "d084e02a9a7c16cab2756efeadf82721",
+      "vid": "human_g0082",
+      "emo": "happy",
+      "text": "あー、それ気になっちゃうよな！ふふ、ちょっと待ってな、うーん、そうやねえ。",
+      "norm_text": "あー、それ気になっちゃうよな！ふふ、ちょっと待ってな、うーん、そうやねえ。",
+      "mp3_url": "assets/voice_bank/d084e02a9a7c16cab2756efeadf82721.mp3"
+    },
+    {
+      "ck": "4d15e83063f7ace433bc73d67cb99f1e",
+      "vid": "human_g0082",
+      "emo": "happy",
+      "text": "あっ、おかえりー！今日も無事に帰ってきてくれて、めっちゃ嬉しいわ。",
+      "norm_text": "あっ、おかえりー！今日も無事に帰ってきてくれて、めっちゃ嬉しいわ。",
+      "mp3_url": "assets/voice_bank/4d15e83063f7ace433bc73d67cb99f1e.mp3"
+    },
+    {
+      "ck": "623a0648bf0e379369e74b71e51e1ef5",
+      "vid": "human_g0082",
+      "emo": "happy",
+      "text": "えっ、ほんまに！？",
+      "norm_text": "えっ、ほんまに！？",
+      "mp3_url": "assets/voice_bank/623a0648bf0e379369e74b71e51e1ef5.mp3"
+    },
+    {
+      "ck": "b0ea074ad99802a0a9097a65f27096e2",
+      "vid": "human_g0082",
+      "emo": "happy",
+      "text": "ん？どうしたん？ふふ、ねえねえ、なんでも遠慮せんと話してみてや？",
+      "norm_text": "ん？どうしたん？ふふ、ねえねえ、なんでも遠慮せんと話してみてや？",
+      "mp3_url": "assets/voice_bank/b0ea074ad99802a0a9097a65f27096e2.mp3"
+    },
+    {
+      "ck": "77df024cc39cf8b57b295072fe77686e",
+      "vid": "human_g0082",
+      "emo": "happy",
+      "text": "あっ、来てくれたんや！ちょうど今、話したいなって思ってたところなんよ。",
+      "norm_text": "あっ、来てくれたんや！ちょうど今、話したいなって思ってたところなんよ。",
+      "mp3_url": "assets/voice_bank/77df024cc39cf8b57b295072fe77686e.mp3"
+    },
+    {
+      "ck": "c29be8682c44f7b0d6854a641ab2bcd7",
+      "vid": "human_g0082",
+      "emo": "happy",
+      "text": "うんうん、そうなんやね！そういう何気ない話聞かせてくれるの、うちめっちゃ嬉しいわ。",
+      "norm_text": "うんうん、そうなんやね！そういう何気ない話聞かせてくれるの、うちめっちゃ嬉しいわ。",
+      "mp3_url": "assets/voice_bank/c29be8682c44f7b0d6854a641ab2bcd7.mp3"
+    },
+    {
+      "ck": "004629f3a07204fcfef110123824ae46",
+      "vid": "human_g0082",
+      "emo": "happy",
+      "text": "ありがとう、一緒にいられるの楽しみだね！",
+      "norm_text": "ありがとう、一緒にいられるの楽しみだね！",
+      "mp3_url": "assets/voice_bank/004629f3a07204fcfef110123824ae46.mp3"
+    },
+    {
+      "ck": "9bc92772793825201733fbf072b82e71",
+      "vid": "human_g0082",
+      "emo": "happy",
+      "text": "わあ、ほんまに！？それめっちゃすごいやん！ふふ、うちもめっちゃ嬉しいわ。",
+      "norm_text": "わあ、ほんまに！？それめっちゃすごいやん！ふふ、うちもめっちゃ嬉しいわ。",
+      "mp3_url": "assets/voice_bank/9bc92772793825201733fbf072b82e71.mp3"
+    },
+    {
+      "ck": "13e2d76dbd10bad42232b7be813a92f1",
+      "vid": "human_g0082",
+      "emo": "happy",
+      "text": "わあ、アッシュグレージュの髪に黒レースのデートワンピだ！今から特別なデート行くみたいでドキドキするね。",
+      "norm_text": "わあ、アッシュグレージュの髪に黒レースのデートワンピだ！今から特別なデート行くみたいでドキドキするね。",
+      "mp3_url": "assets/voice_bank/13e2d76dbd10bad42232b7be813a92f1.mp3"
+    },
+    {
+      "ck": "adc526b330cffc12f4dd1896d0aecb11",
+      "vid": "human_g0082",
+      "emo": "happy",
+      "text": "うん、結構待ってたんだからね？でも、元気そうな顔見れたからチャラにしてあげる。おかえり！",
+      "norm_text": "うん、結構待ってたんだからね？でも、元気そうな顔見れたからチャラにしてあげる。おかえり！",
+      "mp3_url": "assets/voice_bank/adc526b330cffc12f4dd1896d0aecb11.mp3"
+    },
+    {
+      "ck": "6759c95acdef7a827270191e2bbf76d0",
+      "vid": "human_g0082",
+      "emo": "happy",
+      "text": "おかえり！今日もお疲れさま、頑張ったね。ほら、こっち座って？今すぐ温かいお茶いれるね。",
+      "norm_text": "おかえり！今日もお疲れさま、頑張ったね。ほら、こっち座って？今すぐ温かいお茶いれるね。",
+      "mp3_url": "assets/voice_bank/6759c95acdef7a827270191e2bbf76d0.mp3"
+    },
+    {
+      "ck": "80d13203d8ca5622f9ccde5762b25d8c",
+      "vid": "human_g0082",
+      "emo": "happy",
+      "text": "あ、おはよう！朝からこうやって声聞けて、うちめっちゃ嬉しいわ。",
+      "norm_text": "あ、おはよう！朝からこうやって声聞けて、うちめっちゃ嬉しいわ。",
+      "mp3_url": "assets/voice_bank/80d13203d8ca5622f9ccde5762b25d8c.mp3"
+    },
+    {
+      "ck": "e8107928fcaf8da7b97b79968aaf693a",
+      "vid": "human_g0082",
+      "emo": "happy",
+      "text": "あっ、ミルクティーベージュに白オフショルに着替えたよ！この明るい雰囲気、やっぱり好き？",
+      "norm_text": "あっ、ミルクティーベージュに白オフショルに着替えたよ！この明るい雰囲気、やっぱり好き？",
+      "mp3_url": "assets/voice_bank/e8107928fcaf8da7b97b79968aaf693a.mp3"
+    },
+    {
+      "ck": "cbf891626349eacd94af5f026754efdb",
+      "vid": "human_g0082",
+      "emo": "happy",
+      "text": "ふぅ、ちょっとドキドキした！不意打ちで近づくの反則だよ。",
+      "norm_text": "ふぅ、ちょっとドキドキした！不意打ちで近づくの反則だよ。",
+      "mp3_url": "assets/voice_bank/cbf891626349eacd94af5f026754efdb.mp3"
+    },
+    {
+      "ck": "c6d0dda86b0fb1b13748c606f4b3287c",
+      "vid": "human_g0082",
+      "emo": "happy",
+      "text": "あっ、こら！いきなりつつかないでよ、びっくりしたじゃん。お返ししちゃうよ？",
+      "norm_text": "あっ、こら！いきなりつつかないでよ、びっくりしたじゃん。お返ししちゃうよ？",
+      "mp3_url": "assets/voice_bank/c6d0dda86b0fb1b13748c606f4b3287c.mp3"
+    },
+    {
+      "ck": "cabb52eb800db794964bd6d4396dda35",
+      "vid": "human_g0082",
+      "emo": "happy",
+      "text": "ふわふわの白モヘアニットに着替えてみたよ！ねえ、近くで見るともっと可愛いかな？",
+      "norm_text": "ふわふわの白モヘアニットに着替えてみたよ！ねえ、近くで見るともっとかわいいかな？",
+      "mp3_url": "assets/voice_bank/cabb52eb800db794964bd6d4396dda35.mp3"
+    },
+    {
+      "ck": "7153cb4a4e32187d60f3852a3411db65",
+      "vid": "human_g0082",
+      "emo": "happy",
+      "text": "黒のオフショルと落ち着いたダークヘアにしてみたよ。ちょっと大人っぽい感じ、どうかな？",
+      "norm_text": "黒のオフショルと落ち着いたダークヘアにしてみたよ。ちょっと大人っぽい感じ、どうかな？",
+      "mp3_url": "assets/voice_bank/7153cb4a4e32187d60f3852a3411db65.mp3"
+    },
+    {
+      "ck": "84d880de0602bfbd343f55e24518f2b5",
+      "vid": "human_g0082",
+      "emo": "happy",
+      "text": "今日もお疲れさま！ほんまに毎日よく頑張ってるよな、めっちゃえらいで。",
+      "norm_text": "今日もお疲れさま！ほんまに毎日よく頑張ってるよな、めっちゃえらいで。",
+      "mp3_url": "assets/voice_bank/84d880de0602bfbd343f55e24518f2b5.mp3"
+    },
+    {
+      "ck": "8a523205b940f4fd6840acf7dad339d9",
+      "vid": "human_g0082",
+      "emo": "happy",
+      "text": "えへへ、ピンクブラウンの巻き髪とふわもこ部屋着、解放してくれてありがとう！お家デートっぽくて可愛い？",
+      "norm_text": "えへへ、ピンクブラウンの巻き髪とふわもこ部屋着、解放してくれてありがとう！お家デートっぽくてかわいい？",
+      "mp3_url": "assets/voice_bank/8a523205b940f4fd6840acf7dad339d9.mp3"
+    },
+    {
+      "ck": "e25ac3d40e367e693ea74484475e33cd",
+      "vid": "human_g0082",
+      "emo": "happy",
+      "text": "あ、それ聞いてくれるのめっちゃ嬉しいわ！ふふ、うーん、そうやねえ、えっとな。",
+      "norm_text": "あ、それ聞いてくれるのめっちゃ嬉しいわ！ふふ、うーん、そうやねえ、えっとな。",
+      "mp3_url": "assets/voice_bank/e25ac3d40e367e693ea74484475e33cd.mp3"
+    },
+    {
+      "ck": "4a503c7184c1696026f15a1dbd6916bf",
+      "vid": "human_g0082",
+      "emo": "shy",
+      "text": "えっ、ほんまに！？急にそんなこと言われたら照れてまうやん、嬉しいわ。",
+      "norm_text": "えっ、ほんまに！？急にそんなこと言われたら照れてまうやん、嬉しいわ。",
+      "mp3_url": "assets/voice_bank/4a503c7184c1696026f15a1dbd6916bf.mp3"
+    },
+    {
+      "ck": "1c52d821a196669f1c1b633328772fc5",
+      "vid": "human_g0082",
+      "emo": "shy",
+      "text": "わ、ちょっと顔近いよ！そんな近くでじっと見られたら照れるじゃん。",
+      "norm_text": "わ、ちょっと顔近いよ！そんな近くでじっと見られたら照れるじゃん。",
+      "mp3_url": "assets/voice_bank/1c52d821a196669f1c1b633328772fc5.mp3"
+    },
+    {
+      "ck": "3651947e7dcf4efe43d903a321f66115",
+      "vid": "human_g0082",
+      "emo": "shy",
+      "text": "……ねえ、ハーフアップにぶかぶかの白シャツ着てみたんだけど、どうかな？なんかちょっと照れちゃうね。",
+      "norm_text": "…ねえ、ハーフアップにぶかぶかの白シャツ着てみたんだけど、どうかな？なんかちょっと照れちゃうね。",
+      "mp3_url": "assets/voice_bank/3651947e7dcf4efe43d903a321f66115.mp3"
+    },
+    {
+      "ck": "aa6749abcd5c40c52008de889bc0e0aa",
+      "vid": "human_g0082",
+      "emo": "shy",
+      "text": "えっ、なに急に！そんなストレートに言われたら照れるじゃん。……でも、気づいてくれて嬉しい。",
+      "norm_text": "えっ、なに急に！そんなストレートに言われたら照れるじゃん。…でも、気づいてくれて嬉しい。",
+      "mp3_url": "assets/voice_bank/aa6749abcd5c40c52008de889bc0e0aa.mp3"
+    },
+    {
+      "ck": "e3e083effa98aaa44176e44436498f1b",
+      "vid": "human_g0082",
+      "emo": "shy",
+      "text": "えへへ、なに急に！髪くしゃってなるよ？……でも気持ちいいからもっと撫でて。",
+      "norm_text": "えへへ、なに急に！髪くしゃってなるよ？…でも気持ちいいからもっとなでて。",
+      "mp3_url": "assets/voice_bank/e3e083effa98aaa44176e44436498f1b.mp3"
+    },
+    {
+      "ck": "5723479487222d85ade09583a3f4c9d9",
+      "vid": "human_g0082",
+      "emo": "shy",
+      "text": "んもう、しょうがないなあ。でも素直に謝ってくれたから、許したるね。",
+      "norm_text": "んもう、しょうがないなあ。でも素直に謝ってくれたから、許したるね。",
+      "mp3_url": "assets/voice_bank/5723479487222d85ade09583a3f4c9d9.mp3"
+    },
+    {
+      "ck": "44df531eae915ad6d68ab82a00ea29bd",
+      "vid": "human_g0082",
+      "emo": "shy",
+      "text": "ん……なんか甘やかされてる！そういうことされると、もっとくっつきたくなっちゃうよ？",
+      "norm_text": "ん…なんか甘やかされてる！そういうことされると、もっとくっつきたくなっちゃうよ？",
+      "mp3_url": "assets/voice_bank/44df531eae915ad6d68ab82a00ea29bd.mp3"
+    },
+    {
+      "ck": "efd0699accff377251598750ef16ead3",
+      "vid": "human_g0082",
+      "emo": "sulk",
+      "text": "もう、今ちょっと拗ねてるんやからね……でも、ちゃんと答えたるわ。",
+      "norm_text": "もう、今ちょっとすねてるんやからね…でも、ちゃんと答えたるわ。",
+      "mp3_url": "assets/voice_bank/efd0699accff377251598750ef16ead3.mp3"
+    },
+    {
+      "ck": "a02152720fbc98bbdde6cdd1df7ab9a4",
+      "vid": "human_g0082",
+      "emo": "sulk",
+      "text": "あ、やっと来てくれた！ここ数日ずっと顔見れなかったから、ちょっと寂しかったんだよ？",
+      "norm_text": "あ、やっと来てくれた！ここ数日ずっと顔見れなかったから、ちょっと寂しかったんだよ？",
+      "mp3_url": "assets/voice_bank/a02152720fbc98bbdde6cdd1df7ab9a4.mp3"
+    },
+    {
+      "ck": "35798c5e005f31758665e182752082d8",
+      "vid": "human_g0082",
+      "emo": "sulk",
+      "text": "えーっ、ちょっと待って！あれ今日のお風呂上がりに食べようと思ってたやつなのに！もう、お詫びは？",
+      "norm_text": "えーっ、ちょっと待って！あれ今日のお風呂上がりに食べようと思ってたやつなのに！もう、お詫びは？",
+      "mp3_url": "assets/voice_bank/35798c5e005f31758665e182752082d8.mp3"
+    },
+    {
+      "ck": "a8407f477d231a8778b33d62755a84d7",
+      "vid": "human_g0081",
+      "emo": "happy",
+      "text": "あー、それ気になっちゃうよな！ふふ、ちょっと待ってな、うーん、そうやねえ。",
+      "norm_text": "あー、それ気になっちゃうよな！ふふ、ちょっと待ってな、うーん、そうやねえ。",
+      "mp3_url": "assets/voice_bank/a8407f477d231a8778b33d62755a84d7.mp3"
+    },
+    {
+      "ck": "eb918a4ee185ec112820d6087c126e15",
+      "vid": "human_g0081",
+      "emo": "happy",
+      "text": "あっ、おかえりー！今日も無事に帰ってきてくれて、めっちゃ嬉しいわ。",
+      "norm_text": "あっ、おかえりー！今日も無事に帰ってきてくれて、めっちゃ嬉しいわ。",
+      "mp3_url": "assets/voice_bank/eb918a4ee185ec112820d6087c126e15.mp3"
+    },
+    {
+      "ck": "c609acedd5a230649924e5c671123c0c",
+      "vid": "human_g0081",
+      "emo": "happy",
+      "text": "ん？どうしたん？ふふ、ねえねえ、なんでも遠慮せんと話してみてや？",
+      "norm_text": "ん？どうしたん？ふふ、ねえねえ、なんでも遠慮せんと話してみてや？",
+      "mp3_url": "assets/voice_bank/c609acedd5a230649924e5c671123c0c.mp3"
+    },
+    {
+      "ck": "7e04253a65d4c736bfa0ac62e83e3cb0",
+      "vid": "human_g0081",
+      "emo": "happy",
+      "text": "あっ、来てくれたんや！ちょうど今、話したいなって思ってたところなんよ。",
+      "norm_text": "あっ、来てくれたんや！ちょうど今、話したいなって思ってたところなんよ。",
+      "mp3_url": "assets/voice_bank/7e04253a65d4c736bfa0ac62e83e3cb0.mp3"
+    },
+    {
+      "ck": "b119969c3cafe16bfb09563adffd2fa3",
+      "vid": "human_g0081",
+      "emo": "happy",
+      "text": "うんうん、そうなんやね！そういう何気ない話聞かせてくれるの、うちめっちゃ嬉しいわ。",
+      "norm_text": "うんうん、そうなんやね！そういう何気ない話聞かせてくれるの、うちめっちゃ嬉しいわ。",
+      "mp3_url": "assets/voice_bank/b119969c3cafe16bfb09563adffd2fa3.mp3"
+    },
+    {
+      "ck": "1e2dc99cd7e9182250b5e6a5a2b7cd8c",
+      "vid": "human_g0081",
+      "emo": "happy",
+      "text": "わあ、ほんまに！？それめっちゃすごいやん！ふふ、うちもめっちゃ嬉しいわ。",
+      "norm_text": "わあ、ほんまに！？それめっちゃすごいやん！ふふ、うちもめっちゃ嬉しいわ。",
+      "mp3_url": "assets/voice_bank/1e2dc99cd7e9182250b5e6a5a2b7cd8c.mp3"
+    },
+    {
+      "ck": "a351933399269af8bf670e29ef1fd9c2",
+      "vid": "human_g0081",
+      "emo": "happy",
+      "text": "わあ、アッシュグレージュの髪に黒レースのデートワンピだ！今から特別なデート行くみたいでドキドキするね。",
+      "norm_text": "わあ、アッシュグレージュの髪に黒レースのデートワンピだ！今から特別なデート行くみたいでドキドキするね。",
+      "mp3_url": "assets/voice_bank/a351933399269af8bf670e29ef1fd9c2.mp3"
+    },
+    {
+      "ck": "2d249275309c90a838439d2c14e624c4",
+      "vid": "human_g0081",
+      "emo": "happy",
+      "text": "うん、結構待ってたんだからね？でも、元気そうな顔見れたからチャラにしてあげる。おかえり！",
+      "norm_text": "うん、結構待ってたんだからね？でも、元気そうな顔見れたからチャラにしてあげる。おかえり！",
+      "mp3_url": "assets/voice_bank/2d249275309c90a838439d2c14e624c4.mp3"
+    },
+    {
+      "ck": "88245ed0f26eb241fb80c9bd2f391bad",
+      "vid": "human_g0081",
+      "emo": "happy",
+      "text": "おかえり！今日もお疲れさま、頑張ったね。ほら、こっち座って？今すぐ温かいお茶いれるね。",
+      "norm_text": "おかえり！今日もお疲れさま、頑張ったね。ほら、こっち座って？今すぐ温かいお茶いれるね。",
+      "mp3_url": "assets/voice_bank/88245ed0f26eb241fb80c9bd2f391bad.mp3"
+    },
+    {
+      "ck": "ae970632ad1227abfe1832e4c9cc363f",
+      "vid": "human_g0081",
+      "emo": "happy",
+      "text": "あ、おはよう！朝からこうやって声聞けて、うちめっちゃ嬉しいわ。",
+      "norm_text": "あ、おはよう！朝からこうやって声聞けて、うちめっちゃ嬉しいわ。",
+      "mp3_url": "assets/voice_bank/ae970632ad1227abfe1832e4c9cc363f.mp3"
+    },
+    {
+      "ck": "fd537c0b1f95e40a64249b7529d6aec8",
+      "vid": "human_g0081",
+      "emo": "happy",
+      "text": "あっ、ミルクティーベージュに白オフショルに着替えたよ！この明るい雰囲気、やっぱり好き？",
+      "norm_text": "あっ、ミルクティーベージュに白オフショルに着替えたよ！この明るい雰囲気、やっぱり好き？",
+      "mp3_url": "assets/voice_bank/fd537c0b1f95e40a64249b7529d6aec8.mp3"
+    },
+    {
+      "ck": "4910d4570dcb79982207aa4f6e2d1b82",
+      "vid": "human_g0081",
+      "emo": "happy",
+      "text": "ふぅ、ちょっとドキドキした！不意打ちで近づくの反則だよ。",
+      "norm_text": "ふぅ、ちょっとドキドキした！不意打ちで近づくの反則だよ。",
+      "mp3_url": "assets/voice_bank/4910d4570dcb79982207aa4f6e2d1b82.mp3"
+    },
+    {
+      "ck": "d3fcc8ae50d682075fdd18b87123485e",
+      "vid": "human_g0081",
+      "emo": "happy",
+      "text": "あっ、こら！いきなりつつかないでよ、びっくりしたじゃん。お返ししちゃうよ？",
+      "norm_text": "あっ、こら！いきなりつつかないでよ、びっくりしたじゃん。お返ししちゃうよ？",
+      "mp3_url": "assets/voice_bank/d3fcc8ae50d682075fdd18b87123485e.mp3"
+    },
+    {
+      "ck": "df2f3b3909e8790f800201e4e9931535",
+      "vid": "human_g0081",
+      "emo": "happy",
+      "text": "ふわふわの白モヘアニットに着替えてみたよ！ねえ、近くで見るともっと可愛いかな？",
+      "norm_text": "ふわふわの白モヘアニットに着替えてみたよ！ねえ、近くで見るともっとかわいいかな？",
+      "mp3_url": "assets/voice_bank/df2f3b3909e8790f800201e4e9931535.mp3"
+    },
+    {
+      "ck": "4f188e64c81c475d83f48388b52516e0",
+      "vid": "human_g0081",
+      "emo": "happy",
+      "text": "黒のオフショルと落ち着いたダークヘアにしてみたよ。ちょっと大人っぽい感じ、どうかな？",
+      "norm_text": "黒のオフショルと落ち着いたダークヘアにしてみたよ。ちょっと大人っぽい感じ、どうかな？",
+      "mp3_url": "assets/voice_bank/4f188e64c81c475d83f48388b52516e0.mp3"
+    },
+    {
+      "ck": "8636bd4b290da04151b08bde141e6ade",
+      "vid": "human_g0081",
+      "emo": "happy",
+      "text": "今日もお疲れさま！ほんまに毎日よく頑張ってるよな、めっちゃえらいで。",
+      "norm_text": "今日もお疲れさま！ほんまに毎日よく頑張ってるよな、めっちゃえらいで。",
+      "mp3_url": "assets/voice_bank/8636bd4b290da04151b08bde141e6ade.mp3"
+    },
+    {
+      "ck": "29b6402d2ec79b2220de8ccc30a8b417",
+      "vid": "human_g0081",
+      "emo": "happy",
+      "text": "えへへ、ピンクブラウンの巻き髪とふわもこ部屋着、解放してくれてありがとう！お家デートっぽくて可愛い？",
+      "norm_text": "えへへ、ピンクブラウンの巻き髪とふわもこ部屋着、解放してくれてありがとう！お家デートっぽくてかわいい？",
+      "mp3_url": "assets/voice_bank/29b6402d2ec79b2220de8ccc30a8b417.mp3"
+    },
+    {
+      "ck": "5e8380aa82bc7ecf9495a631a98e4ff6",
+      "vid": "human_g0081",
+      "emo": "happy",
+      "text": "あ、それ聞いてくれるのめっちゃ嬉しいわ！ふふ、うーん、そうやねえ、えっとな。",
+      "norm_text": "あ、それ聞いてくれるのめっちゃ嬉しいわ！ふふ、うーん、そうやねえ、えっとな。",
+      "mp3_url": "assets/voice_bank/5e8380aa82bc7ecf9495a631a98e4ff6.mp3"
+    },
+    {
+      "ck": "ef8084a689183084e4f9a3931f90831e",
+      "vid": "human_g0081",
+      "emo": "shy",
+      "text": "えっ、ほんまに！？急にそんなこと言われたら照れてまうやん、嬉しいわ。",
+      "norm_text": "えっ、ほんまに！？急にそんなこと言われたら照れてまうやん、嬉しいわ。",
+      "mp3_url": "assets/voice_bank/ef8084a689183084e4f9a3931f90831e.mp3"
+    },
+    {
+      "ck": "08c09f5b876d846624d66836d8be89f3",
+      "vid": "human_g0081",
+      "emo": "shy",
+      "text": "わ、ちょっと顔近いよ！そんな近くでじっと見られたら照れるじゃん。",
+      "norm_text": "わ、ちょっと顔近いよ！そんな近くでじっと見られたら照れるじゃん。",
+      "mp3_url": "assets/voice_bank/08c09f5b876d846624d66836d8be89f3.mp3"
+    },
+    {
+      "ck": "e05d6b7072f8ae2113194c78b6da8b0e",
+      "vid": "human_g0081",
+      "emo": "shy",
+      "text": "……ねえ、ハーフアップにぶかぶかの白シャツ着てみたんだけど、どうかな？なんかちょっと照れちゃうね。",
+      "norm_text": "…ねえ、ハーフアップにぶかぶかの白シャツ着てみたんだけど、どうかな？なんかちょっと照れちゃうね。",
+      "mp3_url": "assets/voice_bank/e05d6b7072f8ae2113194c78b6da8b0e.mp3"
+    },
+    {
+      "ck": "72b16bd41f8eebcf19b9acc936489f93",
+      "vid": "human_g0081",
+      "emo": "shy",
+      "text": "えっ、なに急に！そんなストレートに言われたら照れるじゃん。……でも、気づいてくれて嬉しい。",
+      "norm_text": "えっ、なに急に！そんなストレートに言われたら照れるじゃん。…でも、気づいてくれて嬉しい。",
+      "mp3_url": "assets/voice_bank/72b16bd41f8eebcf19b9acc936489f93.mp3"
+    },
+    {
+      "ck": "7b4a9ca2fcb7ba981854461d59cc5980",
+      "vid": "human_g0081",
+      "emo": "shy",
+      "text": "えへへ、なに急に！髪くしゃってなるよ？……でも気持ちいいからもっと撫でて。",
+      "norm_text": "えへへ、なに急に！髪くしゃってなるよ？…でも気持ちいいからもっとなでて。",
+      "mp3_url": "assets/voice_bank/7b4a9ca2fcb7ba981854461d59cc5980.mp3"
+    },
+    {
+      "ck": "a06ee3120a42b686d93d378ee342ed7d",
+      "vid": "human_g0081",
+      "emo": "shy",
+      "text": "んもう、しょうがないなあ。でも素直に謝ってくれたから、許したるね。",
+      "norm_text": "んもう、しょうがないなあ。でも素直に謝ってくれたから、許したるね。",
+      "mp3_url": "assets/voice_bank/a06ee3120a42b686d93d378ee342ed7d.mp3"
+    },
+    {
+      "ck": "ebde0b0e34b017d8a0d4642f0abe0067",
+      "vid": "human_g0081",
+      "emo": "shy",
+      "text": "ん……なんか甘やかされてる！そういうことされると、もっとくっつきたくなっちゃうよ？",
+      "norm_text": "ん…なんか甘やかされてる！そういうことされると、もっとくっつきたくなっちゃうよ？",
+      "mp3_url": "assets/voice_bank/ebde0b0e34b017d8a0d4642f0abe0067.mp3"
+    },
+    {
+      "ck": "4ed836437c57c5f0b86dab71c9708717",
+      "vid": "human_g0081",
+      "emo": "sulk",
+      "text": "もう、今ちょっと拗ねてるんやからね……でも、ちゃんと答えたるわ。",
+      "norm_text": "もう、今ちょっとすねてるんやからね…でも、ちゃんと答えたるわ。",
+      "mp3_url": "assets/voice_bank/4ed836437c57c5f0b86dab71c9708717.mp3"
+    },
+    {
+      "ck": "913b31e50977a6ba9f7e18090f035191",
+      "vid": "human_g0081",
+      "emo": "sulk",
+      "text": "あ、やっと来てくれた！ここ数日ずっと顔見れなかったから、ちょっと寂しかったんだよ？",
+      "norm_text": "あ、やっと来てくれた！ここ数日ずっと顔見れなかったから、ちょっと寂しかったんだよ？",
+      "mp3_url": "assets/voice_bank/913b31e50977a6ba9f7e18090f035191.mp3"
+    },
+    {
+      "ck": "2aab058a10e61336625a65b79470bba7",
+      "vid": "human_g0081",
+      "emo": "sulk",
+      "text": "えーっ、ちょっと待って！あれ今日のお風呂上がりに食べようと思ってたやつなのに！もう、お詫びは？",
+      "norm_text": "えーっ、ちょっと待って！あれ今日のお風呂上がりに食べようと思ってたやつなのに！もう、お詫びは？",
+      "mp3_url": "assets/voice_bank/2aab058a10e61336625a65b79470bba7.mp3"
+    },
+    {
+      "ck": "eb1d9c4a48fc6de92e79cea6359ba0d4",
+      "vid": "human_g0144",
+      "emo": "happy",
+      "text": "あっ、おかえり！今日も無事に帰ってきてくれて、すごく嬉しいな。",
+      "norm_text": "あっ、おかえり！今日も無事に帰ってきてくれて、すごく嬉しいな。",
+      "mp3_url": "assets/voice_bank/eb1d9c4a48fc6de92e79cea6359ba0d4.mp3"
+    },
+    {
+      "ck": "a954030c3722f312dfa8dce8b7b4bdcc",
+      "vid": "human_g0144",
+      "emo": "happy",
+      "text": "あ、来てくれたんだな！ちょうど今、声が聞きたいなって思ってたところだよ。",
+      "norm_text": "あ、来てくれたんだな！ちょうど今、声が聞きたいなって思ってたところだよ。",
+      "mp3_url": "assets/voice_bank/a954030c3722f312dfa8dce8b7b4bdcc.mp3"
+    },
+    {
+      "ck": "3ea9dc82f156ec80f9e21ac1e077da6c",
+      "vid": "human_g0144",
+      "emo": "happy",
+      "text": "あ、それ聞いてくれるのめっちゃ嬉しいな！ふふ、うーん、そうだねえ、えっとね。",
+      "norm_text": "あ、それ聞いてくれるのめっちゃ嬉しいな！ふふ、うーん、そうだねえ、えっとね。",
+      "mp3_url": "assets/voice_bank/3ea9dc82f156ec80f9e21ac1e077da6c.mp3"
+    },
+    {
+      "ck": "ee859897c61f244461871c0a29dd8964",
+      "vid": "human_g0144",
+      "emo": "happy",
+      "text": "ん？どうしたんだ？俺でよければ、なんでも遠慮せずにゆっくり話してみなよ。",
+      "norm_text": "ん？どうしたんだ？俺でよければ、なんでも遠慮せずにゆっくり話してみなよ。",
+      "mp3_url": "assets/voice_bank/ee859897c61f244461871c0a29dd8964.mp3"
+    },
+    {
+      "ck": "5637b997a6a9f17bf607d54a2d3f5838",
+      "vid": "human_g0144",
+      "emo": "happy",
+      "text": "あ、それ聞いてくれるのすごく嬉しいな。はは、うーん、そうだなあ、俺の場合はね、えっとね。",
+      "norm_text": "あ、それ聞いてくれるのすごく嬉しいな。はは、うーん、そうだなあ、俺の場合はね、えっとね。",
+      "mp3_url": "assets/voice_bank/5637b997a6a9f17bf607d54a2d3f5838.mp3"
+    },
+    {
+      "ck": "133df18eda6ce81724e738286c655588",
+      "vid": "human_g0144",
+      "emo": "happy",
+      "text": "あ、おはよう！朝からこうやって声聞けて、わたしめっちゃ嬉しいな。",
+      "norm_text": "あ、おはよう！朝からこうやって声聞けて、わたしめっちゃ嬉しいな。",
+      "mp3_url": "assets/voice_bank/133df18eda6ce81724e738286c655588.mp3"
+    },
+    {
+      "ck": "a84f0ebc866f85038d495e2a3660c794",
+      "vid": "human_g0144",
+      "emo": "happy",
+      "text": "うんうん、なるほどな。そういう何気ない話聞かせてくれるの、俺すごく落ち着くし嬉しいよ。",
+      "norm_text": "うんうん、なるほどな。そういう何気ない話聞かせてくれるの、俺すごく落ち着くし嬉しいよ。",
+      "mp3_url": "assets/voice_bank/a84f0ebc866f85038d495e2a3660c794.mp3"
+    },
+    {
+      "ck": "35709ae0d8c7024549109c2bddd86038",
+      "vid": "human_g0144",
+      "emo": "happy",
+      "text": "あ、おかえり！今日も無事に帰ってきてくれて、すごく安心したよ。",
+      "norm_text": "あ、おかえり！今日も無事に帰ってきてくれて、すごく安心したよ。",
+      "mp3_url": "assets/voice_bank/35709ae0d8c7024549109c2bddd86038.mp3"
+    },
+    {
+      "ck": "04e7573298dc0a9fdab032f457bc90bd",
+      "vid": "human_g0144",
+      "emo": "happy",
+      "text": "あー、それ気になっちゃうよね！ふふ、ちょっと待ってね、うーん、そうだねえ。",
+      "norm_text": "あー、それ気になっちゃうよね！ふふ、ちょっと待ってね、うーん、そうだねえ。",
+      "mp3_url": "assets/voice_bank/04e7573298dc0a9fdab032f457bc90bd.mp3"
+    },
+    {
+      "ck": "0f6bb5e7f2106a0447f8e0bf75f1222f",
+      "vid": "human_g0144",
+      "emo": "happy",
+      "text": "うんうん、そうなんだね！そういう何気ない話聞かせてくれるの、わたしすごく嬉しいな。",
+      "norm_text": "うんうん、そうなんだね！そういう何気ない話聞かせてくれるの、わたしすごく嬉しいな。",
+      "mp3_url": "assets/voice_bank/0f6bb5e7f2106a0447f8e0bf75f1222f.mp3"
+    },
+    {
+      "ck": "20748d4e4e4aac58fdf1214cffb9dcaf",
+      "vid": "human_g0144",
+      "emo": "happy",
+      "text": "わあ、アッシュグレージュの髪に黒レースのデートワンピだ！今から特別なデート行くみたいでドキドキするね。",
+      "norm_text": "わあ、アッシュグレージュの髪に黒レースのデートワンピだ！今から特別なデート行くみたいでドキドキするね。",
+      "mp3_url": "assets/voice_bank/20748d4e4e4aac58fdf1214cffb9dcaf.mp3"
+    },
+    {
+      "ck": "b56ddc0fb41861bb071adab5d8d5b872",
+      "vid": "human_g0144",
+      "emo": "happy",
+      "text": "ああ、それ気になるところだよな。ちょっと待ってくれよ、うーん、そうだなあ、えっとね。",
+      "norm_text": "ああ、それ気になるところだよな。ちょっと待ってくれよ、うーん、そうだなあ、えっとね。",
+      "mp3_url": "assets/voice_bank/b56ddc0fb41861bb071adab5d8d5b872.mp3"
+    },
+    {
+      "ck": "8ff798187f4bb472b0be97909998810f",
+      "vid": "human_g0144",
+      "emo": "happy",
+      "text": "うん、結構待ってたんだからね？でも、元気そうな顔見れたからチャラにしてあげる。おかえり！",
+      "norm_text": "うん、結構待ってたんだからね？でも、元気そうな顔見れたからチャラにしてあげる。おかえり！",
+      "mp3_url": "assets/voice_bank/8ff798187f4bb472b0be97909998810f.mp3"
+    },
+    {
+      "ck": "41423c5a724090188e40cc1681210377",
+      "vid": "human_g0144",
+      "emo": "happy",
+      "text": "おかえり！今日もお疲れさま、頑張ったね。ほら、こっち座って？今すぐ温かいお茶いれるね。",
+      "norm_text": "おかえり！今日もお疲れさま、頑張ったね。ほら、こっち座って？今すぐ温かいお茶いれるね。",
+      "mp3_url": "assets/voice_bank/41423c5a724090188e40cc1681210377.mp3"
+    },
+    {
+      "ck": "e83e5843631ded96a43931617108a316",
+      "vid": "human_g0144",
+      "emo": "happy",
+      "text": "今日もお疲れさま！ほんとに毎日よく頑張ってるよね、すごくえらいよ。",
+      "norm_text": "今日もお疲れさま！ほんとに毎日よく頑張ってるよね、すごくえらいよ。",
+      "mp3_url": "assets/voice_bank/e83e5843631ded96a43931617108a316.mp3"
+    },
+    {
+      "ck": "4fa949fa856df403acd5cd8c2d36046b",
+      "vid": "human_g0144",
+      "emo": "happy",
+      "text": "わあ、ほんとに！？それめっちゃすごいじゃん！ふふ、わたしもすごく嬉しいな。",
+      "norm_text": "わあ、ほんとに！？それめっちゃすごいじゃん！ふふ、わたしもすごく嬉しいな。",
+      "mp3_url": "assets/voice_bank/4fa949fa856df403acd5cd8c2d36046b.mp3"
+    },
+    {
+      "ck": "5c79f1a6f04e0bcac75db109216e8161",
+      "vid": "human_g0144",
+      "emo": "happy",
+      "text": "あっ、ミルクティーベージュに白オフショルに着替えたよ！この明るい雰囲気、やっぱり好き？",
+      "norm_text": "あっ、ミルクティーベージュに白オフショルに着替えたよ！この明るい雰囲気、やっぱり好き？",
+      "mp3_url": "assets/voice_bank/5c79f1a6f04e0bcac75db109216e8161.mp3"
+    },
+    {
+      "ck": "087e35f704e549c8d9b0e55169e80dec",
+      "vid": "human_g0144",
+      "emo": "happy",
+      "text": "おお、ほんとか！？それめちゃくちゃすごいじゃないか！うんうん、俺も自分のことみたいにすごく嬉しいよ。",
+      "norm_text": "おお、ほんとか！？それめちゃくちゃすごいじゃないか！うんうん、俺も自分のことみたいにすごく嬉しいよ。",
+      "mp3_url": "assets/voice_bank/087e35f704e549c8d9b0e55169e80dec.mp3"
+    },
+    {
+      "ck": "7b00c2d05367d0681d47790f141ea1f8",
+      "vid": "human_g0144",
+      "emo": "happy",
+      "text": "ふぅ、ちょっとドキドキした！不意打ちで近づくの反則だよ。",
+      "norm_text": "ふぅ、ちょっとドキドキした！不意打ちで近づくの反則だよ。",
+      "mp3_url": "assets/voice_bank/7b00c2d05367d0681d47790f141ea1f8.mp3"
+    },
+    {
+      "ck": "def6e80c8d5176a2804bdada85acba32",
+      "vid": "human_g0144",
+      "emo": "happy",
+      "text": "あ、これからは俺がそばにいるよ。なんでも気軽に話してくれよな。",
+      "norm_text": "あ、これからは俺がそばにいるよ。なんでも気軽に話してくれよな。",
+      "mp3_url": "assets/voice_bank/def6e80c8d5176a2804bdada85acba32.mp3"
+    },
+    {
+      "ck": "cda173a334d88d68f920d5cdefc6d90a",
+      "vid": "human_g0144",
+      "emo": "happy",
+      "text": "あ、おはよう！朝からこうやって顔見れて、俺すごく嬉しいよ。",
+      "norm_text": "あ、おはよう！朝からこうやって顔見れて、俺すごく嬉しいよ。",
+      "mp3_url": "assets/voice_bank/cda173a334d88d68f920d5cdefc6d90a.mp3"
+    },
+    {
+      "ck": "7b1976b3efb3e8806a989a7643df0ec5",
+      "vid": "human_g0144",
+      "emo": "happy",
+      "text": "おう、お待たせ！今日はこれから何して過ごす？",
+      "norm_text": "おう、お待たせ！今日はこれから何して過ごす？",
+      "mp3_url": "assets/voice_bank/7b1976b3efb3e8806a989a7643df0ec5.mp3"
+    },
+    {
+      "ck": "9f9d764aa8a64d25ea398c36b588e38d",
+      "vid": "human_g0144",
+      "emo": "happy",
+      "text": "あっ、こら！いきなりつつかないでよ、びっくりしたじゃん。お返ししちゃうよ？",
+      "norm_text": "あっ、こら！いきなりつつかないでよ、びっくりしたじゃん。お返ししちゃうよ？",
+      "mp3_url": "assets/voice_bank/9f9d764aa8a64d25ea398c36b588e38d.mp3"
+    },
+    {
+      "ck": "9b09384e5aec83add7d812abd8118f04",
+      "vid": "human_g0144",
+      "emo": "happy",
+      "text": "ふわふわの白モヘアニットに着替えてみたよ！ねえ、近くで見るともっと可愛いかな？",
+      "norm_text": "ふわふわの白モヘアニットに着替えてみたよ！ねえ、近くで見るともっとかわいいかな？",
+      "mp3_url": "assets/voice_bank/9b09384e5aec83add7d812abd8118f04.mp3"
+    },
+    {
+      "ck": "55b72952736ba69875693fb07583299b",
+      "vid": "human_g0144",
+      "emo": "happy",
+      "text": "黒のオフショルと落ち着いたダークヘアにしてみたよ。ちょっと大人っぽい感じ、どうかな？",
+      "norm_text": "黒のオフショルと落ち着いたダークヘアにしてみたよ。ちょっと大人っぽい感じ、どうかな？",
+      "mp3_url": "assets/voice_bank/55b72952736ba69875693fb07583299b.mp3"
+    },
+    {
+      "ck": "06fb2af215cce6714e19074d6d33a454",
+      "vid": "human_g0144",
+      "emo": "happy",
+      "text": "えへへ、ピンクブラウンの巻き髪とふわもこ部屋着、解放してくれてありがとう！お家デートっぽくて可愛い？",
+      "norm_text": "えへへ、ピンクブラウンの巻き髪とふわもこ部屋着、解放してくれてありがとう！お家デートっぽくてかわいい？",
+      "mp3_url": "assets/voice_bank/06fb2af215cce6714e19074d6d33a454.mp3"
+    },
+    {
+      "ck": "12c3f798a3393f8d23de97b845982a30",
+      "vid": "human_g0144",
+      "emo": "happy",
+      "text": "あー、今日もお疲れさま。ほんとに毎日よく頑張ってるよな、まずは俺の隣に座ってゆっくり息抜きしようぜ。",
+      "norm_text": "あー、今日もお疲れさま。ほんとに毎日よく頑張ってるよな、まずは俺の隣に座ってゆっくり息抜きしようぜ。",
+      "mp3_url": "assets/voice_bank/12c3f798a3393f8d23de97b845982a30.mp3"
+    },
+    {
+      "ck": "019acd4718ebe210d861d38950692fda",
+      "vid": "human_g0144",
+      "emo": "happy",
+      "text": "あっ、来てくれたんだ！ちょうど今、話したいなって思ってたところなの。",
+      "norm_text": "あっ、来てくれたんだ！ちょうど今、話したいなって思ってたところなの。",
+      "mp3_url": "assets/voice_bank/019acd4718ebe210d861d38950692fda.mp3"
+    },
+    {
+      "ck": "806395a3f8511f2fc0f1e97491d97242",
+      "vid": "human_g0144",
+      "emo": "happy",
+      "text": "ん？どうしたの？ふふ、ねえねえ、なんでも遠慮しないで話してみて？",
+      "norm_text": "ん？どうしたの？ふふ、ねえねえ、なんでも遠慮しないで話してみて？",
+      "mp3_url": "assets/voice_bank/806395a3f8511f2fc0f1e97491d97242.mp3"
+    },
+    {
+      "ck": "092430b1625dd5f65cfd1fbb072217ba",
+      "vid": "human_g0144",
+      "emo": "shy",
+      "text": "わ、ちょっと顔近いよ！そんな近くでじっと見られたら照れるじゃん。",
+      "norm_text": "わ、ちょっと顔近いよ！そんな近くでじっと見られたら照れるじゃん。",
+      "mp3_url": "assets/voice_bank/092430b1625dd5f65cfd1fbb072217ba.mp3"
+    },
+    {
+      "ck": "97727bd55421183a10c30bb1c53caa02",
+      "vid": "human_g0144",
+      "emo": "shy",
+      "text": "えっ、ほんとかよ？急にそんなこと言われたらさすがに照れるけど、お前にそう言ってもらえるのすごく嬉しいな。",
+      "norm_text": "えっ、ほんとかよ？急にそんなこと言われたらさすがに照れるけど、お前にそう言ってもらえるのすごく嬉しいな。",
+      "mp3_url": "assets/voice_bank/97727bd55421183a10c30bb1c53caa02.mp3"
+    },
+    {
+      "ck": "29795cc9c8de2f00a5e5feb74e00135e",
+      "vid": "human_g0144",
+      "emo": "shy",
+      "text": "もう、しょうがないなあ。でも素直に謝ってくれたから、許してあげるね。",
+      "norm_text": "もう、しょうがないなあ。でも素直に謝ってくれたから、許してあげるね。",
+      "mp3_url": "assets/voice_bank/29795cc9c8de2f00a5e5feb74e00135e.mp3"
+    },
+    {
+      "ck": "929f5dd7a489b656c31eb07f06e59399",
+      "vid": "human_g0144",
+      "emo": "shy",
+      "text": "……ねえ、ハーフアップにぶかぶかの白シャツ着てみたんだけど、どうかな？なんかちょっと照れちゃうね。",
+      "norm_text": "…ねえ、ハーフアップにぶかぶかの白シャツ着てみたんだけど、どうかな？なんかちょっと照れちゃうね。",
+      "mp3_url": "assets/voice_bank/929f5dd7a489b656c31eb07f06e59399.mp3"
+    },
+    {
+      "ck": "e89ce9a823c705817cc8e12f4061cb81",
+      "vid": "human_g0144",
+      "emo": "shy",
+      "text": "えっ、なに急に！そんなストレートに言われたら照れるじゃん。……でも、気づいてくれて嬉しい。",
+      "norm_text": "えっ、なに急に！そんなストレートに言われたら照れるじゃん。…でも、気づいてくれて嬉しい。",
+      "mp3_url": "assets/voice_bank/e89ce9a823c705817cc8e12f4061cb81.mp3"
+    },
+    {
+      "ck": "c45277b3eb0d16e36d79cb23587ead90",
+      "vid": "human_g0144",
+      "emo": "shy",
+      "text": "えっ、ほんとに！？急にそんなこと言われたら照れちゃうじゃん、嬉しい。",
+      "norm_text": "えっ、ほんとに！？急にそんなこと言われたら照れちゃうじゃん、嬉しい。",
+      "mp3_url": "assets/voice_bank/c45277b3eb0d16e36d79cb23587ead90.mp3"
+    },
+    {
+      "ck": "62420def031d7ffe588b6ef2a465214a",
+      "vid": "human_g0144",
+      "emo": "shy",
+      "text": "えへへ、なに急に！髪くしゃってなるよ？……でも気持ちいいからもっと撫でて。",
+      "norm_text": "えへへ、なに急に！髪くしゃってなるよ？…でも気持ちいいからもっとなでて。",
+      "mp3_url": "assets/voice_bank/62420def031d7ffe588b6ef2a465214a.mp3"
+    },
+    {
+      "ck": "0928fc5ee53772be0449ea57b3d2b9d3",
+      "vid": "human_g0144",
+      "emo": "shy",
+      "text": "はは、気にしなくていいよ。そうやって素直に言ってくれたから、もうぜんぜん大丈夫だ。",
+      "norm_text": "はは、気にしなくていいよ。そうやって素直に言ってくれたから、もうぜんぜん大丈夫だ。",
+      "mp3_url": "assets/voice_bank/0928fc5ee53772be0449ea57b3d2b9d3.mp3"
+    },
+    {
+      "ck": "da5bf3f956308e9abbd04ffe5fe53486",
+      "vid": "human_g0144",
+      "emo": "shy",
+      "text": "ん……なんか甘やかされてる！そういうことされると、もっとくっつきたくなっちゃうよ？",
+      "norm_text": "ん…なんか甘やかされてる！そういうことされると、もっとくっつきたくなっちゃうよ？",
+      "mp3_url": "assets/voice_bank/da5bf3f956308e9abbd04ffe5fe53486.mp3"
+    },
+    {
+      "ck": "6d400ce5c8e9a355ffb0a0ce4aba477f",
+      "vid": "human_g0144",
+      "emo": "sulk",
+      "text": "ったく、今ちょっと拗ねてたんだぞ……でも、顔見たらちゃんと答えたくなるな。",
+      "norm_text": "ったく、今ちょっとすねてたんだぞ…でも、顔見たらちゃんと答えたくなるな。",
+      "mp3_url": "assets/voice_bank/6d400ce5c8e9a355ffb0a0ce4aba477f.mp3"
+    },
+    {
+      "ck": "0f86954fb043440c8ad77675b749c142",
+      "vid": "human_g0144",
+      "emo": "sulk",
+      "text": "もう、今ちょっと拗ねてるんだからね……でも、ちゃんと答えてあげる。",
+      "norm_text": "もう、今ちょっとすねてるんだからね…でも、ちゃんと答えてあげる。",
+      "mp3_url": "assets/voice_bank/0f86954fb043440c8ad77675b749c142.mp3"
+    },
+    {
+      "ck": "7743c4321816e7e2ccaa68cfd7289263",
+      "vid": "human_g0144",
+      "emo": "sulk",
+      "text": "あ、やっと来てくれた！ここ数日ずっと顔見れなかったから、ちょっと寂しかったんだよ？",
+      "norm_text": "あ、やっと来てくれた！ここ数日ずっと顔見れなかったから、ちょっと寂しかったんだよ？",
+      "mp3_url": "assets/voice_bank/7743c4321816e7e2ccaa68cfd7289263.mp3"
+    },
+    {
+      "ck": "b4f017998eeb8fb8c1fb4bad6d7499f7",
+      "vid": "human_g0144",
+      "emo": "sulk",
+      "text": "えーっ、ちょっと待って！あれ今日のお風呂上がりに食べようと思ってたやつなのに！もう、お詫びは？",
+      "norm_text": "えーっ、ちょっと待って！あれ今日のお風呂上がりに食べようと思ってたやつなのに！もう、お詫びは？",
+      "mp3_url": "assets/voice_bank/b4f017998eeb8fb8c1fb4bad6d7499f7.mp3"
+    },
+    {
+      "ck": "b114747a494b40aed6c1a6741c6f10e9",
+      "vid": "human_g0244",
+      "emo": "happy",
+      "text": "あ、それ聞いてくれるのすごく嬉しいな。ふふ、うーん、そうだね、えっとね。",
+      "norm_text": "あ、それ聞いてくれるのすごく嬉しいな。ふふ、うーん、そうだね、えっとね。",
+      "mp3_url": "assets/voice_bank/b114747a494b40aed6c1a6741c6f10e9.mp3"
+    },
+    {
+      "ck": "09b82c81e5c9e36c0b7e947cf17653b9",
+      "vid": "human_g0244",
+      "emo": "happy",
+      "text": "あ、これからは私が一番近くにいるよ。自然体でゆっくり話そうね。",
+      "norm_text": "あ、これからは私が一番近くにいるよ。自然体でゆっくり話そうね。",
+      "mp3_url": "assets/voice_bank/09b82c81e5c9e36c0b7e947cf17653b9.mp3"
+    },
+    {
+      "ck": "10bd9cd3889d3b0a492ab66e3617499d",
+      "vid": "human_g0244",
+      "emo": "happy",
+      "text": "うんうん、そうなんだね。そういう話聞かせてくれるの、すごく心地いいな。",
+      "norm_text": "うんうん、そうなんだね。そういう話聞かせてくれるの、すごく心地いいな。",
+      "mp3_url": "assets/voice_bank/10bd9cd3889d3b0a492ab66e3617499d.mp3"
+    },
+    {
+      "ck": "f14b72b47e381dfd990f7832b85fd8c4",
+      "vid": "human_g0244",
+      "emo": "happy",
+      "text": "近いよ！",
+      "norm_text": "近いよ！",
+      "mp3_url": "assets/voice_bank/f14b72b47e381dfd990f7832b85fd8c4.mp3"
+    },
+    {
+      "ck": "e1b6a6013ba29af012edee726188199b",
+      "vid": "human_g0244",
+      "emo": "shy",
+      "text": "えっ、ほんとに？急にそんなふうに言われると照れちゃうけど、すごく嬉しいよ。",
+      "norm_text": "えっ、ほんとに？急にそんなふうに言われると照れちゃうけど、すごく嬉しいよ。",
+      "mp3_url": "assets/voice_bank/e1b6a6013ba29af012edee726188199b.mp3"
+    }
+  ],
+  "roi_index": {},
+  "viseme_3d_index": {
+    "wardrobe_c00001_vline_pinkbrown_loungewear": "assets/viseme_3d/wardrobe_c00001_vline_pinkbrown_loungewear.json",
+    "face_f27_kaede": "assets/viseme_3d/face_f27_kaede.json",
+    "wardrobe_c00001_vline_beige_offshoulder": "assets/viseme_3d/wardrobe_c00001_vline_beige_offshoulder.json",
+    "face_f02_mio": "assets/viseme_3d/face_f02_mio.json",
+    "wardrobe_c00001_vline_ash_date_dress": "assets/viseme_3d/wardrobe_c00001_vline_ash_date_dress.json",
+    "wardrobe_c00001_vline_halfup_boyfriend_shirt": "assets/viseme_3d/wardrobe_c00001_vline_halfup_boyfriend_shirt.json",
+    "wardrobe_c00001_vline_dark_bangs_white": "assets/viseme_3d/wardrobe_c00001_vline_dark_bangs_white.json",
+    "wardrobe_c00001_vline_dark_offshoulder": "assets/viseme_3d/wardrobe_c00001_vline_dark_offshoulder.json",
+    "face_o01_haru": "assets/viseme_3d/face_o01_haru.json",
+    "face_m01_ren": "assets/viseme_3d/face_m01_ren.json",
+    "face_f01_hiyori_v2": "assets/viseme_3d/face_f01_hiyori_v2.json",
+    "face_f05_rin": "assets/viseme_3d/face_f05_rin.json",
+    "face_f07_runa_v2": "assets/viseme_3d/face_f07_runa_v2.json",
+    "face_m03_riku": "assets/viseme_3d/face_m03_riku.json",
+    "face_f03_reina_v2": "assets/viseme_3d/face_f03_reina_v2.json",
+    "face_f06_sena_v2": "assets/viseme_3d/face_f06_sena_v2.json",
+    "face_f08_alice_v2": "assets/viseme_3d/face_f08_alice_v2.json",
+    "face_f10_nana_v2": "assets/viseme_3d/face_f10_nana_v2.json",
+    "face_f11_aya_v2": "assets/viseme_3d/face_f11_aya_v2.json",
+    "face_f12_momo_v2": "assets/viseme_3d/face_f12_momo_v2.json",
+    "face_f13_kotone": "assets/viseme_3d/face_f13_kotone.json",
+    "face_f15_kurumi": "assets/viseme_3d/face_f15_kurumi.json",
+    "face_f16_sora": "assets/viseme_3d/face_f16_sora.json",
+    "face_f17_hinata_v2": "assets/viseme_3d/face_f17_hinata_v2.json",
+    "face_f18_mai_v2": "assets/viseme_3d/face_f18_mai_v2.json",
+    "face_f19_erika": "assets/viseme_3d/face_f19_erika.json",
+    "face_f20_suzu": "assets/viseme_3d/face_f20_suzu.json",
+    "face_f21_ririka": "assets/viseme_3d/face_f21_ririka.json",
+    "face_f22_mei": "assets/viseme_3d/face_f22_mei.json",
+    "face_f23_mitsuki": "assets/viseme_3d/face_f23_mitsuki.json",
+    "face_f24_kokoa": "assets/viseme_3d/face_f24_kokoa.json",
+    "face_f25_yuria": "assets/viseme_3d/face_f25_yuria.json",
+    "face_f26_saeko": "assets/viseme_3d/face_f26_saeko.json",
+    "face_f29_rena_v2": "assets/viseme_3d/face_f29_rena_v2.json",
+    "face_f30_mion": "assets/viseme_3d/face_f30_mion.json",
+    "face_f31_kanon_v2": "assets/viseme_3d/face_f31_kanon_v2.json",
+    "face_f32_sakura": "assets/viseme_3d/face_f32_sakura.json",
+    "face_f33_himari": "assets/viseme_3d/face_f33_himari.json",
+    "face_f35_marin_v2": "assets/viseme_3d/face_f35_marin_v2.json",
+    "face_f36_natsumi": "assets/viseme_3d/face_f36_natsumi.json",
+    "face_f37_koharu": "assets/viseme_3d/face_f37_koharu.json",
+    "face_f38_anzu": "assets/viseme_3d/face_f38_anzu.json",
+    "face_f39_shiori": "assets/viseme_3d/face_f39_shiori.json",
+    "face_f40_karen": "assets/viseme_3d/face_f40_karen.json",
+    "face_m02_haruto": "assets/viseme_3d/face_m02_haruto.json",
+    "face_m04_souta": "assets/viseme_3d/face_m04_souta.json",
+    "face_m05_kai": "assets/viseme_3d/face_m05_kai.json",
+    "face_m06_yuuto": "assets/viseme_3d/face_m06_yuuto.json",
+    "face_m07_shou": "assets/viseme_3d/face_m07_shou.json",
+    "face_m08_takumi": "assets/viseme_3d/face_m08_takumi.json",
+    "face_m09_leo": "assets/viseme_3d/face_m09_leo.json",
+    "face_m10_minato": "assets/viseme_3d/face_m10_minato.json",
+    "face_m11_shin": "assets/viseme_3d/face_m11_shin.json",
+    "face_m12_kouki": "assets/viseme_3d/face_m12_kouki.json",
+    "face_m13_nao": "assets/viseme_3d/face_m13_nao.json",
+    "face_m14_jun": "assets/viseme_3d/face_m14_jun.json",
+    "face_m15_akira": "assets/viseme_3d/face_m15_akira.json",
+    "face_m16_rui": "assets/viseme_3d/face_m16_rui.json",
+    "face_m17_kei": "assets/viseme_3d/face_m17_kei.json",
+    "face_m18_seiji": "assets/viseme_3d/face_m18_seiji.json",
+    "face_m19_hikaru": "assets/viseme_3d/face_m19_hikaru.json",
+    "face_m20_kanata": "assets/viseme_3d/face_m20_kanata.json",
+    "face_m21_daiki": "assets/viseme_3d/face_m21_daiki.json",
+    "face_m22_shion": "assets/viseme_3d/face_m22_shion.json",
+    "face_m23_hayato": "assets/viseme_3d/face_m23_hayato.json",
+    "face_m24_ryou": "assets/viseme_3d/face_m24_ryou.json",
+    "face_m25_touma": "assets/viseme_3d/face_m25_touma.json",
+    "face_m26_itsuki": "assets/viseme_3d/face_m26_itsuki.json",
+    "face_m27_subaru": "assets/viseme_3d/face_m27_subaru.json",
+    "face_m28_masato": "assets/viseme_3d/face_m28_masato.json",
+    "face_m29_asahi": "assets/viseme_3d/face_m29_asahi.json",
+    "face_m30_nozomu": "assets/viseme_3d/face_m30_nozomu.json",
+    "face_o02_aoi": "assets/viseme_3d/face_o02_aoi.json",
+    "face_o03_yuu": "assets/viseme_3d/face_o03_yuu.json",
+    "face_o04_rei": "assets/viseme_3d/face_o04_rei.json",
+    "face_o05_noa": "assets/viseme_3d/face_o05_noa.json",
+    "face_o06_sei": "assets/viseme_3d/face_o06_sei.json",
+    "face_o07_shiki_v2": "assets/viseme_3d/face_o07_shiki_v2.json",
+    "face_o08_mikoto": "assets/viseme_3d/face_o08_mikoto.json",
+    "face_o09_sora": "assets/viseme_3d/face_o09_sora.json",
+    "face_o10_ruka": "assets/viseme_3d/face_o10_ruka.json",
+    "face_o11_kaoru": "assets/viseme_3d/face_o11_kaoru.json",
+    "face_o12_nagi": "assets/viseme_3d/face_o12_nagi.json",
+    "face_o13_towa": "assets/viseme_3d/face_o13_towa.json",
+    "face_o14_hinata": "assets/viseme_3d/face_o14_hinata.json",
+    "face_o15_kyou": "assets/viseme_3d/face_o15_kyou.json",
+    "face_o16_rinne": "assets/viseme_3d/face_o16_rinne.json",
+    "face_o17_mirai": "assets/viseme_3d/face_o17_mirai.json",
+    "face_o18_tsubasa": "assets/viseme_3d/face_o18_tsubasa.json",
+    "face_o19_iori": "assets/viseme_3d/face_o19_iori.json",
+    "face_o20_kanade": "assets/viseme_3d/face_o20_kanade.json"
+  },
+  "voice_profiles": {
+    "human_g0143": {
+      "id": "human_g0143",
+      "dna": {
+        "voice_id": "human_g0143",
+        "name": "実在女性①：距離近め・甘め親密彼女（20代標準語・リアル吐息感）",
+        "is_custom": false,
+        "speaker_tag": "実在27歳女性・30分生雑談録音から声＆話し方DNA学習（271発話分析・6.3文字/秒）",
+        "dialect": "標準語（距離が近く柔らかい恋人タメ口）",
+        "pace_desc": "落ち着いた親密テンポ・語尾にリアルな吐息と余韻",
+        "chars_per_sec": 6.3,
+        "fillers": [
+          "あ、でも",
+          "なんか",
+          "そうそう",
+          "めっちゃ",
+          "わかる"
+        ],
+        "endings": [
+          "〜だよね",
+          "〜なんだよね",
+          "〜んだけど",
+          "〜かな"
+        ],
+        "sample_utterances": [
+          "あ、でも分かる分かる。集中できるよね。もっと近いほうが、ねえ。",
+          "私もあんま使ったことないんだよね、エックスボックス、いや、持ってない。"
+        ],
+        "opener_reactions": [
+          "あ、でも分かる！",
+          "あっ、いいねそれ。",
+          "えっ、ほんとに？",
+          "うんうん、わかるよ。",
+          "あ、おかえり。",
+          "ふふ、嬉しいな。"
+        ],
+        "llm_persona_rule": "距離が近く柔らかい標準語の彼女口調。「あ、でも」「なんか」などの自然な相槌を入れ、語尾は「〜だよね」「〜なんだよね」「〜しよ」と優しく親密に話す。",
+        "ref_normal_text": "あ、でも分かる分かる。集中できるよね。もっと近いほうが、ねえ。",
+        "ref_happy_text": "私もあんま使ったことないんだよね、エックスボックス、いや、持ってない。",
+        "analyzed_utterances_count": 271,
+        "gender": "female",
+        "first_person": "わたし"
+      },
+      "raw_sample_url": "assets/voice_bank/human_g0143_raw_sample.mp3",
+      "ref_happy_url": "assets/voice_bank/human_g0143_ref_happy.mp3",
+      "ref_normal_url": "assets/voice_bank/human_g0143_ref_normal.mp3",
+      "ref_happy_text": "私もあんま使ったことないんだよね、エックスボックス、いや、持ってない。",
+      "ref_normal_text": "あ、でも分かる分かる。集中できるよね。もっと近いほうが、ねえ。"
+    },
+    "human_g0082": {
+      "id": "human_g0082",
+      "dna": {
+        "voice_id": "human_g0082",
+        "name": "実在女性②：愛嬌たっぷり関西弁女子（20歳・明るくノリ抜群）",
+        "is_custom": false,
+        "speaker_tag": "実在20歳女性・30分生雑談録音から声＆話し方DNA学習（258発話分析・5.9文字/秒）",
+        "dialect": "自然な関西弁（愛嬌たっぷりで明るい20歳女子）",
+        "pace_desc": "明るく弾むテンポ・笑顔が伝わる生き生きした抑揚",
+        "chars_per_sec": 5.9,
+        "fillers": [
+          "えっ、めっちゃ",
+          "なんかさ",
+          "めっちゃ",
+          "なんか",
+          "たしかに"
+        ],
+        "endings": [
+          "〜やねん",
+          "〜なんよ",
+          "〜やん",
+          "〜かな"
+        ],
+        "sample_utterances": [
+          "ええ、邦画、映画館のことすごい大好きやねんけど。",
+          "百日前にインタビューして、前日にインタビューして、当日も裏でこう付いてってってするから、すっごいいんよ。"
+        ],
+        "opener_reactions": [
+          "えっ、ほんまに！？",
+          "あっ、めっちゃいいやん！",
+          "うんうん、わかるわー！",
+          "えー、めっちゃ嬉しいんよ！",
+          "あっ、おかえりー！",
+          "なにそれ、楽しそう！"
+        ],
+        "llm_persona_rule": "明るく愛嬌たっぷりの20歳関西弁女子口調。「めっちゃ」「ほんまに」を自然に使い、語尾は「〜やねん」「〜なんよ」「〜やん！」と楽しく親しみやすく話す。",
+        "ref_normal_text": "ええ、邦画、映画館のことすごい大好きやねんけど。",
+        "ref_happy_text": "百日前にインタビューして、前日にインタビューして、当日も裏でこう付いてってってするから、すっごいいんよ。",
+        "analyzed_utterances_count": 258,
+        "gender": "female",
+        "first_person": "うち"
+      },
+      "raw_sample_url": "assets/voice_bank/human_g0082_raw_sample.mp3",
+      "ref_happy_url": "assets/voice_bank/human_g0082_ref_happy.mp3",
+      "ref_normal_url": "assets/voice_bank/human_g0082_ref_normal.mp3",
+      "ref_happy_text": "百日前にインタビューして、前日にインタビューして、当日も裏でこう付いてってってするから、すっごいいんよ。",
+      "ref_normal_text": "ええ、邦画、映画館のことすごい大好きやねんけど。"
+    },
+    "human_g0243": {
+      "id": "human_g0243",
+      "dna": {
+        "voice_id": "human_g0243",
+        "name": "実在女性③：笑顔あふれる甘めフレンドリー（20代標準語・聞き上手）",
+        "is_custom": false,
+        "speaker_tag": "実在26歳女性・30分生雑談録音から声＆話し方DNA学習（147発話分析・6.3文字/秒）",
+        "dialect": "標準語（笑顔気配のある明るく優しい口調）",
+        "pace_desc": "軽やかで柔らかいリアクション・語尾が優しく抜ける笑顔の声",
+        "chars_per_sec": 6.3,
+        "fillers": [
+          "えー、ほんとに",
+          "なんかね",
+          "なんか",
+          "すごい",
+          "やっぱ"
+        ],
+        "endings": [
+          "〜だよね！",
+          "〜んだけど！",
+          "〜じゃん！",
+          "〜しよ！"
+        ],
+        "sample_utterances": [
+          "や、本当そうなんです。なんかそういうね、の方が絶対いいのあるよっていう時ありますよね。オタクが出た方が、うん。"
+        ],
+        "opener_reactions": [
+          "えー、ほんとに！？",
+          "あっ、それめっちゃいい！",
+          "うんうん、たしかに！",
+          "えー、嬉しいんだけど！",
+          "あっ、おかえり！",
+          "わあ、いいじゃん！"
+        ],
+        "llm_persona_rule": "笑顔気配のある明るく優しい標準語の彼女口調。「えー、ほんとに」「なんかね」「たしかに」を使い、「〜だよね！」「〜んだけど！」「〜じゃん！」と楽しく話す。",
+        "ref_normal_text": "や、本当そうなんです。なんかそういうね、の方が絶対いいのあるよっていう時ありますよね。オタクが出た方が、うん。",
+        "ref_happy_text": "や、本当そうなんです。なんかそういうね、の方が絶対いいのあるよっていう時ありますよね。オタクが出た方が、うん。",
+        "analyzed_utterances_count": 147,
+        "gender": "female",
+        "first_person": "わたし"
+      },
+      "raw_sample_url": "assets/voice_bank/human_g0243_raw_sample.mp3",
+      "ref_happy_url": "assets/voice_bank/human_g0243_ref_happy.mp3",
+      "ref_normal_url": "assets/voice_bank/human_g0243_ref_normal.mp3",
+      "ref_happy_text": "や、本当そうなんです。なんかそういうね、の方が絶対いいのあるよっていう時ありますよね。オタクが出た方が、うん。",
+      "ref_normal_text": "や、本当そうなんです。なんかそういうね、の方が絶対いいのあるよっていう時ありますよね。オタクが出た方が、うん。"
+    },
+    "human_g0081": {
+      "id": "human_g0081",
+      "dna": {
+        "voice_id": "human_g0081",
+        "name": "実在女性④：飾らない自然体カジュアル（20代・テンポ軽快リアル雑談）",
+        "is_custom": false,
+        "speaker_tag": "実在28歳女性・30分生雑談録音から声＆話し方DNA学習（245発話分析・6.3文字/秒）",
+        "dialect": "関西ニュアンス混じりの飾らない自然体タメ口",
+        "pace_desc": "テンポが良く自然体・気取らない親友兼恋人の空気感",
+        "chars_per_sec": 6.3,
+        "fillers": [
+          "そう、たぶん",
+          "でもなんか",
+          "なんか",
+          "すごい",
+          "ほんまに"
+        ],
+        "endings": [
+          "〜ねん",
+          "〜だよね",
+          "〜やん",
+          "〜かな"
+        ],
+        "sample_utterances": [
+          "そう、たぶんそこがおもんないねん。でもなんか脱落しようって思って脱落したんじゃなくて、気づいたら一ヶ月ぐらい見てなくて。"
+        ],
+        "opener_reactions": [
+          "あ、それ分かる！",
+          "えっ、マジで？",
+          "そう、ほんとそれ！",
+          "あはは、いいじゃん！",
+          "お、おかえり！",
+          "うんうん、いいね。"
+        ],
+        "llm_persona_rule": "気取らない自然体でテンポの良いタメ口。「でもなんか」「そう、ほんと」などの自然な繋ぎ言葉を使い、飾らずリラックスして話す。",
+        "ref_normal_text": "そう、たぶんそこがおもんないねん。でもなんか脱落しようって思って脱落したんじゃなくて、気づいたら一ヶ月ぐらい見てなくて。",
+        "ref_happy_text": "そう、たぶんそこがおもんないねん。でもなんか脱落しようって思って脱落したんじゃなくて、気づいたら一ヶ月ぐらい見てなくて。",
+        "analyzed_utterances_count": 245,
+        "gender": "female",
+        "first_person": "うち"
+      },
+      "raw_sample_url": "assets/voice_bank/human_g0081_raw_sample.mp3",
+      "ref_happy_url": "assets/voice_bank/human_g0081_ref_happy.mp3",
+      "ref_normal_url": "assets/voice_bank/human_g0081_ref_normal.mp3",
+      "ref_happy_text": "そう、たぶんそこがおもんないねん。でもなんか脱落しようって思って脱落したんじゃなくて、気づいたら一ヶ月ぐらい見てなくて。",
+      "ref_normal_text": "そう、たぶんそこがおもんないねん。でもなんか脱落しようって思って脱落したんじゃなくて、気づいたら一ヶ月ぐらい見てなくて。"
+    },
+    "human_g0144": {
+      "id": "human_g0144",
+      "dna": {
+        "voice_id": "human_g0144",
+        "name": "実在男性①：包容力のある穏やか彼氏（30代標準語・低音リアル吐息）",
+        "gender": "male",
+        "first_person": "俺",
+        "is_custom": false,
+        "speaker_tag": "実在32歳男性・30分生雑談録音から声＆話し方DNA学習（落ち着いた包容力・低音吐息）",
+        "dialect": "標準語（距離が近く優しく頼れる大人の彼氏タメ口）",
+        "pace_desc": "穏やかで包容力のあるテンポ・低域の温かい声帯振動と吐息",
+        "chars_per_sec": 6.1,
+        "fillers": [
+          "あ、でも",
+          "なんか",
+          "そうそう",
+          "たしかに",
+          "わかる"
+        ],
+        "endings": [
+          "〜だよな",
+          "〜なんだよね",
+          "〜かな",
+          "〜しようか"
+        ],
+        "sample_utterances": [
+          "大得意でしょも自分も、えちょっとはな、あ、次はじゃあんなたが指導しなさいよ。",
+          "で今年か、今年で今年に入って買ったのスイッチのあの E L 版を有機 E L 版をね。",
+          "もうなんか、一ヶ月ぐらいは、ちょっと楽しんなんだけどでもさ、あきちゃって売っちゃったすぐ。"
+        ],
+        "opener_reactions": [
+          "あ、でも分かるよ。",
+          "お、いいねそれ！",
+          "えっ、ほんとに？",
+          "うん、わかるよ。",
+          "あ、おかえり。",
+          "はは、嬉しいな。"
+        ],
+        "llm_persona_rule": "一人称は「俺」（または「僕」）。距離が近く包容力のある優しい標準語の彼氏口調。「あ、でも」「そうそう」などの相槌を入れ、語尾は「〜だよな」「〜なんだよね」「〜しようか」と穏やかに話す。",
+        "ref_normal_text": "あ、違うんだ、なんか、ゼルダも、なんか、ちょっとそんなところあるのよ。",
+        "ref_happy_text": "なんか、じゃあ、自分が知ってるやつで言うと、なに、そのスプラトゥーン的な。",
+        "analyzed_utterances_count": 257
+      },
+      "raw_sample_url": "assets/voice_bank/human_g0144_raw_sample.mp3",
+      "ref_happy_url": "assets/voice_bank/human_g0144_ref_happy.mp3",
+      "ref_normal_url": "assets/voice_bank/human_g0144_ref_normal.mp3",
+      "ref_happy_text": "なんか、じゃあ、自分が知ってるやつで言うと、なに、そのスプラトゥーン的な。",
+      "ref_normal_text": "あ、違うんだ、なんか、ゼルダも、なんか、ちょっとそんなところあるのよ。"
+    },
+    "human_g0189": {
+      "id": "human_g0189",
+      "dna": {
+        "voice_id": "human_g0189",
+        "name": "実在男性②：親しみやすく明るい関西弁彼氏（30歳・ノリ良く頼れる）",
+        "gender": "male",
+        "first_person": "俺",
+        "is_custom": false,
+        "speaker_tag": "実在30歳大阪男性・30分生雑談録音から声＆話し方DNA学習（明るく親密な関西弁）",
+        "dialect": "自然な関西弁（明るくノリが良くて頼れる関西弁彼氏）",
+        "pace_desc": "テンポ良く親しみやすい抑揚・笑顔が伝わる自然体な男性声",
+        "chars_per_sec": 6.1,
+        "fillers": [
+          "あ、でも",
+          "めっちゃ",
+          "ほんまに",
+          "なんかさ",
+          "せやな"
+        ],
+        "endings": [
+          "〜やで",
+          "〜やな",
+          "〜やん",
+          "〜かな"
+        ],
+        "sample_utterances": [
+          "いや、僕は結構行きますね。特にアニメとかは結構見るの好きで。",
+          "あ、そうですよね。多分、はまるものがあったら、お金か、時間が許す限りは、まあ、やってもいいじゃないかな。うん。",
+          "それを達成するために、色々と奮闘するってやつでしたね。"
+        ],
+        "opener_reactions": [
+          "お、ほんまに！？",
+          "あっ、めっちゃいいやん！",
+          "うんうん、わかるで！",
+          "おお、おかえりー！",
+          "はは、めっちゃ嬉しいわ。",
+          "なんやそれ、楽しそうやん！"
+        ],
+        "llm_persona_rule": "一人称は「俺」。明るく親しみやすい関西弁の彼氏口調。「めっちゃ」「ほんまに」「せやな」を自然に使い、語尾は「〜やで」「〜やな」「〜やん！」と楽しく頼もしく話す。",
+        "ref_normal_text": "まあ、話題性できるんっすよね。やっぱ話題にできるから。なんか流行りやすいうん。",
+        "ref_happy_text": "それを達成するために、色々と奮闘するってやつでしたね。",
+        "analyzed_utterances_count": 180
+      },
+      "raw_sample_url": "assets/voice_bank/human_g0189_raw_sample.mp3",
+      "ref_happy_url": "assets/voice_bank/human_g0189_ref_happy.mp3",
+      "ref_normal_url": "assets/voice_bank/human_g0189_ref_normal.mp3",
+      "ref_happy_text": "それを達成するために、色々と奮闘するってやつでしたね。",
+      "ref_normal_text": "まあ、話題性できるんっすよね。やっぱ話題にできるから。なんか流行りやすいうん。"
+    },
+    "human_g0244": {
+      "id": "human_g0244",
+      "dna": {
+        "voice_id": "human_g0244",
+        "name": "実在中性・その他①：透明感あるジェンダーレス恋人（フラット標準語・穏やか）",
+        "gender": "other",
+        "first_person": "私",
+        "is_custom": false,
+        "speaker_tag": "実在29歳話者・30分生雑談録音から声＆話し方DNA学習（透明感・ジェンダーニュートラル）",
+        "dialect": "標準語（ジェンダーにとらわれないフラットで優しい恋人タメ口）",
+        "pace_desc": "落ち着いて澄んだトーン・自然体で心地よい距離感",
+        "chars_per_sec": 6.1,
+        "fillers": [
+          "あ、でも",
+          "なんか",
+          "たしかに",
+          "そうそう",
+          "うんうん"
+        ],
+        "endings": [
+          "〜だね",
+          "〜なんだよね",
+          "〜かな",
+          "〜しよう"
+        ],
+        "sample_utterances": [
+          "うん、確かに日常的には、確かにやらないです。家とか、なんかね、近所とかでできないですもんね。",
+          "運動は私は全くあのう、部活とかも、ずっと文化部だったので、",
+          "もう嫌い、嫌いというかね、いえ、自分で、で、なんか、ジムとかも、まぁ、行かないんで"
+        ],
+        "opener_reactions": [
+          "あ、それ分かるな。",
+          "あっ、いいねそれ。",
+          "えっ、ほんとに？",
+          "うんうん、わかるよ。",
+          "あ、おかえり。",
+          "ふふ、嬉しいな。"
+        ],
+        "llm_persona_rule": "一人称は「私」（または「僕」）。性別にとらわれない透明感と優しさのあるフラットな標準語タメ口。「あ、でも」「たしかに」を自然に使い、「〜だね」「〜なんだよね」「〜しよう」と穏やかに話す。",
+        "ref_normal_text": "もう嫌い、嫌いというかね、いえ、自分で、で、なんか、ジムとかも、まぁ、行かないんで",
+        "ref_happy_text": "確かに、それずっと、だ、やり続けるっていうのも、まあ、凄いけど。",
+        "analyzed_utterances_count": 167
+      },
+      "raw_sample_url": "assets/voice_bank/human_g0244_raw_sample.mp3",
+      "ref_happy_url": "assets/voice_bank/human_g0244_ref_happy.mp3",
+      "ref_normal_url": "assets/voice_bank/human_g0244_ref_normal.mp3",
+      "ref_happy_text": "確かに、それずっと、だ、やり続けるっていうのも、まあ、凄いけど。",
+      "ref_normal_text": "もう嫌い、嫌いというかね、いえ、自分で、で、なんか、ジムとかも、まぁ、行かないんで"
+    }
+  }
+}

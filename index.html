@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>リアルパートナーAI — 厳選85種モデル・俳優級カタログ(女35・男30・中立20)×無料ベータ版</title>
+  <link rel="stylesheet" href="static/style.css?v=16" />
+</head>
+<body>
+  <!-- 初回クリックで音声＆実写ビデオストリームを有効化する入室画面 -->
+  <div id="enter-overlay" class="enter-overlay">
+    <div class="enter-card">
+      <div class="enter-avatar-preview">
+        <img id="enter-avatar-img" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="パートナー" />
+        <span class="live-dot"></span>
+      </div>
+      <h1 id="enter-title">部屋であなたを待っています</h1>
+      <p><strong>厳選85種類の芸能人・モデル・俳優級カタログ（女性35種・男性30種・中立20種：白人系・黒人系・南米系・日本人すべて流暢な日本語対応）</strong>から好みのパートナーを選び、<strong>完全無料で今すぐ会話＆着せ替え</strong>を楽しめます！</p>
+      <div class="enter-actions">
+        <button id="btn-enter-room" class="btn-enter-room">🚪 部屋に入る（映像・生声ON）</button>
+        <div class="enter-sub-row">
+          <button id="btn-enter-wardrobe" class="btn-enter-sub">👗 髪色・服を選んでから入る</button>
+          <button id="btn-enter-audition" class="btn-enter-sub">👑 厳選85種の恋人カタログから選ぶ</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- メインのフルスクリーン実写同棲ビュー -->
+  <main id="room-stage" class="room-stage">
+    <!-- 実写ビデオAIストリーム（待機ループ2層＋プログレッシブ連続発話2層） -->
+    <div id="camera-rig" class="camera-rig">
+      <video
+        id="idle-video-a"
+        class="partner-video active"
+        autoplay
+        loop
+        muted
+        playsinline
+      ></video>
+      <video
+        id="idle-video-b"
+        class="partner-video"
+        loop
+        muted
+        playsinline
+      ></video>
+      <video
+        id="talking-video"
+        class="partner-video talking-layer"
+        playsinline
+      ></video>
+      <video
+        id="talking-video-next"
+        class="partner-video talking-layer"
+        playsinline
+      ></video>
+      <canvas
+        id="roi-talk-canvas"
+        width="1280"
+        height="720"
+        class="partner-video talking-layer"
+      ></canvas>
+      <div id="lighting-tint" class="lighting-tint"></div>
+    </div>
+
+    <!-- 直接触れる透明スキンシップ当たり判定（頭なでなで・ほっぺツンツン） -->
+    <div id="touch-head" class="touch-zone touch-head" title="クリックで頭をなでる">
+      <span class="touch-hint">👋 なでる</span>
+    </div>
+    <div id="touch-cheek" class="touch-zone touch-cheek" title="クリックでほっぺをつつく">
+      <span class="touch-hint">👉 つつく</span>
+    </div>
+
+    <!-- タッチ時のハート・エフェクト表示レイヤー -->
+    <div id="fx-layer" class="fx-layer"></div>
+
+    <!-- 左上：名前・性別バッジ・親密度ハート・スタイルコイン -->
+    <header class="top-left-badge">
+      <div class="status-dot" id="voice-wave-dot"></div>
+      <span class="partner-name-label" id="partner-name-label">ひより</span>
+      <span class="gender-pill" id="partner-gender-pill" title="クリックで性別・写真・声のカスタムスタジオを開く">👩 彼女</span>
+      <span class="heart-meter" id="heart-meter">💗 62</span>
+      <span class="coin-pill" id="coin-pill" title="髪色・服・プレミアム衣装の解放に使えるコイン">💎 1,200</span>
+      <span class="memory-pill" id="memory-pill" title="覚えているあなたの記憶">🧠 記憶 0件</span>
+    </header>
+
+    <!-- 右上：髪色・服着せ替えショップ・理想の恋人カスタム・実在肉声＆話し方学習・ホンネ透視・時間/放置切替・切り抜き -->
+    <nav class="top-right-tools">
+      <button id="btn-open-wardrobe-modal" class="tool-pill wardrobe-pill" title="同じ顔のまま髪色・髪型・服・スタイルを着せ替え（課金ショップ）">👗 髪色・服チェンジ</button>
+      <button id="btn-open-voice-modal" class="tool-pill voice-pill" title="実在女性・男性・中性ボイスの肉声＆話し方DNA切替・動画や音声から声と喋り方を学習">🎙️ 肉声・話し方学習</button>
+      <button id="btn-open-char-modal" class="tool-pill char-pill" title="全90種類の顔カタログ（選抜済75種＋新規補充15候補）や好きな写真から顔を選び、性別（女・男・その他）と声を組み合わせて理想のAI恋人にする">👑 顔(90種)・性別・声カスタム</button>
+      <button id="btn-toggle-thought" class="tool-pill active">💭 ホンネ ON</button>
+      <div class="scene-switcher">
+        <button class="scene-btn" data-scene="morning" title="朝の寝起き">☀️朝</button>
+        <button class="scene-btn active" data-scene="evening" title="夜のリビング">🌆夜</button>
+        <button class="scene-btn" data-scene="late_night" title="深夜2時">🌙深夜</button>
+        <button class="scene-btn danger" data-scene="neglected_3days" title="3日間放置">💢3日放置</button>
+      </div>
+      <button id="btn-clip-share" class="tool-pill highlight">🎬 切り抜き</button>
+    </nav>
+
+    <!-- イベント通知トースト -->
+    <div id="event-toast" class="event-toast hidden"></div>
+
+    <!-- 顔の横にふわっと浮かぶ『脳内の本音（ホンネ）』吹き出し -->
+    <aside id="thought-bubble" class="thought-bubble">
+      <div class="thought-tag">💭 心の中の本音</div>
+      <p id="thought-text">帰ってきてくれて一気に気分明るくなっちゃった。</p>
+    </aside>
+
+    <!-- 手前のテーブルに飾られていくプレゼント棚 -->
+    <div id="table-gifts" class="table-gifts"></div>
+
+    <!-- 下部：映画風のセリフ字幕 ＋ 常時すぐ話せる直感会話バー -->
+    <section class="bottom-hud">
+      <div id="user-heard-pill" class="user-heard-pill hidden"></div>
+
+      <div class="subtitle-box" id="subtitle-box">
+        <div id="speaking-bars" class="speaking-bars hidden">
+          <span></span><span></span><span></span><span></span>
+        </div>
+        <p id="spoken-subtitle" class="spoken-subtitle">あっ、おかえり！今日も一日お疲れさま。</p>
+      </div>
+
+      <!-- ワンタップで返せる自然な3択セリフ -->
+      <div id="choices-row" class="choices-row"></div>
+
+      <!-- メイン会話＆アクションバー（マイク音声認識 ＋ 常時表示テキスト入力 ＋ 着せ替え・差し入れ） -->
+      <div class="action-bar">
+        <button id="btn-mic" type="button" class="btn-mic" title="押して声で話しかける（話し終えると自動送信／もう一度押して送信）">
+          <span class="mic-icon">🎙️</span>
+          <span id="mic-label">声で話す</span>
+          <span id="mic-level-wrap" class="mic-level-wrap hidden"><span id="mic-level-fill" class="mic-level-fill"></span></span>
+        </button>
+
+        <form id="free-input-form" class="inline-chat-form">
+          <input
+            id="free-input-text"
+            type="text"
+            placeholder="ここに言葉を入力してEnter（例：今何してた？ / すごく可愛いね！）"
+            autocomplete="off"
+          />
+          <button id="btn-send-text" type="submit" class="btn-send-text">伝える</button>
+        </form>
+
+        <button id="btn-wardrobe-bottom" type="button" class="btn-sub-action wardrobe-sub-btn">👗 髪色・服</button>
+        <button id="btn-gift-menu" type="button" class="btn-sub-action">🎁 差し入れ</button>
+        <button id="btn-distance" type="button" class="btn-sub-action">💓 近づく</button>
+      </div>
+
+      <!-- 開閉式：差し入れプレゼント選択ポップアップ -->
+      <div id="gift-drawer" class="popup-drawer hidden">
+        <button type="button" class="gift-item-btn" data-gift="cake">🍰 いちごショート</button>
+        <button type="button" class="gift-item-btn" data-gift="latte">☕ ホットラテ</button>
+        <button type="button" class="gift-item-btn" data-gift="bear">🧸 クマちゃん</button>
+        <button type="button" class="gift-item-btn" data-gift="flower">💐 ミニブーケ</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- 👑 理想のAI恋人カスタム＆ユーザー合格承認スタジオ（全90種顔カタログ・性別選択・好きな写真投入・声選択・表情テスト試写モーダル） -->
+  <div id="char-modal" class="modal-backdrop hidden">
+    <div class="modal-card char-modal-card">
+      <div class="modal-header-row">
+        <h3>👑 理想のAI恋人メイキング ＆ 全90種（選抜済75＋🆕新候補15）オーディション</h3>
+        <button id="btn-close-char-modal-top" class="btn-icon-close" title="閉じる">✕</button>
+      </div>
+      <p class="modal-desc">
+        <strong>全90種類のフォトリアル顔カタログ（女性40種・男性30種・中性20種：選抜済75種＋🆕補充15候補）</strong>から好みの顔を「⭐ 好み選抜」し、<strong>性別 × 実在人間の生声</strong>を自由に組み合わせて理想のAI恋人をメイキングできます。
+      </p>
+
+      <!-- 💖 Step 1: 性別・顔タイプ・名前・一人称・声・あなたの呼ばれ方 統合カスタムパネル -->
+      <div class="custom-lover-panel">
+        <div class="custom-panel-title">💖 Step 1: AI恋人の性別・顔タイプ（全90種+）・名前・一人称・声・あなたの呼ばれ方を設定</div>
+        <div class="gender-selector-row" role="group" aria-label="パートナーの性別選択">
+          <button type="button" id="gender-btn-female" class="gender-select-btn active" data-gender="female">
+            👩 女性（彼女モード・40種）
+          </button>
+          <button type="button" id="gender-btn-male" class="gender-select-btn" data-gender="male">
+            👨 男性（彼氏モード・30種）
+          </button>
+          <button type="button" id="gender-btn-other" class="gender-select-btn" data-gender="other">
+            🌈 その他（中性・20種）
+          </button>
+        </div>
+
+        <div class="custom-grid-row">
+          <div class="custom-field custom-field-wide">
+            <label for="custom-face-select">😊 恋人の顔タイプ（全90種カタログ：女40・男30・中性20＋カスタム顔から選択）</label>
+            <select id="custom-face-select" class="voice-select-input"></select>
+          </div>
+          <div class="custom-field">
+            <label for="custom-partner-name">恋人の名前</label>
+            <input id="custom-partner-name" type="text" class="voice-text-input" value="ひより" maxlength="20" placeholder="例：ひより / レン / ハル" />
+          </div>
+          <div class="custom-field">
+            <label for="custom-first-person">恋人の一人称</label>
+            <select id="custom-first-person" class="voice-select-input">
+              <option value="わたし">わたし（女性・自然体）</option>
+              <option value="私">私（落ち着き・中性）</option>
+              <option value="うち">うち（関西弁・親密）</option>
+              <option value="俺">俺（男性・頼れる彼氏）</option>
+              <option value="僕">僕（男性・優しい彼氏・中性）</option>
+              <option value="自分">自分（クール・フラット）</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="custom-grid-row">
+          <div class="custom-field custom-field-wide">
+            <label for="custom-voice-select">🎙️ 組み合わせる実在肉声＆話し方DNA</label>
+            <div class="custom-voice-inline">
+              <select id="custom-voice-select" class="voice-select-input"></select>
+              <button type="button" id="btn-custom-voice-raw" class="btn-raw-sample" title="選んだ声の本人原音サンプルを試聴">🔊 原音試聴</button>
+            </div>
+          </div>
+          <div class="custom-field">
+            <label for="custom-user-name">あなたの呼ばれ方（任意）</label>
+            <input id="custom-user-name" type="text" class="voice-text-input" placeholder="例：たくや / みさき（空欄でもOK）" maxlength="16" />
+          </div>
+          <div class="custom-field">
+            <label for="custom-user-gender">あなたの性別（任意）</label>
+            <select id="custom-user-gender" class="voice-select-input">
+              <option value="unspecified">指定なし（自然体）</option>
+              <option value="male">男性</option>
+              <option value="female">女性</option>
+              <option value="other">その他・ノンバイナリー</option>
+            </select>
+          </div>
+          <div class="custom-field custom-field-wide custom-apply-col">
+            <button type="button" id="btn-apply-custom-profile" class="btn-apply-lover-profile">
+              💝 この恋人設定（顔・性別・声・名前）で今すぐ話す
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 実写テスト試写プレイヤー（採用前にまばたき・表情・声を確認） -->
+      <div id="audition-preview-panel" class="audition-preview-panel hidden">
+        <div class="audition-video-wrap">
+          <video id="audition-preview-video" controls playsinline></video>
+        </div>
+        <div class="audition-preview-meta">
+          <span id="audition-preview-label">🎬 オーディション試写プレビュー（まばたき・口元・愛嬌・声を確認）</span>
+        </div>
+      </div>
+
+      <!-- 😊 Step 2: 90種類の顔カタログ一覧（好みの顔を★選抜・試写・即採用） -->
+      <div class="face-catalog-header-row">
+        <div class="voice-section-label">▼ Step 2: 全90種類の生身人間・多国籍顔カタログ（女40・男30・中性20 ／ 🌍外国人・ハーフ48種＋🇯🇵日本人・アジア42種・すべて日本語会話OK）から好みの顔を再選抜できます</div>
+        <div class="voice-filter-tabs" id="face-filter-tabs">
+          <button type="button" class="voice-filter-tab face-filter-tab active" data-face-filter="all">すべて (85種)</button>
+          <button type="button" class="voice-filter-tab face-filter-tab" data-face-filter="foreign">🌍 外国人・白人・黒人・南米 (49種)</button>
+          <button type="button" class="voice-filter-tab face-filter-tab" data-face-filter="japanese">🇯🇵 日本人・アジア (36種)</button>
+          <button type="button" class="voice-filter-tab face-filter-tab" data-face-filter="female">👩 女性 (35種)</button>
+          <button type="button" class="voice-filter-tab face-filter-tab" data-face-filter="male">👨 男性 (30種)</button>
+          <button type="button" class="voice-filter-tab face-filter-tab" data-face-filter="other">🌈 中性 (20種)</button>
+          <button type="button" id="face-filter-tab-favs" class="voice-filter-tab face-filter-tab" data-face-filter="favorites">⭐ 好み選抜済み (85)</button>
+          <button type="button" id="face-filter-tab-new" class="voice-filter-tab face-filter-tab" data-face-filter="unselected">🆕 未選抜 (0)</button>
+        </div>
+      </div>
+      <div id="favorite-faces-bar" class="favorite-faces-bar">
+        <span id="favorite-faces-summary">⭐ <strong>あなたの好みの顔 選抜リスト (0種)</strong>：気になる顔カードの「☆ 好み選抜」ボタンを押すとここにキープされ、いつでも比較・絞り込みできます。</span>
+        <button type="button" id="btn-copy-favorite-faces" class="btn-sub-action btn-sm hidden">📋 選抜リスト(番号)をコピー</button>
+      </div>
+      <div id="face-catalog-grid" class="char-grid face-catalog-grid"></div>
+
+      <!-- 2. 表情の愛嬌度調整 -->
+      <div class="expression-tune-box">
+        <div class="tune-row">
+          <label for="charm-slider">😊 表情・目元・小首の愛嬌レベル：<strong id="charm-val-label">1.00（標準の愛嬌）</strong></label>
+          <input id="charm-slider" type="range" min="0.5" max="1.4" step="0.05" value="1.00" />
+          <button id="btn-apply-charm" type="button" class="btn-sub-action btn-sm">この表情で試す</button>
+        </div>
+      </div>
+
+      <!-- 3. 写真から生成した審査待ち顔候補一覧（オーディション） -->
+      <div id="candidate-section-wrap">
+        <div class="voice-section-label">▼ 写真から生成した審査待ちの顔候補（「▶ 試写」で声との相性を確認し、気に入った顔を「✅ 合格・採用」してください）</div>
+        <div id="candidate-grid" class="char-grid"></div>
+      </div>
+
+      <!-- 4. 採用済み（合格済み）カスタムキャラクター一覧 -->
+      <div id="approved-section-wrap" class="hidden">
+        <div class="voice-section-label">▼ あなたが写真から合格・採用済みのカスタムパートナー一覧</div>
+        <div id="approved-char-grid" class="char-grid approved-grid"></div>
+      </div>
+
+      <!-- 5. 新しい画像フォルダ または 複数画像ドロップから学習して候補を生成 -->
+      <div class="voice-section-label">▼ Step 3: 自分の好きな写真（複数枚可）またはフォルダを投入して新しい顔候補を作る</div>
+      <form id="char-learn-form" class="voice-learn-form">
+        <div class="char-form-row">
+          <input
+            id="char-name-input"
+            type="text"
+            class="voice-text-input"
+            placeholder="キャラの名前（例：ひより / レン）"
+            value="ひより"
+            maxlength="20"
+          />
+          <input
+            id="char-folder-input"
+            type="text"
+            class="voice-text-input folder-input"
+            placeholder="ローカル画像フォルダパス（例：D:\■dev\PATCHWOR_NATION\face_pic\00001）"
+            value="D:\■dev\PATCHWOR_NATION\face_pic\00001"
+          />
+        </div>
+        <label id="char-dropzone" class="voice-dropzone">
+          <input
+            id="char-files-input"
+            type="file"
+            accept="image/*,.png,.jpg,.jpeg,.webp"
+            multiple
+            hidden
+          />
+          <span id="char-files-label">📸 ここに好きな写真をドラッグ＆ドロップ（1枚〜複数枚OK／クリックして選択）<br/><small>※「元写真そのままHD（顔・髪・服100%無改変）」候補も同時生成されるため、女性・男性・中性どんな写真でも破綻なく動かせます</small></span>
+        </label>
+        <button id="btn-submit-char-learn" type="submit" class="btn-primary full-width">✨ 好きな写真から顔候補を生成する（性別・声連動）</button>
+      </form>
+      <p id="char-learn-status" class="voice-learn-status hidden"></p>
+
+      <div class="modal-actions">
+        <button id="btn-close-char-modal" class="btn-sub-action">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 👗 髪色・服・スタイル着せ替えクローゼット ＆ プレミアム課金ショップモーダル -->
+  <div id="wardrobe-modal" class="modal-backdrop hidden">
+    <div class="modal-card wardrobe-modal-card">
+      <div class="modal-header-row">
+        <div>
+          <h3>👗 髪色・服・スタイル着せ替えクローゼット ＆ ショップ</h3>
+          <p class="modal-sub-caption">お気に入りの顔はそのまま、気分やデートに合わせて<strong>髪色・髪型・服装</strong>をいつでも着せ替えられます。</p>
+        </div>
+        <div class="wardrobe-coin-bar">
+          <span id="wardrobe-coin-count" class="wardrobe-coin-badge">💎 1,200 コイン</span>
+          <button id="btn-topup-coins" type="button" class="btn-topup-coins">＋1,000補充</button>
+          <button id="btn-close-wardrobe-top" type="button" class="btn-icon-close" title="閉じる">✕</button>
+        </div>
+      </div>
+
+      <p id="wardrobe-status" class="voice-learn-status hidden"></p>
+      <div id="wardrobe-grid" class="wardrobe-grid"></div>
+
+      <div class="modal-actions">
+        <button id="btn-close-wardrobe" class="btn-sub-action">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🎙️ 実在人間の肉声 ＆「話し方DNA（口癖・語尾・方言）」審査・学習モーダル -->
+  <div id="voice-modal" class="modal-backdrop hidden">
+    <div class="modal-card voice-modal-card">
+      <div class="modal-header-row">
+        <h3>🎙️ 実在人間の肉声 ＆「話し方DNA」学習スタジオ</h3>
+        <button id="btn-close-voice-top" class="btn-icon-close" title="閉じる">✕</button>
+      </div>
+      <p class="modal-desc">
+        機械的な合成音ではなく、<strong>実在日本人の女性・男性・中性スピーカーの生雑談録音から学習した肉声（吐息・空気感）＋本人の口癖・語尾・方言（話し方DNA）</strong>を全7種搭載しています。「🔊 原音試聴」で本人の生録音とも聴き比べられます。
+      </p>
+
+      <div class="voice-filter-tabs" id="voice-filter-tabs">
+        <button type="button" class="voice-filter-tab active" data-gender-filter="all">すべて (全7種+学習)</button>
+        <button type="button" class="voice-filter-tab" data-gender-filter="female">👩 女性ボイス</button>
+        <button type="button" class="voice-filter-tab" data-gender-filter="male">👨 男性ボイス</button>
+        <button type="button" class="voice-filter-tab" data-gender-filter="other">🌈 中性・その他</button>
+      </div>
+
+      <div class="voice-section-label">▼ 実在肉声＆話し方プロファイル（選択すると声色・口癖・喋り方が丸ごと切り替わります）</div>
+      <div id="voice-list" class="voice-list"></div>
+
+      <div class="voice-section-label">▼ 動画・音声ファイル（複数可）またはフォルダから「好きな人の声＋話し方・口癖」を新しく学習</div>
+      <form id="voice-learn-form" class="voice-learn-form">
+        <div class="char-form-row">
+          <input
+            id="voice-label-input"
+            type="text"
+            class="voice-text-input"
+            placeholder="声と話し方の名前（例：お気に入り恋人ボイス）"
+            maxlength="24"
+          />
+          <select id="voice-gender-select" class="voice-select-input" style="max-width: 170px;">
+            <option value="female">👩 女性の声として学習</option>
+            <option value="male">👨 男性の声として学習</option>
+            <option value="other">🌈 中性・その他で学習</option>
+          </select>
+          <input
+            id="voice-folder-input"
+            type="text"
+            class="voice-text-input folder-input"
+            placeholder="任意：音声/動画が入ったローカルフォルダパス"
+          />
+        </div>
+        <label id="voice-dropzone" class="voice-dropzone">
+          <input
+            id="voice-file-input"
+            type="file"
+            accept="video/*,audio/*,.mp4,.mov,.webm,.mkv,.wav,.mp3,.m4a,.ogg,.flac"
+            multiple
+            hidden
+          />
+          <span id="voice-file-label">📁 クリックまたはドラッグ＆ドロップで動画・音声を選択（複数ファイル同時学習OK）<br/><small>音声から「肉声マルチトーン」と「口癖・相槌・語尾・方言・テンポ（話し方DNA）」を自動抽出して会話に反映します</small></span>
+        </label>
+        <button id="btn-submit-voice-learn" type="submit" class="btn-primary full-width">🧬 この人の声と話し方DNAを学習して喋らせる</button>
+      </form>
+      <p id="voice-learn-status" class="voice-learn-status hidden"></p>
+      <p class="voice-legal-note">※ご自身の声、または利用許諾を得た動画・音声ファイルをご使用ください。</p>
+
+      <div class="modal-actions">
+        <button id="btn-close-voice-modal" class="btn-sub-action">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 記憶一覧ミニモーダル -->
+  <div id="memory-modal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <h3>🧠 覚えているあなたのこと</h3>
+      <ul id="memory-list" class="memory-list"></ul>
+      <div class="modal-actions">
+        <button id="btn-reset-memory" class="btn-danger-outline">記憶をリセット</button>
+        <button id="btn-close-memory" class="btn-primary">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SNS・配信用「神リアクション切り抜き」モーダル -->
+  <div id="clip-modal" class="modal-backdrop hidden">
+    <div class="modal-card clip-card-modal">
+      <h3>🎬 SNS・ショート動画用 切り抜きカード</h3>
+      <canvas id="clip-canvas" width="720" height="960" class="clip-canvas"></canvas>
+      <div class="modal-actions">
+        <button id="btn-download-clip" class="btn-primary">📸 画像として保存</button>
+        <button id="btn-close-clip" class="btn-sub-action">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="static/cloud_free_engine.js?v=16"></script>
+  <script src="static/app.js?v=16"></script>
+</body>
+</html>
