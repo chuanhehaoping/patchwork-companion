@@ -1,17 +1,19 @@
 // ============================================================================
-// PATCHWORK NATION - 完全無料・PC負荷ゼロ クラウドエンジン (v6 Head-Locked Ditto 3D Edition)
+// PATCHWORK NATION - 完全無料・PC負荷ゼロ クラウドエンジン
+// (v7: 60fps Multi-Branch 3D Motion Graph & Markov Random State Machine Edition)
 // - あなたのPC（ローカルGPU/Pythonサーバー）を一切使わず、GitHub Pages 等の完全無料クラウドで24時間稼働
 // - ブラウザ内蔵の機械音声 (window.speechSynthesis) は 100% 使用禁止！
 //   全発話で事前合成済みの「本物の Qwen3-TTS 1.7B 実在人間クローン肉声 MP3 (assets/voice_bank/*.mp3)」を再生
-// - 手書き2Dワープや雑な図形描画は 100% 使用禁止！
-//   全85キャラ＋6衣装すべてで「本物の Ditto 3D (stitch_net + warp_net + SPADEDecoder) 頭蓋完全固定キーフレーム」
-//   (assets/viseme_3d/*.json) を使用し、待機中から発話中まで単一の60fps 3Dキャンバスでシームレスに描画
+// - 60fps コマ送り × 多パターン3Dモーショングラフ × マルコフ連鎖ランダム分岐アルゴリズムを搭載！
+//   （右小首かしげ愛嬌スマイル / 左小首かしげ視線ゆらぎ / うんうん二段頷き / 照れ笑い視線そらし / 上目遣い微笑み / 呼吸ゆらぎ）
+//   さらに毎回「傾きの深さ（リーチ）」「ピーク滞留時間」「速度」「シングル/ダブルまばたき」がランダムに分岐し、
+//   どの3D角度のコマにいても本物の音声フォルマントに完全同期して口と目尻が60fpsで動く「生身の人間」を実現！
 // ============================================================================
 
 (function () {
   "use strict";
 
-  const STORAGE_KEY_MEM = "pw_cloud_v6_memory";
+  const STORAGE_KEY_MEM = "pw_cloud_v7_memory";
 
   let catalogMeta = null;
   let voiceManifest = null;
@@ -25,7 +27,9 @@
   let activeTimeData = null;
   let isSpeakingNow = false;
 
-  // 相対パス解決（GitHub Pages の /patchwork-companion/ 等のサブディレクトリでも100%動作保証）
+  // 会話・スキンシップの文脈に応じたモーション分岐リクエストキュー
+  let requestedBranchHint = null;
+
   function resolveAssetUrl(u) {
     if (!u || typeof u !== "string") return "";
     if (u.startsWith("http://") || u.startsWith("https://") || u.startsWith("data:") || u.startsWith("blob:")) {
@@ -63,7 +67,10 @@
       favorite_face_ids: [],
     };
     try {
-      const raw = localStorage.getItem(STORAGE_KEY_MEM) || localStorage.getItem("pw_cloud_v5_memory");
+      const raw =
+        localStorage.getItem(STORAGE_KEY_MEM) ||
+        localStorage.getItem("pw_cloud_v6_memory") ||
+        localStorage.getItem("pw_cloud_v5_memory");
       if (raw) {
         const parsed = JSON.parse(raw);
         return { ...def, ...parsed };
@@ -101,8 +108,6 @@
     const copy = { ...found };
     copy.portrait_url = resolveAssetUrl(copy.portrait_url);
     copy.thumb_url = resolveAssetUrl(copy.thumb_url);
-    // 待機動画と発話キャンバスの切り替えによる首のカクつき・顔ズレを100%防ぐため、
-    // 常に統合 3D ヴィセームキャンバスで待機まばたき〜発話リップシンクを連続描画する
     copy.idle_video_url = "";
     copy.active = true;
     return copy;
@@ -158,7 +163,6 @@
     ];
   }
 
-  // ===== 本物の Qwen3-TTS 1.7B 肉声バンクから最適な音声MP3と完全一致セリフを選択 =====
   function selectRealVoiceEntry(voiceId, targetText, intentCategory) {
     if (!voiceManifest || !Array.isArray(voiceManifest.voices)) return null;
     const allVoices = voiceManifest.voices;
@@ -238,36 +242,56 @@
     return "chat";
   }
 
-  // ===== 91スタイル全員対応：頭蓋完全固定の本物 Ditto 3D ヴィセームスプライトローダー =====
+  // ===== 60fps 3D モーショングラフ＆ヴィセームローダー =====
+  async function b64ToBitmap(b64) {
+    if (!b64) return null;
+    const bin = atob(b64);
+    const len = bin.length;
+    const u8 = new Uint8Array(len);
+    for (let i = 0; i < len; i++) u8[i] = bin.charCodeAt(i);
+    const blob = new Blob([u8], { type: "image/jpeg" });
+    return createImageBitmap(blob);
+  }
+
+  async function decode5StateNode(rawNode) {
+    const [closed, small, mid, wide, blink] = await Promise.all([
+      b64ToBitmap(rawNode.closed),
+      b64ToBitmap(rawNode.small),
+      b64ToBitmap(rawNode.mid),
+      b64ToBitmap(rawNode.wide),
+      b64ToBitmap(rawNode.blink),
+    ]);
+    return {
+      closed,
+      small: small || closed,
+      mid: mid || small || closed,
+      wide: wide || mid || closed,
+      blink: blink || closed,
+    };
+  }
+
   function loadCharacterVisemeSprite(charId, portraitUrl) {
     if (!charId) return Promise.resolve(null);
     if (visemeCache.has(charId)) return visemeCache.get(charId);
 
     const p = (async () => {
       try {
-        const res = await origFetch(resolveAssetUrl(`assets/viseme_3d/${charId}.json?v=6`), { cache: "no-cache" });
+        const res = await origFetch(resolveAssetUrl(`assets/viseme_3d/${charId}.json?v=19`), { cache: "no-cache" });
         if (!res.ok) return null;
         const data = await res.json();
-        const frames = data.frames || {};
+        const baseImg = await loadBasePortraitImg(portraitUrl);
 
-        async function b64ToBitmap(b64) {
-          if (!b64) return null;
-          const bin = atob(b64);
-          const len = bin.length;
-          const u8 = new Uint8Array(len);
-          for (let i = 0; i < len; i++) u8[i] = bin.charCodeAt(i);
-          const blob = new Blob([u8], { type: "image/jpeg" });
-          return createImageBitmap(blob);
+        let nodesBitmaps = [];
+        let branches = null;
+
+        if (data.motion_graph && Array.isArray(data.motion_graph.nodes)) {
+          // 60fps 多パターン 3D モーショングラフ（全姿勢ノードを並列デコード）
+          nodesBitmaps = await Promise.all(data.motion_graph.nodes.map((n) => decode5StateNode(n)));
+          branches = data.motion_graph.branches || null;
+        } else {
+          const singleNode = await decode5StateNode(data.frames || {});
+          nodesBitmaps = [singleNode];
         }
-
-        const [closedBmp, smallBmp, midBmp, wideBmp, blinkBmp, baseImg] = await Promise.all([
-          b64ToBitmap(frames.closed),
-          b64ToBitmap(frames.small),
-          b64ToBitmap(frames.mid),
-          b64ToBitmap(frames.wide),
-          b64ToBitmap(frames.blink),
-          loadBasePortraitImg(portraitUrl),
-        ]);
 
         return {
           charId,
@@ -278,13 +302,9 @@
           w: Number(data.w || 0),
           h: Number(data.h || 0),
           baseImg,
-          bitmaps: {
-            closed: closedBmp,
-            small: smallBmp || closedBmp,
-            mid: midBmp || smallBmp || closedBmp,
-            wide: wideBmp || midBmp || closedBmp,
-            blink: blinkBmp || closedBmp,
-          },
+          bitmaps: nodesBitmaps[0],
+          nodes: nodesBitmaps,
+          branches,
         };
       } catch (_) {
         return null;
@@ -310,7 +330,6 @@
     return p;
   }
 
-  // ===== WebAudio 音声再生制御 =====
   function stopCloudVoice() {
     isSpeakingNow = false;
     activeAnalyser = null;
@@ -328,9 +347,18 @@
     if (bars) bars.classList.add("hidden");
   }
 
-  async function playRealVoiceWith3DViseme(mp3Url, charObj) {
+  async function playRealVoiceWith3DViseme(mp3Url, charObj, intentHint = "") {
     stopCloudVoice();
     if (!mp3Url || !charObj) return;
+
+    // 会話の文脈に合わせて最初の3Dモーションブランチを自然に分岐予約
+    if (intentHint === "compliment" || intentHint === "pat_head" || intentHint === "poke_cheek" || intentHint === "close_dist") {
+      requestedBranchHint = Math.random() < 0.55 ? "shy_lookaway" : "tilt_right_smile";
+    } else if (intentHint === "greeting_home" || intentHint === "greeting_morning" || intentHint === "positive_news") {
+      requestedBranchHint = Math.random() < 0.6 ? "tilt_right_smile" : "bright_lookup";
+    } else if (intentHint === "fatigue" || intentHint === "chat" || intentHint === "question") {
+      requestedBranchHint = Math.random() < 0.5 ? "nod_agree" : "tilt_left_gaze";
+    }
 
     const cleanMp3Url = resolveAssetUrl(mp3Url);
     const charId = charObj.id || charObj.face_id || "face_f02_mio";
@@ -354,7 +382,7 @@
 
     const analyser = cloudAudioCtx.createAnalyser();
     analyser.fftSize = 256;
-    analyser.smoothingTimeConstant = 0.45;
+    analyser.smoothingTimeConstant = 0.42;
 
     const srcNode = cloudAudioCtx.createBufferSource();
     srcNode.buffer = audioBuf;
@@ -379,10 +407,120 @@
     srcNode.start(0);
   }
 
-  // ===== 統合 60fps Head-Locked Ditto 3D レンダリングエンジン =====
-  // 待機中（非周期生体まばたき＋呼吸スウェイ）から発話中（音素フォルマント同期3Dリップシンク）まで
-  // 単一の #roi-talk-canvas 上で 100% 連続描画し、レイヤー切り替え時の首飛びや顔ズレを物理的にゼロにする
+  // ===== 60fps コマ送り × マルコフ連鎖ランダム分岐 3D モーショングラフ・エンジン =====
   let unifiedLoopStarted = false;
+
+  function buildDynamicBranchTrajectory(branchesObj, branchName, reachRatio, peakHoldFrames) {
+    const rawSeq = branchesObj[branchName];
+    if (!Array.isArray(rawSeq) || rawSeq.length === 0) return [0];
+
+    if (branchName === "nod_agree") {
+      // うんうん頷きは1周軌道（シングル頷きにするかダブル頷きにするかもランダム分岐！）
+      if (reachRatio < 0.65) {
+        const halfLen = Math.max(4, Math.floor(rawSeq.length * 0.55));
+        const sub = rawSeq.slice(0, halfLen);
+        return [...sub, ...sub.slice(0, -1).reverse()];
+      }
+      return [...rawSeq];
+    }
+
+    // 行き(0 -> peak) のユニーク部分を取り出し、今回のランダムな深さ(reachRatio: 0.45〜1.0)まで進んでピーク滞留し、0へ戻る軌道を動的構築！
+    const halfIdx = Math.floor(rawSeq.length / 2);
+    const forwardFull = rawSeq.slice(0, halfIdx);
+    const maxStep = Math.max(3, Math.round(forwardFull.length * reachRatio));
+    const forward = forwardFull.slice(0, maxStep);
+    const peakNode = forward[forward.length - 1];
+    const holdArr = Array(Math.max(1, peakHoldFrames)).fill(peakNode);
+    const backward = forward.slice(0, -1).reverse();
+    return [...forward, ...holdArr, ...backward];
+  }
+
+  function pickNextRandomBranch(lastBranch, speaking) {
+    if (requestedBranchHint) {
+      const h = requestedBranchHint;
+      requestedBranchHint = null;
+      return h;
+    }
+
+    // 状態（発話中 vs 待機中）に応じたマルコフ遷移重みテーブル
+    const weights = speaking
+      ? [
+          { name: "tilt_right_smile", w: 30 },
+          { name: "nod_agree", w: 28 },
+          { name: "tilt_left_gaze", w: 20 },
+          { name: "bright_lookup", w: 14 },
+          { name: "shy_lookaway", w: 8 },
+        ]
+      : [
+          { name: "center_breath", w: 30 },
+          { name: "tilt_right_smile", w: 22 },
+          { name: "tilt_left_gaze", w: 20 },
+          { name: "nod_agree", w: 11 },
+          { name: "bright_lookup", w: 10 },
+          { name: "shy_lookaway", w: 7 },
+        ];
+
+    // 同じしぐさが2回連続しないよう直前ブランチの重みを下げる
+    const filtered = weights.map((item) => ({
+      name: item.name,
+      w: item.name === lastBranch ? item.w * 0.15 : item.w,
+    }));
+    const totalW = filtered.reduce((acc, it) => acc + it.w, 0);
+    let r = Math.random() * totalW;
+    for (const it of filtered) {
+      r -= it.w;
+      if (r <= 0) return it.name;
+    }
+    return filtered[0].name;
+  }
+
+  // 1つの 3D 姿勢ノード内で、現在の口開き量 (smoothMouth) とまばたき量 (blinkAlpha) を描画するヘルパー
+  function drawNodeState(ctx, nodeBmps, x, y, w, h, smoothMouth, blinkAlpha, baseAlpha = 1.0) {
+    if (!nodeBmps || !nodeBmps.closed) return;
+
+    ctx.globalAlpha = baseAlpha;
+    ctx.drawImage(nodeBmps.closed, x, y, w, h);
+
+    if (smoothMouth > 0.025) {
+      let lowerBmp = nodeBmps.closed;
+      let upperBmp = nodeBmps.small;
+      let blend = 0.0;
+
+      if (smoothMouth < 0.34) {
+        lowerBmp = nodeBmps.closed;
+        upperBmp = nodeBmps.small;
+        blend = smoothMouth / 0.34;
+      } else if (smoothMouth < 0.68) {
+        lowerBmp = nodeBmps.small;
+        upperBmp = nodeBmps.mid;
+        blend = (smoothMouth - 0.34) / 0.34;
+      } else {
+        lowerBmp = nodeBmps.mid;
+        upperBmp = nodeBmps.wide;
+        blend = Math.min(1.0, (smoothMouth - 0.68) / 0.32);
+      }
+
+      if (lowerBmp && lowerBmp !== nodeBmps.closed) {
+        ctx.globalAlpha = baseAlpha;
+        ctx.drawImage(lowerBmp, x, y, w, h);
+      }
+      if (upperBmp && blend > 0.01) {
+        ctx.globalAlpha = baseAlpha * blend;
+        ctx.drawImage(upperBmp, x, y, w, h);
+      }
+    }
+
+    if (blinkAlpha > 0.02 && nodeBmps.blink) {
+      const eyeClipH = Math.round(h * 0.56);
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(x, y, w, eyeClipH);
+      ctx.clip();
+      ctx.globalAlpha = baseAlpha * blinkAlpha;
+      ctx.drawImage(nodeBmps.blink, x, y, w, h);
+      ctx.restore();
+    }
+  }
 
   function startUnified3DAvatarEngine() {
     if (unifiedLoopStarted) return;
@@ -390,7 +528,6 @@
     if (!roiCanvas) return;
     unifiedLoopStarted = true;
 
-    // app.js 側が .active を外しても絶対に消えないよう常時表示スタイルを固定
     roiCanvas.style.cssText =
       "position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;z-index:3;opacity:1 !important;display:block !important;will-change:transform;";
     roiCanvas.classList.add("active");
@@ -399,9 +536,18 @@
 
     let drawnBaseCharId = "";
     let smoothMouth = 0.0;
-    let nextBlinkStart = performance.now() + 1400 + Math.random() * 1800;
+
+    // 非周期の生体まばたき状態
+    let nextBlinkStart = performance.now() + 1200 + Math.random() * 1800;
     let blinkStart = 0;
-    const BLINK_DURATION = 165; // 閉じ70ms + 開き95ms
+    let currentBlinkDuration = 160;
+
+    // 60fps マルコフ分岐モーショングラフ状態
+    let currentBranchName = "tilt_right_smile";
+    let activeTrajectory = null; // Nodeインデックス配列
+    let trajCursor = 0.0;
+    let trajSpeed = 0.18; // 60fps あたりのステップ進行量（1ステップ ≈ 4〜6フレーム = 60fpsで滑らかに補間！）
+    let hubPauseUntil = 0;
 
     const tick = async (now) => {
       requestAnimationFrame(tick);
@@ -413,7 +559,6 @@
       const sprite = await loadCharacterVisemeSprite(charObj.id, charObj.portrait_url);
       if (!sprite || !sprite.baseImg) return;
 
-      // 1. キャラクター切替時またはサイズ変更時にベース高精細ポートレートを全面描画
       if (
         roiCanvas.width !== sprite.frameW ||
         roiCanvas.height !== sprite.frameH ||
@@ -424,15 +569,15 @@
         roiCtx.globalAlpha = 1.0;
         roiCtx.drawImage(sprite.baseImg, 0, 0, sprite.frameW, sprite.frameH);
         drawnBaseCharId = sprite.charId;
+        activeTrajectory = null;
       }
 
-      // 2. 音声解析による口開き量 (smoothMouth: 0.0 〜 1.0) の算出
+      // 1. 音声解析による口開き量 (smoothMouth: 0.0 〜 1.0) の算出
       let targetMouth = 0.0;
       if (isSpeakingNow && activeAnalyser && activeFreqData && activeTimeData) {
         activeAnalyser.getByteFrequencyData(activeFreqData);
         activeAnalyser.getByteTimeDomainData(activeTimeData);
 
-        // 時間領域のRMS振幅（子音の区切りでしっかり口が閉じるようにする）
         let sumSq = 0;
         for (let i = 0; i < activeTimeData.length; i++) {
           const v = (activeTimeData[i] - 128) / 128.0;
@@ -440,7 +585,6 @@
         }
         const rms = Math.sqrt(sumSq / activeTimeData.length);
 
-        // 母音フォルマント帯域（約200Hz〜2600Hz）のエネルギー
         let fSum = 0;
         const binStart = 2;
         const binEnd = Math.min(32, activeFreqData.length);
@@ -449,101 +593,101 @@
         }
         const fAvg = fSum / Math.max(1, binEnd - binStart);
 
-        if (rms > 0.012 && fAvg > 16) {
-          const rmsNorm = Math.min(1.0, (rms - 0.012) / 0.14);
-          const fNorm = Math.min(1.0, (fAvg - 16) / 88);
+        if (rms > 0.011 && fAvg > 15) {
+          const rmsNorm = Math.min(1.0, (rms - 0.011) / 0.13);
+          const fNorm = Math.min(1.0, (fAvg - 15) / 85);
           targetMouth = Math.max(0.0, Math.min(1.0, rmsNorm * 0.55 + fNorm * 0.45));
         }
       }
 
-      // 開くときは素早く、閉じるときも音節ごとに自然に締まるダンピング
       smoothMouth =
         targetMouth > smoothMouth
-          ? smoothMouth * 0.35 + targetMouth * 0.65
-          : smoothMouth * 0.58 + targetMouth * 0.42;
+          ? smoothMouth * 0.34 + targetMouth * 0.66
+          : smoothMouth * 0.56 + targetMouth * 0.44;
       if (smoothMouth < 0.025) smoothMouth = 0.0;
 
-      // 3. 非周期の生体まばたきカーブ算出 (blinkAlpha: 0.0 〜 1.0)
+      // 2. 非周期の生体まばたきカーブ算出 (シングル / ダブル / 速度ゆらぎ)
       let blinkAlpha = 0.0;
       if (now >= nextBlinkStart && blinkStart === 0) {
         blinkStart = now;
+        currentBlinkDuration = 145 + Math.random() * 55;
       }
       if (blinkStart > 0) {
         const elapsed = now - blinkStart;
-        if (elapsed < BLINK_DURATION) {
-          // 閉じるときは速く(70ms)、開くときは少しゆっくり(95ms)
-          if (elapsed < 70) {
-            blinkAlpha = Math.sin((elapsed / 70) * (Math.PI / 2));
+        const closeTime = currentBlinkDuration * 0.42;
+        const openTime = currentBlinkDuration * 0.58;
+        if (elapsed < currentBlinkDuration) {
+          if (elapsed < closeTime) {
+            blinkAlpha = Math.sin((elapsed / closeTime) * (Math.PI / 2));
           } else {
-            blinkAlpha = Math.cos(((elapsed - 70) / 95) * (Math.PI / 2));
+            blinkAlpha = Math.cos(((elapsed - closeTime) / openTime) * (Math.PI / 2));
           }
           blinkAlpha = Math.max(0.0, Math.min(1.0, blinkAlpha));
         } else {
           blinkStart = 0;
-          // 24%の確率で自然なダブルブリンク
-          nextBlinkStart = now + (Math.random() < 0.24 ? 140 : 2000 + Math.random() * 2800);
+          // 28%の確率でパチパチッと連続するダブルブリンク
+          nextBlinkStart = now + (Math.random() < 0.28 ? 110 + Math.random() * 60 : 1600 + Math.random() * 2600);
         }
       }
 
-      // 4. Head-Locked 3D キーフレームの描画（頭・目・輪郭は 0.000px 完全一致！）
-      const { x, y, w, h, bitmaps } = sprite;
-      if (w > 0 && h > 0 && bitmaps.closed) {
-        // まず基準の closed を不透明で描画
-        roiCtx.globalAlpha = 1.0;
-        roiCtx.drawImage(bitmaps.closed, x, y, w, h);
+      // 3. 60fps マルコフ分岐 3D モーショングラフの進行と描画
+      const { x, y, w, h, nodes, branches } = sprite;
 
-        // 発話中で口が開いている場合：段階キーフレーム (small / mid / wide) を連続補間描画
-        if (smoothMouth > 0.025) {
-          let lowerBmp = bitmaps.closed;
-          let upperBmp = bitmaps.small;
-          let blend = 0.0;
-
-          if (smoothMouth < 0.34) {
-            lowerBmp = bitmaps.closed;
-            upperBmp = bitmaps.small;
-            blend = smoothMouth / 0.34;
-          } else if (smoothMouth < 0.68) {
-            lowerBmp = bitmaps.small;
-            upperBmp = bitmaps.mid;
-            blend = (smoothMouth - 0.34) / 0.34;
+      if (branches && Array.isArray(nodes) && nodes.length > 1) {
+        // 新しいブランチへの分岐抽選
+        if (!activeTrajectory || trajCursor >= activeTrajectory.length - 1) {
+          if (now >= hubPauseUntil || requestedBranchHint) {
+            currentBranchName = pickNextRandomBranch(currentBranchName, isSpeakingNow);
+            // 毎回異なる深さ(0.55〜1.0)・ピーク滞留(2〜7ステップ)・スピード(0.16〜0.28)をランダム生成！
+            const reach = isSpeakingNow ? 0.65 + Math.random() * 0.35 : 0.50 + Math.random() * 0.50;
+            const holdSteps = Math.floor(2 + Math.random() * 6);
+            activeTrajectory = buildDynamicBranchTrajectory(branches, currentBranchName, reach, holdSteps);
+            trajCursor = 0.0;
+            trajSpeed = isSpeakingNow
+              ? 0.20 + Math.random() * 0.10
+              : 0.14 + Math.random() * 0.09;
+            // ブランチ完了後のごく短い自然な間（0ms〜320ms）
+            hubPauseUntil = 0;
           } else {
-            lowerBmp = bitmaps.mid;
-            upperBmp = bitmaps.wide;
-            blend = Math.min(1.0, (smoothMouth - 0.68) / 0.32);
-          }
-
-          if (lowerBmp && lowerBmp !== bitmaps.closed) {
-            roiCtx.globalAlpha = 1.0;
-            roiCtx.drawImage(lowerBmp, x, y, w, h);
-          }
-          if (upperBmp && blend > 0.01) {
-            roiCtx.globalAlpha = blend;
-            roiCtx.drawImage(upperBmp, x, y, w, h);
+            activeTrajectory = [0];
+            trajCursor = 0.0;
           }
         }
 
-        // まばたき中かつ大きく口を開けていない時は blink キーフレームを目元領域（上部58%）に合成
-        // （口が大きく開いている最中でも目元だけ自然にまばたきできるよう上部クリップ合成！）
-        if (blinkAlpha > 0.02 && bitmaps.blink) {
-          const eyeClipH = Math.round(h * 0.56);
-          roiCtx.save();
-          roiCtx.beginPath();
-          roiCtx.rect(x, y, w, eyeClipH);
-          roiCtx.clip();
-          roiCtx.globalAlpha = blinkAlpha;
-          roiCtx.drawImage(bitmaps.blink, x, y, w, h);
-          roiCtx.restore();
+        const idx0 = Math.min(activeTrajectory.length - 1, Math.floor(trajCursor));
+        const idx1 = Math.min(activeTrajectory.length - 1, idx0 + 1);
+        const subAlpha = trajCursor - idx0;
+
+        const nodeIdxA = activeTrajectory[idx0] || 0;
+        const nodeIdxB = activeTrajectory[idx1] || 0;
+        const nodeA = nodes[nodeIdxA] || nodes[0];
+        const nodeB = nodes[nodeIdxB] || nodes[0];
+
+        // ステップAを描画し、次ステップBと異なる場合は subAlpha で60fpsサブフレーム補間！
+        drawNodeState(roiCtx, nodeA, x, y, w, h, smoothMouth, blinkAlpha, 1.0);
+        if (nodeIdxB !== nodeIdxA && subAlpha > 0.02) {
+          drawNodeState(roiCtx, nodeB, x, y, w, h, smoothMouth, blinkAlpha, subAlpha);
         }
+        roiCtx.globalAlpha = 1.0;
+
+        // 発話中は声のエネルギーが高いときに少し動きが活発になる生体連動
+        const voiceBoost = isSpeakingNow ? 1.0 + smoothMouth * 0.25 : 1.0;
+        trajCursor += trajSpeed * voiceBoost;
+        if (trajCursor >= activeTrajectory.length - 1 && hubPauseUntil === 0) {
+          hubPauseUntil = now + (isSpeakingNow ? 40 + Math.random() * 120 : 120 + Math.random() * 380);
+        }
+      } else {
+        // 単一ノードキャラのフォールバック描画
+        drawNodeState(roiCtx, sprite.bitmaps, x, y, w, h, smoothMouth, blinkAlpha, 1.0);
         roiCtx.globalAlpha = 1.0;
       }
 
-      // 5. 生身の人間らしい微細な生体呼吸＆発話リズムうなずき（画像の歪みゼロ）
+      // 4. 胸元・身体全体の微細な生体呼吸ゆらぎ
       const tSec = now * 0.001;
-      const breathY = Math.sin(tSec * 1.65) * 1.4;
-      const swayX = Math.sin(tSec * 0.85 + 0.7) * 1.1;
-      const swayRot = Math.sin(tSec * 0.92) * 0.18 + (smoothMouth > 0.15 ? Math.sin(tSec * 5.2) * 0.16 : 0.0);
-      const scale = 1.004 + Math.sin(tSec * 1.65) * 0.0018;
-      roiCanvas.style.transform = `translate3d(${swayX.toFixed(2)}px, ${breathY.toFixed(2)}px, 0) scale(${scale.toFixed(4)}) rotate(${swayRot.toFixed(3)}deg)`;
+      const breathY = Math.sin(tSec * 1.65) * 1.3;
+      const swayX = Math.sin(tSec * 0.85 + 0.7) * 1.0;
+      const scale = 1.003 + Math.sin(tSec * 1.65) * 0.0015;
+      roiCanvas.style.transform = `translate3d(${swayX.toFixed(2)}px, ${breathY.toFixed(2)}px, 0) scale(${scale.toFixed(4)})`;
     };
 
     requestAnimationFrame(tick);
@@ -633,7 +777,6 @@
     });
   }
 
-  // ===== fetch インターセプタ（PCサーバー不要で全APIを0.05秒処理＋本物のQwen3-TTS肉声＆3Dヴィセーム再生） =====
   const origFetch = window.fetch.bind(window);
 
   window.fetch = async function (input, init) {
@@ -655,14 +798,12 @@
       } catch (_) {}
     }
 
-    // 1. /api/companion/state
     if (rawUrl.endsWith("/api/companion/state")) {
       const entry = selectRealVoiceEntry(mem.active_voice_id, "", "greeting_home");
       const spoken = entry ? entry.text : "あっ、おかえり！今日も一日お疲れさま。ねえ、こっち座ってゆっくり話そ？";
       return makeJsonResponse(buildCloudStatePayload(mem, spoken, "帰ってきてくれて嬉しいな。今日もいっぱい話そうね。", "happy"));
     }
 
-    // 2. /api/companion/characters & /api/companion/faces
     if (rawUrl.includes("/api/companion/characters") && (!init || !init.method || init.method === "GET")) {
       const st = buildCloudStatePayload(mem, "", "", "happy");
       return makeJsonResponse({
@@ -709,7 +850,6 @@
       return makeJsonResponse({ favorite_face_ids: favs, count: favs.length });
     }
 
-    // 3. /api/companion/voices
     if (rawUrl.endsWith("/api/companion/voices")) {
       const voices = getBuiltinVoicesList(mem.active_voice_id);
       const vp = (voiceManifest && voiceManifest.voice_profiles && voiceManifest.voice_profiles[mem.active_voice_id]) || {};
@@ -721,7 +861,6 @@
       });
     }
 
-    // 4. /api/companion/init_stream（入室挨拶）
     if (rawUrl.endsWith("/api/companion/init_stream")) {
       const scKey =
         mem.time_scene === "morning"
@@ -743,12 +882,11 @@
           { type: "done", total_chunks: 1, spoken, inner_thought: st.inner_thought, emotion: emo, choices },
         ],
         () => {
-          if (entry && entry.mp3_url) playRealVoiceWith3DViseme(entry.mp3_url, activeChar);
+          if (entry && entry.mp3_url) playRealVoiceWith3DViseme(entry.mp3_url, activeChar, scKey);
         }
       );
     }
 
-    // 5. /api/companion/talk_stream（選択肢＆自由会話＆音声入力）
     if (rawUrl.endsWith("/api/companion/talk_stream") || rawUrl.endsWith("/api/companion/voice_input_stream")) {
       const userText = (bodyObj.text || "ねえ、聞いて！").trim();
       const intent = classifyUserTalkIntent(userText, mem.mood);
@@ -792,12 +930,11 @@
           },
         ],
         () => {
-          if (entry && entry.mp3_url) playRealVoiceWith3DViseme(entry.mp3_url, activeChar);
+          if (entry && entry.mp3_url) playRealVoiceWith3DViseme(entry.mp3_url, activeChar, intent);
         }
       );
     }
 
-    // 6. /api/companion/characters/select & /api/companion/profile/customize_stream
     if (
       rawUrl.includes("/api/companion/characters/select") ||
       rawUrl.includes("/api/companion/profile/customize") ||
@@ -847,17 +984,16 @@
             { type: "done", total_chunks: 1, spoken, inner_thought: st.inner_thought, emotion: emo, choices },
           ],
           () => {
-            if (entry && entry.mp3_url) playRealVoiceWith3DViseme(entry.mp3_url, activeChar);
+            if (entry && entry.mp3_url) playRealVoiceWith3DViseme(entry.mp3_url, activeChar, "greeting_home");
           }
         );
       }
       setTimeout(() => {
-        if (entry && entry.mp3_url) playRealVoiceWith3DViseme(entry.mp3_url, activeChar);
+        if (entry && entry.mp3_url) playRealVoiceWith3DViseme(entry.mp3_url, activeChar, "greeting_home");
       }, 20);
       return makeJsonResponse(st);
     }
 
-    // 7. /api/companion/action_stream & /api/companion/action
     if (rawUrl.includes("/api/companion/action")) {
       const act = bodyObj.action_type || "";
       const val = bodyObj.value || "";
@@ -919,17 +1055,16 @@
             { type: "done", total_chunks: 1, spoken, inner_thought: st.inner_thought, emotion: emo, choices },
           ],
           () => {
-            if (entry && entry.mp3_url) playRealVoiceWith3DViseme(entry.mp3_url, activeChar);
+            if (entry && entry.mp3_url) playRealVoiceWith3DViseme(entry.mp3_url, activeChar, intent);
           }
         );
       }
       setTimeout(() => {
-        if (entry && entry.mp3_url) playRealVoiceWith3DViseme(entry.mp3_url, activeChar);
+        if (entry && entry.mp3_url) playRealVoiceWith3DViseme(entry.mp3_url, activeChar, intent);
       }, 20);
       return makeJsonResponse(st);
     }
 
-    // 8. /api/companion/wardrobe/topup
     if (rawUrl.includes("/api/companion/wardrobe/topup")) {
       mem.coins = (mem.coins || 1200) + 1000;
       saveCloudMemory(mem);
@@ -939,7 +1074,6 @@
     return makeJsonResponse(buildCloudStatePayload(mem, "うんうん、なんでも話してね！", "", "happy"));
   };
 
-  // ===== 🧪 友人シェア＆感想フィードバックモーダル UI =====
   function injectShareAndFeedbackButton() {
     if (document.getElementById("btn-open-beta-feedback")) return;
     const topRight = document.querySelector(".top-right-controls") || document.querySelector(".hud-top");
