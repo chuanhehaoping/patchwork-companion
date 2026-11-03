@@ -1,5 +1,5 @@
 {
-  "version": "v13_kidoairaku_corneal_rigidity_master",
+  "version": "v15_true_video_driven_real_human_master",
   "character_id": "face_f02_mio",
   "fps": 50,
   "idle_branches": [
@@ -58,14 +58,14 @@
       "frames": 240,
       "fps": 50,
       "emo_start": "joy",
-      "emo_end": "joy"
+      "emo_end": "joy_full"
     },
     "606cb477f9a7eb3909fe3459477be5d3": {
       "url": "assets/fmv_mio/talk_606cb477f9a7eb3909fe3459477be5d3.mp4",
       "frames": 184,
       "fps": 50,
       "emo_start": "joy",
-      "emo_end": "joy"
+      "emo_end": "joy_full"
     },
     "61344fc20ad64f074fa12c3246abe609": {
       "url": "assets/fmv_mio/talk_61344fc20ad64f074fa12c3246abe609.mp4",
@@ -92,7 +92,7 @@
       "url": "assets/fmv_mio/talk_67cc34c206eb434ba626ddbb53fe4d8b.mp4",
       "frames": 288,
       "fps": 50,
-      "emo_start": "joy",
+      "emo_start": "shy",
       "emo_end": "joy"
     },
     "cc47d326b8106539c6e1d4159d8e8edc": {
@@ -100,7 +100,7 @@
       "frames": 160,
       "fps": 50,
       "emo_start": "fun",
-      "emo_end": "fun"
+      "emo_end": "joy"
     },
     "598b23a7aed76d04b01f33c3468f6bc3": {
       "url": "assets/fmv_mio/talk_598b23a7aed76d04b01f33c3468f6bc3.mp4",
@@ -128,34 +128,34 @@
       "frames": 316,
       "fps": 50,
       "emo_start": "fun",
-      "emo_end": "joy"
+      "emo_end": "joy_full"
     },
     "4279f3f422f62ae5fc65810d1ac97f13": {
       "url": "assets/fmv_mio/talk_4279f3f422f62ae5fc65810d1ac97f13.mp4",
       "frames": 288,
       "fps": 50,
       "emo_start": "fun",
-      "emo_end": "joy"
+      "emo_end": "joy_full"
     },
     "dd2fa2b76821684a6e43ef431ce17646": {
       "url": "assets/fmv_mio/talk_dd2fa2b76821684a6e43ef431ce17646.mp4",
       "frames": 340,
       "fps": 50,
       "emo_start": "anger",
-      "emo_end": "anger"
+      "emo_end": "sulk"
     },
     "9e48b887c9dcb66f9c98663eb72378ef": {
       "url": "assets/fmv_mio/talk_9e48b887c9dcb66f9c98663eb72378ef.mp4",
       "frames": 264,
       "fps": 50,
-      "emo_start": "anger",
+      "emo_start": "sulk",
       "emo_end": "fun"
     },
     "a04d8e0dd828fd3fb8b6d3d7047b17d5": {
       "url": "assets/fmv_mio/talk_a04d8e0dd828fd3fb8b6d3d7047b17d5.mp4",
       "frames": 304,
       "fps": 50,
-      "emo_start": "anger",
+      "emo_start": "sulk",
       "emo_end": "sadness"
     },
     "e092c07207d071d18068fa70dcfd7c6f": {
@@ -163,7 +163,7 @@
       "frames": 328,
       "fps": 50,
       "emo_start": "sadness",
-      "emo_end": "sadness"
+      "emo_end": "shy"
     },
     "b20f225de3f04fddbfd169f470a463e5": {
       "url": "assets/fmv_mio/talk_b20f225de3f04fddbfd169f470a463e5.mp4",
@@ -177,13 +177,13 @@
       "frames": 316,
       "fps": 50,
       "emo_start": "sadness",
-      "emo_end": "joy"
+      "emo_end": "shy"
     },
     "a4f54263c302bab207b778a3106acb52": {
       "url": "assets/fmv_mio/talk_a4f54263c302bab207b778a3106acb52.mp4",
       "frames": 256,
       "fps": 50,
-      "emo_start": "anger",
+      "emo_start": "sulk",
       "emo_end": "joy"
     },
     "35172f14f03c543252a9eb51fef82ee4": {
@@ -191,14 +191,14 @@
       "frames": 104,
       "fps": 50,
       "emo_start": "sadness",
-      "emo_end": "sadness"
+      "emo_end": "shy"
     },
     "07362ac6769f38e2c83d41e905552aca": {
       "url": "assets/fmv_mio/talk_07362ac6769f38e2c83d41e905552aca.mp4",
       "frames": 200,
       "fps": 50,
       "emo_start": "shy",
-      "emo_end": "shy"
+      "emo_end": "joy"
     },
     "067ffbd98b564724e505b4adab0c412e": {
       "url": "assets/fmv_mio/talk_067ffbd98b564724e505b4adab0c412e.mp4",
@@ -233,7 +233,7 @@
       "frames": 268,
       "fps": 50,
       "emo_start": "shy",
-      "emo_end": "shy"
+      "emo_end": "joy"
     }
   }
 }

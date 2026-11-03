@@ -20,7 +20,7 @@
 (function () {
   "use strict";
 
-  const ASSET_VER = "24";
+  const ASSET_VER = "25";
   const STORAGE_KEY_MEM = "pw_cloud_v9_memory";
 
   let catalogMeta = null;
