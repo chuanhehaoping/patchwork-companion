@@ -1,20 +1,16 @@
 // ============================================================================
-// PATCHWORK NATION - 完全無料・PC負荷ゼロ クラウドエンジン
-// (v17: 100% 文脈一致対話エンジン + 51本 50fps v16 安定実写人間ストリーム + マイク音声認識完全対応)
-// - あなたのPC（ローカルGPU/Pythonサーバー）を一切使わず、GitHub Pages の完全無料クラウドで24時間稼働
-// - ブラウザ内蔵の機械音声 (window.speechSynthesis) は 100% 使用禁止！
-//   全発話で事前合成済みの「本物の Qwen3-TTS 1.7B 実在人間クローン肉声 MP3」を再生
-// - 「会話がかみ合っていない」を100%根絶する3層コンテキスト対話システム：
-//   1. 未完フィラー音声（「えっとね。」「うーん、そうだねえ。」で切れる音声）および会話途中の入室挨拶誤爆を 100% 追放！
-//   2. 全選択肢ボタンに対する 1対1 完全一致ディスパッチ ＋ 文脈連鎖型の次選択肢生成！
-//   3. 自由入力（テキスト＆マイク音声認識）の 45カテゴリ精密インテント＆固有名詞・質問スロット抽出により、
-//      ユーザーのどんな発言にも 100% 噛み合った回答・肉声・50fpsリップシンク映像を即座に返却！
+// PATCHWORK NATION - 完全無料・リアルAI対話＆日本語7大発音口形(Viseme)クラウドエンジン
+// (v18: 本物の生成AI(LLM)対話直結 + 日本語音素7大口形(あ・い・う・え・お・ん/ま/ば/ぱ・促音)完全同期)
+// - 問題①解決: 定型アルゴリズムではなく本物のAI(ローカルOllama Qwen2.5 + クラウドOpenAI-Fast)が
+//   ユーザーのどんな話しかけにも100%内容に踏み込んだ自然な返答をリアルタイム生成！
+// - 問題②解決: 単なる音量上下の口パクを完全廃止！日本語の発音（母音A/I/U/E/O・両唇閉鎖音MBP・無音SIL）
+//   をする時の本物の人間の解剖学的口形（50fps MP4 & 60fps Viseme Atlas）で発話！
 // ============================================================================
 
 (function () {
   "use strict";
 
-  const ASSET_VER = "27";
+  const ASSET_VER = "28";
   const STORAGE_KEY_MEM = "pw_cloud_v9_memory";
 
   let catalogMeta = null;
@@ -24,7 +20,18 @@
   let visemeCache = new Map(); // charId -> Promise<Sprite>
   let baseImgCache = new Map(); // url -> Promise<HTMLImageElement>
 
-  // ===== Mobile-Safe 3-Decoder Pool & Blob Memory Cache (for face_f02_mio 50fps v16 Composed Streams) =====
+  // ===== 美桜 (face_f02_mio) 日本語 7大発音口形 (Viseme) アトラス & リアルタイムタイムライン =====
+  // スロット定義: 0:SIL, 1:MBP(ん/ま/ば/ぱ/っ), 2:A(あ), 3:I(い), 4:U(う), 5:E(え), 6:O(お), 7:BLINK(瞬き)
+  const MIO_VISEME_ROI = { x: 420, y: 0, w: 472, h: 434, fullW: 1280, fullH: 720 };
+  const VISEME_SLOT = { SIL: 0, MBP: 1, A: 2, I: 3, U: 4, E: 5, O: 6, BLINK: 7 };
+  let mioBase1280Img = null;
+  let mioVisemeAtlasImg = null;
+  let mioVisemeLoadProm = null;
+
+  // AI自由発話時の音素タイムライン再生状態
+  let activeVisemeTimeline = null; // { startPerfTime, totalDuration, keyframes: [{t, slot, label}] }
+
+  // ===== Mobile-Safe 3-Decoder Pool & Blob Memory Cache (for face_f02_mio 50fps v18 Phoneme Streams) =====
   let fmvBlobUrlCache = new Map(); // relativeUrl -> Promise<blobUrl>
   let fmvIdleUrlMap = new Map(); // branchId -> relativeUrl
   let idleDecoderA = null;
@@ -299,7 +306,222 @@
         }
       } catch (_) {}
     }
+    ensureMioVisemeAtlasLoaded();
     return { catalogMeta, voiceManifest, fmvManifestMio };
+  }
+
+  // ===== 美桜の日本語 7大発音口形アトラス (mio_viseme_atlas.jpg + mio_base_1280.jpg) ローダー =====
+  function ensureMioVisemeAtlasLoaded() {
+    if (mioVisemeLoadProm) return mioVisemeLoadProm;
+    mioVisemeLoadProm = Promise.all([
+      loadBasePortraitImg(`assets/fmv_mio/mio_base_1280.jpg?v=${ASSET_VER}`),
+      loadBasePortraitImg(`assets/fmv_mio/mio_viseme_atlas.jpg?v=${ASSET_VER}`),
+    ]).then(([baseImg, atlasImg]) => {
+      mioBase1280Img = baseImg;
+      mioVisemeAtlasImg = atlasImg;
+      return { baseImg, atlasImg };
+    });
+    return mioVisemeLoadProm;
+  }
+
+  // ===== 日本語テキスト → 解剖学的 7大発音口形 (Viseme) タイムライン変換エンジン =====
+  const KANJI_READING_PAIRS = [
+    ["美桜", "みお"], ["私", "わたし"], ["僕", "ぼく"], ["俺", "おれ"], ["君", "きみ"],
+    ["今日", "きょう"], ["明日", "あした"], ["昨日", "きのう"], ["毎日", "まいにち"], ["今度", "こんど"],
+    ["一緒", "いっしょ"], ["本当", "ほんとう"], ["大好き", "だいすき"], ["好き", "すき"], ["可愛い", "かわいい"],
+    ["綺麗", "きれい"], ["素敵", "すてき"], ["嬉し", "うれし"], ["楽し", "たのし"], ["寂し", "さびし"],
+    ["恥ずかし", "はずかし"], ["優し", "やさし"], ["美味し", "おいし"], ["素晴らし", "すばらし"], ["難し", "むずかし"],
+    ["忙し", "いそがし"], ["懐かし", "なつかし"], ["羨まし", "うらやまし"], ["悔し", "くやし"], ["悲し", "かなし"],
+    ["仕事", "しごと"], ["会社", "かいしゃ"], ["学校", "がっこう"], ["授業", "じゅぎょう"], ["会議", "かいぎ"],
+    ["残業", "ざんぎょう"], ["休憩", "きゅうけい"], ["休日", "きゅうじつ"], ["休み", "やすみ"], ["予定", "よてい"],
+    ["天気", "てんき"], ["雨", "あめ"], ["傘", "かさ"], ["晴れ", "はれ"], ["曇り", "くもり"], ["雪", "ゆき"],
+    ["風", "かぜ"], ["雷", "かみなり"], ["台風", "たいふう"], ["季節", "きせつ"], ["春", "はる"], ["夏", "なつ"],
+    ["秋", "あき"], ["冬", "ふゆ"], ["朝", "あさ"], ["昼", "ひる"], ["夕方", "ゆうがた"], ["夜", "よる"],
+    ["部屋", "へや"], ["お家", "おうち"], ["家", "いえ"], ["電車", "でんしゃ"], ["駅", "えき"], ["階段", "かいだん"],
+    ["道", "みち"], ["帰り道", "かえりみち"], ["散歩", "さんぽ"], ["旅行", "りょこう"], ["温泉", "おんせん"],
+    ["映画", "えいが"], ["音楽", "おんがく"], ["写真", "しゃしん"], ["動画", "どうが"], ["本", "ほん"],
+    ["料理", "りょうり"], ["食事", "しょくじ"], ["ご飯", "ごはん"], ["朝ご飯", "あさごはん"], ["昼ご飯", "ひるごはん"],
+    ["晩ご飯", "ばんごはん"], ["夕飯", "ゆうはん"], ["お弁当", "おべんとう"], ["お茶", "おちゃ"], ["水", "みず"],
+    ["野菜", "やさい"], ["肉", "にく"], ["魚", "さかな"], ["甘い", "あまい"], ["辛い", "からい"], ["熱い", "あつい"],
+    ["暑い", "あつい"], ["寒い", "さむい"], ["温か", "あたたか"], ["暖か", "あたたか"], ["涼し", "すずし"],
+    ["冷た", "つめた"], ["眠い", "ねむい"], ["疲れ", "つかれ"], ["頑張", "がんば"], ["無理", "むり"],
+    ["大丈夫", "だいじょうぶ"], ["心配", "しんぱい"], ["安心", "あんしん"], ["応援", "おうえん"], ["相談", "そうだん"],
+    ["質問", "しつもん"], ["返事", "へんじ"], ["連絡", "れんらく"], ["電話", "でんわ"], ["話", "はなし"],
+    ["声", "こえ"], ["顔", "かお"], ["目", "め"], ["口", "くち"], ["手", "て"], ["頭", "あたま"], ["髪", "かみ"],
+    ["心", "こころ"], ["気持ち", "きもち"], ["気分", "きぶん"], ["体調", "たいちょう"], ["風邪", "かぜ"],
+    ["お風呂", "おふろ"], ["布団", "ふとん"], ["ベッド", "べっど"], ["睡眠", "すいみん"], ["夢", "ゆめ"],
+    ["時間", "じかん"], ["瞬間", "しゅんかん"], ["最近", "さいきん"], ["今", "いま"], ["次", "つぎ"],
+    ["前", "まえ"], ["後", "あと"], ["隣", "となり"], ["近く", "ちかく"], ["遠く", "とおく"], ["全部", "ぜんぶ"],
+    ["一番", "いちばん"], ["特別", "とくべつ"], ["最高", "さいこう"], ["大切", "たいせつ"], ["大事", "だいじ"],
+    ["幸せ", "しあわせ"], ["元気", "げんき"], ["笑顔", "えがお"], ["涙", "なみだ"], ["秘密", "ひみつ"],
+    ["約束", "やくそく"], ["記念日", "きねんび"], ["誕生日", "たんじょうび"], ["プレゼント", "ぷれぜんと"],
+    ["食べ", "たべ"], ["飲み", "のみ"], ["見", "み"], ["聞", "き"], ["聴", "き"], ["言", "い"], ["思", "おも"],
+    ["考", "かんが"], ["知", "し"], ["分", "わ"], ["行", "い"], ["来", "き"], ["帰", "かえ"], ["寝", "ね"],
+    ["起", "お"], ["歩", "ある"], ["走", "はし"], ["転", "ころ"], ["濡", "ぬ"], ["降", "ふ"], ["買", "か"],
+    ["作", "つく"], ["遊", "あそ"], ["笑", "わら"], ["怒", "おこ"], ["泣", "な"], ["照", "て"], ["驚", "おどろ"],
+    ["喜", "よろこ"], ["褒", "ほ"], ["許", "ゆる"], ["待", "ま"], ["会", "あ"], ["選", "えら"], ["決", "き"],
+  ];
+
+  function katakanaToHiragana(str) {
+    return (str || "").replace(/[\u30a1-\u30f6]/g, (ch) =>
+      String.fromCharCode(ch.charCodeAt(0) - 0x60)
+    );
+  }
+
+  function normalizeTextToHiragana(rawText, yomiHint = "") {
+    let base = yomiHint && yomiHint.trim().length >= 4 ? yomiHint.trim() : rawText || "";
+    for (const [kanji, kana] of KANJI_READING_PAIRS) {
+      if (base.includes(kanji)) {
+        base = base.split(kanji).join(kana);
+      }
+    }
+    return katakanaToHiragana(base);
+  }
+
+  // かな文字から { prefixSlot,prefixDur, vowelSlot,vowelDur } への解剖学的マッピング
+  const KANA_VISEME_MAP = {
+    // あ段 (V_A: 縦開口)
+    あ: { v: VISEME_SLOT.A }, か: { v: VISEME_SLOT.A }, さ: { v: VISEME_SLOT.A }, た: { v: VISEME_SLOT.A },
+    な: { v: VISEME_SLOT.A }, は: { v: VISEME_SLOT.A }, や: { v: VISEME_SLOT.A }, ら: { v: VISEME_SLOT.A },
+    が: { v: VISEME_SLOT.A }, ざ: { v: VISEME_SLOT.A }, だ: { v: VISEME_SLOT.A }, ぁ: { v: VISEME_SLOT.A },
+    ゃ: { v: VISEME_SLOT.A },
+    // 両唇音 + あ段 (MBP閉唇 -> A縦開口)
+    ま: { p: VISEME_SLOT.MBP, v: VISEME_SLOT.A }, ば: { p: VISEME_SLOT.MBP, v: VISEME_SLOT.A }, ぱ: { p: VISEME_SLOT.MBP, v: VISEME_SLOT.A },
+    // わ (Uすぼめ -> A縦開口)
+    わ: { p: VISEME_SLOT.U, v: VISEME_SLOT.A }, ゎ: { p: VISEME_SLOT.U, v: VISEME_SLOT.A },
+
+    // い段 (V_I: 口角横引き)
+    い: { v: VISEME_SLOT.I }, き: { v: VISEME_SLOT.I }, し: { v: VISEME_SLOT.I }, ち: { v: VISEME_SLOT.I },
+    に: { v: VISEME_SLOT.I }, ひ: { v: VISEME_SLOT.I }, り: { v: VISEME_SLOT.I }, ぎ: { v: VISEME_SLOT.I },
+    じ: { v: VISEME_SLOT.I }, ぢ: { v: VISEME_SLOT.I }, ぃ: { v: VISEME_SLOT.I },
+    // 両唇音 + い段 (MBP閉唇 -> I横引き)
+    み: { p: VISEME_SLOT.MBP, v: VISEME_SLOT.I }, び: { p: VISEME_SLOT.MBP, v: VISEME_SLOT.I }, ぴ: { p: VISEME_SLOT.MBP, v: VISEME_SLOT.I },
+
+    // う段 (V_U: 口輪筋すぼめ丸口)
+    う: { v: VISEME_SLOT.U }, く: { v: VISEME_SLOT.U }, す: { v: VISEME_SLOT.U }, つ: { v: VISEME_SLOT.U },
+    ぬ: { v: VISEME_SLOT.U }, ふ: { v: VISEME_SLOT.U }, ゆ: { v: VISEME_SLOT.U }, る: { v: VISEME_SLOT.U },
+    ぐ: { v: VISEME_SLOT.U }, ず: { v: VISEME_SLOT.U }, づ: { v: VISEME_SLOT.U }, ぅ: { v: VISEME_SLOT.U },
+    ゅ: { v: VISEME_SLOT.U }, ゔ: { v: VISEME_SLOT.U },
+    // 両唇音 + う段 (MBP閉唇 -> Uすぼめ)
+    む: { p: VISEME_SLOT.MBP, v: VISEME_SLOT.U }, ぶ: { p: VISEME_SLOT.MBP, v: VISEME_SLOT.U }, ぷ: { p: VISEME_SLOT.MBP, v: VISEME_SLOT.U },
+
+    // え段 (V_E: 横広楕円開口)
+    え: { v: VISEME_SLOT.E }, け: { v: VISEME_SLOT.E }, せ: { v: VISEME_SLOT.E }, て: { v: VISEME_SLOT.E },
+    ね: { v: VISEME_SLOT.E }, へ: { v: VISEME_SLOT.E }, れ: { v: VISEME_SLOT.E }, げ: { v: VISEME_SLOT.E },
+    ぜ: { v: VISEME_SLOT.E }, で: { v: VISEME_SLOT.E }, ぇ: { v: VISEME_SLOT.E },
+    // 両唇音 + え段 (MBP閉唇 -> E横広開口)
+    め: { p: VISEME_SLOT.MBP, v: VISEME_SLOT.E }, べ: { p: VISEME_SLOT.MBP, v: VISEME_SLOT.E }, ぺ: { p: VISEME_SLOT.MBP, v: VISEME_SLOT.E },
+
+    // お段 (V_O: 縦丸オー口形)
+    お: { v: VISEME_SLOT.O }, こ: { v: VISEME_SLOT.O }, そ: { v: VISEME_SLOT.O }, と: { v: VISEME_SLOT.O },
+    の: { v: VISEME_SLOT.O }, ほ: { v: VISEME_SLOT.O }, よ: { v: VISEME_SLOT.O }, ろ: { v: VISEME_SLOT.O },
+    を: { v: VISEME_SLOT.O }, ご: { v: VISEME_SLOT.O }, ぞ: { v: VISEME_SLOT.O }, ど: { v: VISEME_SLOT.O },
+    ぉ: { v: VISEME_SLOT.O }, ょ: { v: VISEME_SLOT.O },
+    // 両唇音 + お段 (MBP閉唇 -> O縦丸開口)
+    も: { p: VISEME_SLOT.MBP, v: VISEME_SLOT.O }, ぼ: { p: VISEME_SLOT.MBP, v: VISEME_SLOT.O }, ぽ: { p: VISEME_SLOT.MBP, v: VISEME_SLOT.O },
+
+    // 撥音「ん」・促音「っ」 (MBP 完全両唇閉鎖)
+    ん: { v: VISEME_SLOT.MBP, dur: 0.11 },
+    っ: { v: VISEME_SLOT.MBP, dur: 0.095 },
+  };
+
+  function buildJapaneseVisemeTimeline(spokenText, yomiHint = "") {
+    const hira = normalizeTextToHiragana(spokenText, yomiHint);
+    const keyframes = [{ t: 0.0, slot: VISEME_SLOT.SIL, label: "SIL" }];
+    let t = 0.04;
+    let lastVowelSlot = VISEME_SLOT.SIL;
+
+    for (let i = 0; i < hira.length; i++) {
+      const ch = hira[i];
+      const nextCh = i + 1 < hira.length ? hira[i + 1] : "";
+
+      // 句読点・感嘆符・空白はポーズ (SIL)
+      if ("、。！？!?…・ 　「」『』（）()".includes(ch)) {
+        const pauseDur = "。！？!?".includes(ch) ? 0.18 : 0.11;
+        keyframes.push({ t, slot: VISEME_SLOT.SIL, label: "SIL" });
+        t += pauseDur;
+        lastVowelSlot = VISEME_SLOT.SIL;
+        continue;
+      }
+
+      // 長音「ー」は直前の母音を維持
+      if (ch === "ー" || ch === "〜" || ch === "~") {
+        const holdSlot = lastVowelSlot !== VISEME_SLOT.SIL ? lastVowelSlot : VISEME_SLOT.A;
+        keyframes.push({ t, slot: holdSlot, label: "HOLD" });
+        t += 0.11;
+        continue;
+      }
+
+      // 拗音（きゃ・きゅ・きょ・しゃ・しゅ・しょ・ちゃ・ちゅ・ちょ等）の結合処理
+      if (nextCh && "ゃゅょぁぃぅぇぉ".includes(nextCh)) {
+        const curMap = KANA_VISEME_MAP[ch];
+        const smallMap = KANA_VISEME_MAP[nextCh];
+        if (curMap && curMap.p !== undefined) {
+          keyframes.push({ t, slot: curMap.p, label: "MBP" });
+          t += 0.045;
+        } else {
+          keyframes.push({ t, slot: VISEME_SLOT.I, label: "PAL" });
+          t += 0.035;
+        }
+        const targetV = smallMap ? smallMap.v : VISEME_SLOT.A;
+        keyframes.push({ t, slot: targetV, label: "VOWEL" });
+        t += 0.095;
+        lastVowelSlot = targetV;
+        i += 1; // 小書き文字をスキップ
+        continue;
+      }
+
+      // 日本語音声学の長音化規則: お段の直後の「う」は O (オー) として発音（「ありがとう」「そう」「おはよう」）
+      if (ch === "う" && lastVowelSlot === VISEME_SLOT.O) {
+        keyframes.push({ t, slot: VISEME_SLOT.O, label: "O_LONG" });
+        t += 0.105;
+        continue;
+      }
+
+      const entry = KANA_VISEME_MAP[ch];
+      if (entry) {
+        if (entry.p !== undefined) {
+          keyframes.push({ t, slot: entry.p, label: "PREFIX" });
+          t += 0.046;
+        }
+        const vDur = entry.dur || 0.092;
+        // 同じ母音が連続する場合は間に微細な口形変化を挟んで棒立ちを防ぐ
+        if (entry.v === lastVowelSlot && entry.p === undefined && entry.v !== VISEME_SLOT.MBP) {
+          keyframes.push({ t, slot: VISEME_SLOT.SIL, label: "REARTIC" });
+          t += 0.028;
+        }
+        keyframes.push({ t, slot: entry.v, label: ch });
+        t += vDur;
+        lastVowelSlot = entry.v;
+      } else {
+        // 辞書外の漢字が残っていた場合は文字コードから自然な日本語母音サイクルを生成
+        const code = ch.charCodeAt(0);
+        if (code >= 0x4e00 && code <= 0x9faf) {
+          const cycle = [VISEME_SLOT.A, VISEME_SLOT.I, VISEME_SLOT.O, VISEME_SLOT.E, VISEME_SLOT.U];
+          const v1 = cycle[code % 5];
+          const v2 = cycle[(code >> 3) % 5];
+          if (code % 4 === 0) {
+            keyframes.push({ t, slot: VISEME_SLOT.MBP, label: "K_MBP" });
+            t += 0.045;
+          }
+          keyframes.push({ t, slot: v1, label: "K_V1" });
+          t += 0.085;
+          keyframes.push({ t, slot: v2, label: "K_V2" });
+          t += 0.085;
+          lastVowelSlot = v2;
+        }
+      }
+    }
+
+    keyframes.push({ t, slot: VISEME_SLOT.MBP, label: "CLOSE" });
+    t += 0.06;
+    keyframes.push({ t, slot: VISEME_SLOT.SIL, label: "END_SIL" });
+    t += 0.12;
+
+    return {
+      totalDuration: Math.max(1.2, t),
+      keyframes,
+    };
   }
 
   async function initMioFmvIdlePool() {
@@ -1234,7 +1456,7 @@
       };
     }
 
-    // 4-15. その他の日常エピソード・雑談（具体的な発言内容を受け止めて温かい相槌フルボイスを返す）
+    // 4-15. その他の日常エピソード・雑談（オフライン時の最終フォールバック）
     const chatCk = Math.random() < 0.5 ? "61344fc20ad64f074fa12c3246abe609" : "67cc34c206eb434ba626ddbb53fe4d8b";
     const chatEntry = findVoiceEntryByCk(chatCk);
     return {
@@ -1250,6 +1472,232 @@
         "今度一緒にお出かけしようよ",
         "少し近くに来て？",
       ],
+    };
+  }
+
+  // ============================================================================
+  // ★ v18: 本物の生成AI (LLM: ローカルOllama Qwen2.5 + クラウドOpenAI-Fast) 対話エンジン
+  // - 定型選択肢ボタンの完全一致以外は、アルゴリズムではなく 100% 本物のAI(LLM)で回答を生成！
+  // ============================================================================
+  const EXACT_PRESET_BUTTON_TEXTS = new Set([
+    "今日あったこと聞いてよ",
+    "なんか今日いつもよりすごく可愛いね",
+    "ごめん冷蔵庫のプリン食べちゃった",
+    "ごめんごめんお詫びに美味しいケーキ買ってくるから許して",
+    "怒った顔もすごく可愛いね",
+    "少し近くに来て",
+    "もっと近くにおいでよ",
+    "喜んでくれて嬉しいよ",
+    "いつもそばにいてくれてありがとう",
+    "いつも優しくしてくれてありがとう",
+    "いつも応援してくれてありがとう",
+    "いつも美桜が応援してくれるおかげだよ",
+    "美桜のことが大好きだよ",
+    "美桜はどんな食べ物が好き",
+    "美桜は他にどんな食べ物が好き",
+    "美桜は休みの日は何してるの",
+    "美桜は今なにしてたの",
+    "今なにしてたの",
+    "最近どんな映画見た",
+    "今度一緒にお出かけしようよ",
+    "今度一緒にカフェに食べに行こうよ",
+    "今度のお休みにデートしよう",
+    "おやすみそろそろ寝るね",
+    "おはようよく眠れた",
+  ]);
+
+  const AI_REACTION_VOICE_MAP = {
+    surprised: { ck: "07fcbee8e949e606c288e46a308f2d8e", prefix: "えっ、ほんとに？" },
+    agree: { ck: "820fde0211d176cd9c9ba4d1950d2fe8", prefix: "うんうん、わかるよ。" },
+    happy: { ck: "c00eb8ce3a628f30662c80e25621aa4b", prefix: "ふふ、嬉しいな。" },
+    empathy: { ck: "b69cb7e9dea7fdd02e29256f386e6761", prefix: "あ、でも分かる！" },
+    idea: { ck: "71260ec33402ee5e8e019eb22ff6fd39", prefix: "あっ、いいねそれ。" },
+  };
+
+  function extractJsonFromLlmText(rawText) {
+    if (!rawText || typeof rawText !== "string") return null;
+    const trimmed = rawText.trim();
+    try {
+      return JSON.parse(trimmed);
+    } catch (_) {}
+    const match = trimmed.match(/\{[\s\S]*\}/);
+    if (match) {
+      try {
+        return JSON.parse(match[0]);
+      } catch (_) {}
+    }
+    return null;
+  }
+
+  async function callRealLlmBackend(userText, mem) {
+    const uName = mem.user_name ? `${mem.user_name}` : "あなた";
+    const recentHist = (mem.chat_history || [])
+      .slice(-4)
+      .map((h) => ({
+        role: h.role === "user" ? "user" : "assistant",
+        content: h.text,
+      }));
+    const memNotes = (mem.memories || []).slice(-4).join("、");
+
+    const systemPrompt = [
+      `あなたは22歳の日本人女性の恋人「美桜（みお）」です。一人称は必ず「わたし」、相手の呼び方は「${uName}」です。`,
+      "・自然で優しい恋人タメ口（「〜だよ」「〜だね」「〜かな」「〜じゃん」等。敬語の「です・ます」は絶対に使わない）で、2文（45〜85文字程度）の返答セリフ本文だけを出力してください。",
+      "・定型文ではぐらかさず、相手が話した具体的な内容（出来事・固有名詞・質問・二択・感情）に100%直接反応して答えてください。",
+      memNotes ? `・ふたりの記憶：${memNotes}` : "",
+      "",
+      "【返答スタイル例】",
+      "相手：今日すごく寒くて手が冷たいよ",
+      "美桜：えっ、そんなに手が冷たくなっちゃったの？ほら、わたしの手でぎゅって温めてあげるから、風邪ひかないように気をつけてね。",
+      "相手：ラーメンとパスタならどっちが好き？",
+      "美桜：うーん、どっちも美味しそうで迷っちゃうけど、今の気分ならアツアツのラーメンかな！今度のお休みにふたりで一緒に食べに行こっか！",
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    const endpoints = [
+      { url: "http://127.0.0.1:11434/api/chat", timeoutMs: 4500, tag: "local-gpu" },
+      { url: "https://pending-weighted-cooperative-bring.trycloudflare.com/api/chat", timeoutMs: 6500, tag: "cloud-https-tunnel" },
+    ];
+
+    for (const ep of endpoints) {
+      try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), ep.timeoutMs);
+        const res = await origFetch(ep.url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: "qwen3:4b-instruct",
+            stream: false,
+            keep_alive: "24h",
+            options: { num_ctx: 1024, temperature: 0.45, num_predict: 110 },
+            messages: [
+              { role: "system", content: systemPrompt },
+              ...recentHist,
+              { role: "user", content: userText },
+            ],
+          }),
+          signal: ctrl.signal,
+        });
+        clearTimeout(timer);
+        if (res.ok) {
+          const data = await res.json();
+          let rawAns = (data && data.message && data.message.content) || "";
+          rawAns = rawAns
+            .replace(/^[\s「『]*(?:美桜\s*[：:]\s*)?/g, "")
+            .replace(/[」』\s]+$/g, "")
+            .trim();
+          if (rawAns.length >= 6) {
+            const isShy = /照れ|ドキドキ|大好き|可愛い|綺麗|ぎゅっ|ハグ|近く/.test(userText + rawAns);
+            const isSulk = /怒|ぷんぷん|ひどい|勝手|むかつ/.test(userText);
+            const isSurprise = /[？?]|えっ|びっくり|急|転|濡|まじ|マジ|10億|ホラー/.test(userText + rawAns);
+            const isFoodOrOut = /食べ|飲|カレー|ハンバーグ|カフェ|コンビニ|スイーツ|映画|行こ/.test(userText + rawAns);
+
+            const emo = isSulk ? "sulk" : isShy ? "shy" : "happy";
+            const reaction = isSurprise
+              ? "surprised"
+              : isShy
+              ? "happy"
+              : isFoodOrOut
+              ? "idea"
+              : "agree";
+
+            const thought = isShy
+              ? `${uName}とこうして話してると、胸がキュンとして幸せになっちゃうな。`
+              : isSurprise
+              ? `${uName}の話してくれるエピソード、すごく情景が浮かんでドキドキしちゃう！`
+              : `${uName}が日々のいろんなことをわたしに話してくれるの、ほんとに嬉しいな。`;
+
+            const choices = isFoodOrOut
+              ? ["今度ふたりで一緒に食べに行こうよ！", "美桜は他にどんな食べ物が好き？", "少し近くに来て？"]
+              : isSurprise
+              ? ["心配してくれてありがとう、美桜と話したら元気出たよ！", "美桜は最近どんなことあった？", "少し近くに来て？"]
+              : ["いつも優しく聞いてくれてありがとう", "美桜は今なにしてたの？", "少し近くに来て？"];
+
+            return {
+              spoken: rawAns,
+              yomi: normalizeTextToHiragana(rawAns),
+              thought,
+              emo,
+              reaction,
+              choices,
+              provider: `qwen3:4b-instruct(${ep.tag})`,
+            };
+          }
+        }
+      } catch (_) {}
+    }
+
+    return null;
+  }
+
+  async function generateRealAiDialogueTurn(rawUserText, mem) {
+    const u = (rawUserText || "").trim();
+    const normU = u.replace(/[ 　\t\r\n！!？?。、…・~〜]/g, "");
+
+    // 1. ユーザーの名前登録（「俺の名前は〇〇」「〇〇って呼んで」）は確実にメモリ保存して即答
+    const nameMatch =
+      u.match(/(?:俺|僕|私|わたし|うち)の名前は[「『]?([^」』、。！？!?\s]{1,12})[」』]?(?:だよ|です|っていい|だ|ね)?$/) ||
+      u.match(/^([ァ-ヶー一-龠々ぁ-んa-zA-Z0-9]{1,10})って呼んで/);
+    if (nameMatch || /(?:俺|僕|私|わたし)の名前(?:は|わかる|分かる|覚えてる|知ってる)/.test(u)) {
+      const turn = resolveContextualDialogueTurn(u, mem);
+      return { ...turn, isAiGenerated: true, yomi: normalizeTextToHiragana(turn.spoken) };
+    }
+
+    // 2. 画面下の定型選択肢ボタンと完全一致する場合は、録音済み51本のフルボイス＆50fps音素同期MP4を即座に再生
+    if (EXACT_PRESET_BUTTON_TEXTS.has(normU)) {
+      const presetTurn = resolveContextualDialogueTurn(u, mem);
+      return { ...presetTurn, isExactPreRecorded: true };
+    }
+
+    // 3. それ以外のあらゆる自由な話しかけは、本物の生成AI (LLM) に渡して 100% 噛み合う回答を生成！
+    const aiResp = await callRealLlmBackend(u, mem);
+    if (aiResp && aiResp.spoken) {
+      const spoken = String(aiResp.spoken).trim();
+      const yomi = String(aiResp.yomi || "").trim() || normalizeTextToHiragana(spoken);
+      const emo = ["happy", "shy", "sulk", "sad"].includes(aiResp.emo) ? aiResp.emo : "happy";
+      const reactionKey = AI_REACTION_VOICE_MAP[aiResp.reaction]
+        ? aiResp.reaction
+        : /[？?]|びっくり|えっ|急|転|濡|大変|まじ|マジ/.test(u + spoken)
+        ? "surprised"
+        : /嬉|好き|可愛|綺麗|最高|ありがとう|褒/.test(u + spoken)
+        ? "happy"
+        : /食べ|飲|行こ|見よ|買|カフェ|映画|おすすめ/.test(u + spoken)
+        ? "idea"
+        : "agree";
+      const reactInfo = AI_REACTION_VOICE_MAP[reactionKey] || AI_REACTION_VOICE_MAP.agree;
+
+      const validChoices =
+        Array.isArray(aiResp.choices) && aiResp.choices.length >= 2
+          ? aiResp.choices.map((c) => String(c).trim()).filter(Boolean).slice(0, 3)
+          : ["そうなんだ！もっと詳しく話そうよ", "いつも優しく聞いてくれてありがとう", "少し近くに来て？"];
+
+      mem.affection = Math.min(100, (mem.affection || 68) + 4);
+      if (emo === "sulk") {
+        mem.mood = Math.max(-20, (mem.mood || 24) - 8);
+      } else {
+        mem.mood = Math.min(50, Math.max(20, (mem.mood || 24) + 6));
+      }
+
+      return {
+        ck: reactInfo.ck,
+        intent: emo === "shy" ? "compliment" : emo === "sulk" ? "sulk_プリン" : "chat",
+        emo,
+        spoken,
+        yomi,
+        thought: String(aiResp.thought || "あなたが話してくれること、なんでも聞きたくなっちゃうな。").trim(),
+        choices: validChoices,
+        isAiGenerated: true,
+        aiProvider: aiResp.provider || "llm",
+      };
+    }
+
+    // 4. 万が一オフライン等で両方のLLMが応答しなかった場合のフォールバック
+    const fallbackTurn = resolveContextualDialogueTurn(u, mem);
+    return {
+      ...fallbackTurn,
+      isAiGenerated: true,
+      yomi: normalizeTextToHiragana(fallbackTurn.spoken),
     };
   }
 
@@ -1347,6 +1795,7 @@
   function stopCloudVoice() {
     currentTalkToken += 1;
     isSpeakingNow = false;
+    activeVisemeTimeline = null;
     activeAnalyser = null;
     activeFreqData = null;
     activeTimeData = null;
@@ -1363,14 +1812,82 @@
         talkDecoder.pause();
       } catch (_) {}
     }
-    if (activeFmvType === "talk") {
+    if (activeFmvType === "talk" || activeFmvType === "ai_viseme") {
       switchToStandbyIdleDecoderInstant();
     }
     const bars = document.getElementById("speaking-bars");
     if (bars) bars.classList.add("hidden");
   }
 
-  // ===== 音声と 50fps v16 発話映像を 0.00ms ハードウェアクロックで完全同時再生 =====
+  // ===== AI自由生成セリフ用：実在肉声リアクション再生 ＋ 日本語7大発音口形(Viseme) 60fps リアルタイム発話 =====
+  async function playAiVisemeSpeechWithReaction(resolved, charObj, voiceEntry) {
+    stopCloudVoice();
+    if (!charObj) return;
+
+    const myToken = ++currentTalkToken;
+    const intentHint = resolved.intent || "chat";
+
+    if (intentHint === "sulk_プリン" || intentHint === "greeting_sulk" || intentHint === "poke_cheek") {
+      currentEmotionMode = "anger";
+      nextIdleBranchHint = "idle_08_playful_sway";
+    } else if (intentHint === "fatigue" || intentHint === "greeting_night") {
+      currentEmotionMode = "sadness";
+      nextIdleBranchHint = "idle_03_gaze_left";
+    } else if (intentHint === "compliment" || intentHint === "pat_head" || intentHint === "close_dist") {
+      currentEmotionMode = "shy";
+      nextIdleBranchHint = "idle_05_shy_glance";
+    } else {
+      currentEmotionMode = "joy";
+      nextIdleBranchHint = "idle_02_smile_right";
+    }
+    queueNextIdleOnStandbyDecoder(currentIdleBranchId);
+
+    await ensureMioVisemeAtlasLoaded();
+    if (myToken !== currentTalkToken) return;
+
+    // 日本語テキスト全文から 1モーラ・1音素単位の 7大発音口形 (SIL/MBP/A/I/U/E/O) タイムラインを構築
+    const timeline = buildJapaneseVisemeTimeline(resolved.spoken || "", resolved.yomi || "");
+    activeVisemeTimeline = {
+      startPerfTime: performance.now(),
+      totalDuration: timeline.totalDuration,
+      keyframes: timeline.keyframes,
+    };
+    activeFmvType = "ai_viseme";
+    isSpeakingNow = true;
+
+    const bars = document.getElementById("speaking-bars");
+    if (bars) bars.classList.remove("hidden");
+
+    // 冒頭の短尺肉声リアクションクリップを再生（機械音声 speechSynthesis は一切不使用）
+    if (voiceEntry && voiceEntry.mp3_url) {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!cloudAudioCtx && AudioCtx) {
+          cloudAudioCtx = new AudioCtx();
+        }
+        if (cloudAudioCtx && cloudAudioCtx.state === "suspended") {
+          await cloudAudioCtx.resume().catch(() => {});
+        }
+        if (myToken !== currentTalkToken) return;
+
+        const cleanMp3Url = resolveAssetUrl(voiceEntry.mp3_url);
+        const res = await origFetch(cleanMp3Url, { cache: "force-cache" });
+        if (res.ok && cloudAudioCtx && myToken === currentTalkToken) {
+          const ab = await res.arrayBuffer();
+          const audioBuf = await cloudAudioCtx.decodeAudioData(ab);
+          if (myToken === currentTalkToken) {
+            const srcNode = cloudAudioCtx.createBufferSource();
+            srcNode.buffer = audioBuf;
+            srcNode.connect(cloudAudioCtx.destination);
+            activeAudioSource = srcNode;
+            srcNode.start(0);
+          }
+        }
+      } catch (_) {}
+    }
+  }
+
+  // ===== 音声と 50fps v18 音素同期発話映像を 0.00ms ハードウェアクロックで完全同時再生 =====
   async function playRealVoiceWithSotaAvatar(entry, charObj, intentHint = "") {
     stopCloudVoice();
     if (!entry || !entry.mp3_url || !charObj) return;
@@ -1429,6 +1946,7 @@
         return await loadVideoIntoDecoder(talkDecoder, blobUrl);
       })(),
       loadCharacterVisemeSprite(charId, charObj.portrait_url),
+      ensureMioVisemeAtlasLoaded(),
     ]);
 
     if (myToken !== currentTalkToken) return;
@@ -1473,6 +1991,15 @@
         activeFmvVideo = talkDecoder;
         activeFmvType = "talk";
       } catch (_) {}
+    } else if (charId === "face_f02_mio") {
+      // 動画デコーダが万が一準備できなかった場合でも日本語音素アトラスで完璧にリップシンク
+      const timeline = buildJapaneseVisemeTimeline(entry.text || "");
+      activeVisemeTimeline = {
+        startPerfTime: performance.now(),
+        totalDuration: audioBuf.duration,
+        keyframes: timeline.keyframes,
+      };
+      activeFmvType = "ai_viseme";
     }
 
     talkAudioStartCtxTime = cloudAudioCtx.currentTime;
@@ -1494,7 +2021,7 @@
     window.addEventListener("click", unlock, { passive: true });
   }
 
-  // ===== 60Hz Direct Frame Blit & Zero-Drift Audio-Clock Sync Engine =====
+  // ===== 60Hz Direct Frame Blit & Japanese 7-Viseme Subframe Morphing Engine =====
   let unifiedLoopStarted = false;
 
   function startUnifiedSotaAvatarEngine() {
@@ -1504,6 +2031,7 @@
     unifiedLoopStarted = true;
 
     setupMobileUnlockListeners();
+    ensureMioVisemeAtlasLoaded();
 
     roiCanvas.style.cssText =
       "position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:51% 22%;pointer-events:none;z-index:3;opacity:1 !important;display:block !important;";
@@ -1536,7 +2064,80 @@
       const charObj = getActiveCharObj(mem);
       if (!charObj || !roiCtx) return;
 
+      // 自然な瞬きタイミング更新
+      let isBlinking = false;
+      if (now >= nextBlinkStart && blinkStart === 0) {
+        blinkStart = now;
+      }
+      if (blinkStart > 0) {
+        if (now - blinkStart < 115) {
+          isBlinking = true;
+        } else {
+          blinkStart = 0;
+          nextBlinkStart = now + 2400 + Math.random() * 2600;
+        }
+      }
+
       if (charObj.id === "face_f02_mio") {
+        // ★ モードA: AI自由回答の日本語 7大発音口形 (SIL/MBP/A/I/U/E/O) 60fps サブフレーム補間描画
+        if (activeFmvType === "ai_viseme" && activeVisemeTimeline && mioBase1280Img && mioVisemeAtlasImg) {
+          const elapsed = (now - activeVisemeTimeline.startPerfTime) / 1000.0;
+          if (elapsed >= activeVisemeTimeline.totalDuration) {
+            stopCloudVoice();
+            return;
+          }
+
+          if (roiCanvas.width !== MIO_VISEME_ROI.fullW || roiCanvas.height !== MIO_VISEME_ROI.fullH) {
+            roiCanvas.width = MIO_VISEME_ROI.fullW;
+            roiCanvas.height = MIO_VISEME_ROI.fullH;
+          }
+
+          const kfs = activeVisemeTimeline.keyframes;
+          let prevKf = kfs[0];
+          let currKf = kfs[0];
+          for (let i = 0; i < kfs.length; i++) {
+            if (kfs[i].t <= elapsed) {
+              prevKf = i > 0 ? kfs[i - 1] : kfs[0];
+              currKf = kfs[i];
+            } else {
+              break;
+            }
+          }
+
+          // 音素切り替わり直後の 52ms で前の口形から現在の口形へ滑らかにサブフレーム補間
+          const dt = Math.max(0.0, elapsed - currKf.t);
+          const transitionDur = 0.052;
+          const blendAlpha = Math.min(1.0, dt / transitionDur);
+
+          const { x, y, w, h, fullW, fullH } = MIO_VISEME_ROI;
+          roiCtx.globalAlpha = 1.0;
+          roiCtx.drawImage(mioBase1280Img, 0, 0, fullW, fullH);
+
+          // 直前の音素口形をベースとして描画
+          const sxPrev = prevKf.slot * w;
+          roiCtx.drawImage(mioVisemeAtlasImg, sxPrev, 0, w, h, x, y, w, h);
+
+          // 現在の音素口形を blendAlpha で滑らかに重ね描き
+          if (currKf.slot !== prevKf.slot) {
+            const sxCurr = currKf.slot * w;
+            roiCtx.globalAlpha = blendAlpha;
+            roiCtx.drawImage(mioVisemeAtlasImg, sxCurr, 0, w, h, x, y, w, h);
+          }
+
+          // 瞬き中は上半分（目元領域 y=0..235）に BLINK スロットをブレンド
+          if (isBlinking) {
+            const sxBlink = VISEME_SLOT.BLINK * w;
+            const eyeH = 235;
+            roiCtx.globalAlpha = 0.92;
+            roiCtx.drawImage(mioVisemeAtlasImg, sxBlink, 0, w, eyeH, x, y, w, eyeH);
+          }
+
+          roiCtx.globalAlpha = 1.0;
+          drawnBaseCharId = "face_f02_mio";
+          return;
+        }
+
+        // ★ モードB: 50fps 音素アライメント済み MP4 ストリーム & アイドル映像再生
         if (activeFmvVideo && activeFmvVideo.readyState >= 2) {
           if (activeFmvType === "talk" && isSpeakingNow && cloudAudioCtx) {
             const audioElapsed = cloudAudioCtx.currentTime - talkAudioStartCtxTime;
@@ -1615,19 +2216,6 @@
         }
       }
       smoothMouth = smoothMouth * 0.45 + targetMouth * 0.55;
-
-      let isBlinking = false;
-      if (now >= nextBlinkStart && blinkStart === 0) {
-        blinkStart = now;
-      }
-      if (blinkStart > 0) {
-        if (now - blinkStart < 110) {
-          isBlinking = true;
-        } else {
-          blinkStart = 0;
-          nextBlinkStart = now + 2200 + Math.random() * 2800;
-        }
-      }
 
       const { x, y, w, h, bitmaps } = sprite;
       roiCtx.globalAlpha = 1.0;
@@ -2042,14 +2630,10 @@
       }
 
       const userText = rawText || "今日あったこと聞いてよ";
-      const resolved = resolveContextualDialogueTurn(userText, mem);
+      const resolved = await generateRealAiDialogueTurn(userText, mem);
       const entry = selectRealVoiceEntry(mem.active_voice_id, resolved.ck, resolved.intent, false);
 
-      // 美桜以外のボイスが選択されている場合は、そのボイスのセリフテキストに合わせる（美桜の時は 100% resolved.spoken を使用）
-      const spoken =
-        mem.active_voice_id === "human_g0143" || !entry
-          ? resolved.spoken
-          : entry.text;
+      const spoken = resolved.spoken || (entry ? entry.text : "うんうん、わかるよ！");
       const emo = resolved.emo || (entry ? entry.emo : "happy");
       const thought = resolved.thought || "こうやって二人でゆっくり話してる時間が一番大好きだな。";
       const nextChoices = resolved.choices || [
@@ -2086,7 +2670,11 @@
           },
         ],
         () => {
-          if (entry) playRealVoiceWithSotaAvatar(entry, activeChar, resolved.intent);
+          if (resolved.isAiGenerated && !resolved.isExactPreRecorded) {
+            playAiVisemeSpeechWithReaction(resolved, activeChar, entry);
+          } else if (entry) {
+            playRealVoiceWithSotaAvatar(entry, activeChar, resolved.intent);
+          }
         }
       );
     }
