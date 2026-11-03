@@ -10,8 +10,12 @@
 (function () {
   "use strict";
 
-  const ASSET_VER = "28";
+  const ASSET_VER = "29";
   const STORAGE_KEY_MEM = "pw_cloud_v9_memory";
+  const LIVE_AI_ENDPOINTS = [
+    { url: "http://127.0.0.1:8000/api/live_ai_talk", timeoutMs: 12000, tag: "local-live-3d" },
+    { url: "https://round-fri-roses-coupled.trycloudflare.com/api/live_ai_talk", timeoutMs: 15000, tag: "cloud-live-3d" },
+  ];
 
   let catalogMeta = null;
   let voiceManifest = null;
@@ -1529,37 +1533,29 @@
     return null;
   }
 
-  async function callRealLlmBackend(userText, mem) {
-    const uName = mem.user_name ? `${mem.user_name}` : "あなた";
+  function b64ToMediaBlobUrl(b64, mimeType) {
+    if (!b64 || typeof b64 !== "string") return "";
+    try {
+      const bin = atob(b64);
+      const len = bin.length;
+      const u8 = new Uint8Array(len);
+      for (let i = 0; i < len; i++) u8[i] = bin.charCodeAt(i);
+      const blob = new Blob([u8], { type: mimeType });
+      return URL.createObjectURL(blob);
+    } catch (_) {
+      return "";
+    }
+  }
+
+  async function callLiveAiFullVoiceBackend(userText, mem) {
     const recentHist = (mem.chat_history || [])
-      .slice(-4)
+      .slice(-6)
       .map((h) => ({
         role: h.role === "user" ? "user" : "assistant",
-        content: h.text,
+        text: h.text || "",
       }));
-    const memNotes = (mem.memories || []).slice(-4).join("、");
 
-    const systemPrompt = [
-      `あなたは22歳の日本人女性の恋人「美桜（みお）」です。一人称は必ず「わたし」、相手の呼び方は「${uName}」です。`,
-      "・自然で優しい恋人タメ口（「〜だよ」「〜だね」「〜かな」「〜じゃん」等。敬語の「です・ます」は絶対に使わない）で、2文（45〜85文字程度）の返答セリフ本文だけを出力してください。",
-      "・定型文ではぐらかさず、相手が話した具体的な内容（出来事・固有名詞・質問・二択・感情）に100%直接反応して答えてください。",
-      memNotes ? `・ふたりの記憶：${memNotes}` : "",
-      "",
-      "【返答スタイル例】",
-      "相手：今日すごく寒くて手が冷たいよ",
-      "美桜：えっ、そんなに手が冷たくなっちゃったの？ほら、わたしの手でぎゅって温めてあげるから、風邪ひかないように気をつけてね。",
-      "相手：ラーメンとパスタならどっちが好き？",
-      "美桜：うーん、どっちも美味しそうで迷っちゃうけど、今の気分ならアツアツのラーメンかな！今度のお休みにふたりで一緒に食べに行こっか！",
-    ]
-      .filter(Boolean)
-      .join("\n");
-
-    const endpoints = [
-      { url: "http://127.0.0.1:11434/api/chat", timeoutMs: 4500, tag: "local-gpu" },
-      { url: "https://pending-weighted-cooperative-bring.trycloudflare.com/api/chat", timeoutMs: 6500, tag: "cloud-https-tunnel" },
-    ];
-
-    for (const ep of endpoints) {
+    for (const ep of LIVE_AI_ENDPOINTS) {
       try {
         const ctrl = new AbortController();
         const timer = setTimeout(() => ctrl.abort(), ep.timeoutMs);
@@ -1567,67 +1563,37 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            model: "qwen3:4b-instruct",
-            stream: false,
-            keep_alive: "24h",
-            options: { num_ctx: 1024, temperature: 0.45, num_predict: 110 },
-            messages: [
-              { role: "system", content: systemPrompt },
-              ...recentHist,
-              { role: "user", content: userText },
-            ],
+            text: userText,
+            history: recentHist,
+            partner_name: mem.partner_name || "美桜",
+            partner_gender: mem.partner_gender || "female",
+            first_person: mem.first_person || "わたし",
+            user_name: mem.user_name || "",
+            voice_id: mem.active_voice_id || "human_g0143",
+            scene: mem.time_scene || "evening",
           }),
           signal: ctrl.signal,
         });
         clearTimeout(timer);
         if (res.ok) {
           const data = await res.json();
-          let rawAns = (data && data.message && data.message.content) || "";
-          rawAns = rawAns
-            .replace(/^[\s「『]*(?:美桜\s*[：:]\s*)?/g, "")
-            .replace(/[」』\s]+$/g, "")
-            .trim();
-          if (rawAns.length >= 6) {
-            const isShy = /照れ|ドキドキ|大好き|可愛い|綺麗|ぎゅっ|ハグ|近く/.test(userText + rawAns);
-            const isSulk = /怒|ぷんぷん|ひどい|勝手|むかつ/.test(userText);
-            const isSurprise = /[？?]|えっ|びっくり|急|転|濡|まじ|マジ|10億|ホラー/.test(userText + rawAns);
-            const isFoodOrOut = /食べ|飲|カレー|ハンバーグ|カフェ|コンビニ|スイーツ|映画|行こ/.test(userText + rawAns);
-
-            const emo = isSulk ? "sulk" : isShy ? "shy" : "happy";
-            const reaction = isSurprise
-              ? "surprised"
-              : isShy
-              ? "happy"
-              : isFoodOrOut
-              ? "idea"
-              : "agree";
-
-            const thought = isShy
-              ? `${uName}とこうして話してると、胸がキュンとして幸せになっちゃうな。`
-              : isSurprise
-              ? `${uName}の話してくれるエピソード、すごく情景が浮かんでドキドキしちゃう！`
-              : `${uName}が日々のいろんなことをわたしに話してくれるの、ほんとに嬉しいな。`;
-
-            const choices = isFoodOrOut
-              ? ["今度ふたりで一緒に食べに行こうよ！", "美桜は他にどんな食べ物が好き？", "少し近くに来て？"]
-              : isSurprise
-              ? ["心配してくれてありがとう、美桜と話したら元気出たよ！", "美桜は最近どんなことあった？", "少し近くに来て？"]
-              : ["いつも優しく聞いてくれてありがとう", "美桜は今なにしてたの？", "少し近くに来て？"];
-
+          if (data && data.ok && data.spoken && data.mp3_b64) {
+            const liveMp3BlobUrl = b64ToMediaBlobUrl(data.mp3_b64, "audio/mpeg");
+            const liveMp4BlobUrl = data.mp4_b64 ? b64ToMediaBlobUrl(data.mp4_b64, "video/mp4") : "";
             return {
-              spoken: rawAns,
-              yomi: normalizeTextToHiragana(rawAns),
-              thought,
-              emo,
-              reaction,
-              choices,
-              provider: `qwen3:4b-instruct(${ep.tag})`,
+              ck: data.ck || "",
+              spoken: String(data.spoken).trim(),
+              thought: String(data.thought || "こうしてゆっくり話せるのが一番嬉しいな。").trim(),
+              emo: data.emo || "happy",
+              choices: Array.isArray(data.choices) ? data.choices : null,
+              liveMp3BlobUrl,
+              liveMp4BlobUrl,
+              provider: ep.tag,
             };
           }
         }
       } catch (_) {}
     }
-
     return null;
   }
 
@@ -1635,41 +1601,35 @@
     const u = (rawUserText || "").trim();
     const normU = u.replace(/[ 　\t\r\n！!？?。、…・~〜]/g, "");
 
-    // 1. ユーザーの名前登録（「俺の名前は〇〇」「〇〇って呼んで」）は確実にメモリ保存して即答
-    const nameMatch =
-      u.match(/(?:俺|僕|私|わたし|うち)の名前は[「『]?([^」』、。！？!?\s]{1,12})[」』]?(?:だよ|です|っていい|だ|ね)?$/) ||
-      u.match(/^([ァ-ヶー一-龠々ぁ-んa-zA-Z0-9]{1,10})って呼んで/);
-    if (nameMatch || /(?:俺|僕|私|わたし)の名前(?:は|わかる|分かる|覚えてる|知ってる)/.test(u)) {
-      const turn = resolveContextualDialogueTurn(u, mem);
-      return { ...turn, isAiGenerated: true, yomi: normalizeTextToHiragana(turn.spoken) };
-    }
-
-    // 2. 画面下の定型選択肢ボタンと完全一致する場合は、録音済み51本のフルボイス＆50fps音素同期MP4を即座に再生
+    // 1. 画面下の定型選択肢ボタンと完全一致する場合は、録音済み53本のフルボイス＆純粋3D MP4を0.05秒で即再生
     if (EXACT_PRESET_BUTTON_TEXTS.has(normU)) {
       const presetTurn = resolveContextualDialogueTurn(u, mem);
       return { ...presetTurn, isExactPreRecorded: true };
     }
 
-    // 3. それ以外のあらゆる自由な話しかけは、本物の生成AI (LLM) に渡して 100% 噛み合う回答を生成！
-    const aiResp = await callRealLlmBackend(u, mem);
-    if (aiResp && aiResp.spoken) {
-      const spoken = String(aiResp.spoken).trim();
-      const yomi = String(aiResp.yomi || "").trim() || normalizeTextToHiragana(spoken);
-      const emo = ["happy", "shy", "sulk", "sad"].includes(aiResp.emo) ? aiResp.emo : "happy";
-      const reactionKey = AI_REACTION_VOICE_MAP[aiResp.reaction]
-        ? aiResp.reaction
-        : /[？?]|びっくり|えっ|急|転|濡|大変|まじ|マジ/.test(u + spoken)
-        ? "surprised"
-        : /嬉|好き|可愛|綺麗|最高|ありがとう|褒/.test(u + spoken)
-        ? "happy"
-        : /食べ|飲|行こ|見よ|買|カフェ|映画|おすすめ/.test(u + spoken)
-        ? "idea"
-        : "agree";
-      const reactInfo = AI_REACTION_VOICE_MAP[reactionKey] || AI_REACTION_VOICE_MAP.agree;
+    // 2. 名前登録（「俺の名前は〇〇」「〇〇って呼んで」）はメモリに記録した上で Live AI で名前を呼ぶフルボイス生成へ渡す
+    const nameMatch =
+      u.match(/(?:俺|僕|私|わたし|うち)の名前は[「『]?([^」』、。！？!?\s]{1,12})[」』]?(?:だよ|です|っていい|だ|ね)?$/) ||
+      u.match(/^([ァ-ヶー一-龠々ぁ-んa-zA-Z0-9]{1,10})って呼んで/);
+    if (nameMatch) {
+      const newName = nameMatch[1].trim();
+      if (newName && newName.length <= 12) {
+        mem.user_name = newName;
+        const note = `あなたの名前は「${newName}」`;
+        if (!(mem.memories || []).includes(note)) {
+          mem.memories = [...(mem.memories || []), note].slice(-12);
+        }
+      }
+    }
 
+    // 3. あらゆる自由な話しかけに対して、AI回答生成 ＋ 回答全文のキャラ肉声合成 (Qwen3-TTS) ＋ 純粋3D発話動画 (MP4) を取得！
+    const liveResp = await callLiveAiFullVoiceBackend(u, mem);
+    if (liveResp && liveResp.spoken && liveResp.liveMp3BlobUrl) {
+      const spoken = liveResp.spoken;
+      const emo = ["happy", "shy", "sulk", "sad", "normal", "sleepy"].includes(liveResp.emo) ? liveResp.emo : "happy";
       const validChoices =
-        Array.isArray(aiResp.choices) && aiResp.choices.length >= 2
-          ? aiResp.choices.map((c) => String(c).trim()).filter(Boolean).slice(0, 3)
+        Array.isArray(liveResp.choices) && liveResp.choices.length >= 2
+          ? liveResp.choices.map((c) => String(c).trim()).filter(Boolean).slice(0, 3)
           : ["そうなんだ！もっと詳しく話そうよ", "いつも優しく聞いてくれてありがとう", "少し近くに来て？"];
 
       mem.affection = Math.min(100, (mem.affection || 68) + 4);
@@ -1680,24 +1640,24 @@
       }
 
       return {
-        ck: reactInfo.ck,
+        ck: liveResp.ck || "live_ai",
         intent: emo === "shy" ? "compliment" : emo === "sulk" ? "sulk_プリン" : "chat",
         emo,
         spoken,
-        yomi,
-        thought: String(aiResp.thought || "あなたが話してくれること、なんでも聞きたくなっちゃうな。").trim(),
+        thought: liveResp.thought,
         choices: validChoices,
-        isAiGenerated: true,
-        aiProvider: aiResp.provider || "llm",
+        liveMp3BlobUrl: liveResp.liveMp3BlobUrl,
+        liveMp4BlobUrl: liveResp.liveMp4BlobUrl,
+        isLiveFullVoice3D: true,
+        aiProvider: liveResp.provider,
       };
     }
 
-    // 4. 万が一オフライン等で両方のLLMが応答しなかった場合のフォールバック
+    // 4. 万が一オフライン等で Live AI サーバーに繋がらない場合は、53本の事前収録フル肉声＋純粋3D発話MP4から文脈一致クリップを返す（テキストと音声が100%一致）
     const fallbackTurn = resolveContextualDialogueTurn(u, mem);
     return {
       ...fallbackTurn,
-      isAiGenerated: true,
-      yomi: normalizeTextToHiragana(fallbackTurn.spoken),
+      isExactPreRecorded: true,
     };
   }
 
@@ -1819,78 +1779,10 @@
     if (bars) bars.classList.add("hidden");
   }
 
-  // ===== AI自由生成セリフ用：実在肉声リアクション再生 ＋ 日本語7大発音口形(Viseme) 60fps リアルタイム発話 =====
-  async function playAiVisemeSpeechWithReaction(resolved, charObj, voiceEntry) {
-    stopCloudVoice();
-    if (!charObj) return;
-
-    const myToken = ++currentTalkToken;
-    const intentHint = resolved.intent || "chat";
-
-    if (intentHint === "sulk_プリン" || intentHint === "greeting_sulk" || intentHint === "poke_cheek") {
-      currentEmotionMode = "anger";
-      nextIdleBranchHint = "idle_08_playful_sway";
-    } else if (intentHint === "fatigue" || intentHint === "greeting_night") {
-      currentEmotionMode = "sadness";
-      nextIdleBranchHint = "idle_03_gaze_left";
-    } else if (intentHint === "compliment" || intentHint === "pat_head" || intentHint === "close_dist") {
-      currentEmotionMode = "shy";
-      nextIdleBranchHint = "idle_05_shy_glance";
-    } else {
-      currentEmotionMode = "joy";
-      nextIdleBranchHint = "idle_02_smile_right";
-    }
-    queueNextIdleOnStandbyDecoder(currentIdleBranchId);
-
-    await ensureMioVisemeAtlasLoaded();
-    if (myToken !== currentTalkToken) return;
-
-    // 日本語テキスト全文から 1モーラ・1音素単位の 7大発音口形 (SIL/MBP/A/I/U/E/O) タイムラインを構築
-    const timeline = buildJapaneseVisemeTimeline(resolved.spoken || "", resolved.yomi || "");
-    activeVisemeTimeline = {
-      startPerfTime: performance.now(),
-      totalDuration: timeline.totalDuration,
-      keyframes: timeline.keyframes,
-    };
-    activeFmvType = "ai_viseme";
-    isSpeakingNow = true;
-
-    const bars = document.getElementById("speaking-bars");
-    if (bars) bars.classList.remove("hidden");
-
-    // 冒頭の短尺肉声リアクションクリップを再生（機械音声 speechSynthesis は一切不使用）
-    if (voiceEntry && voiceEntry.mp3_url) {
-      try {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if (!cloudAudioCtx && AudioCtx) {
-          cloudAudioCtx = new AudioCtx();
-        }
-        if (cloudAudioCtx && cloudAudioCtx.state === "suspended") {
-          await cloudAudioCtx.resume().catch(() => {});
-        }
-        if (myToken !== currentTalkToken) return;
-
-        const cleanMp3Url = resolveAssetUrl(voiceEntry.mp3_url);
-        const res = await origFetch(cleanMp3Url, { cache: "force-cache" });
-        if (res.ok && cloudAudioCtx && myToken === currentTalkToken) {
-          const ab = await res.arrayBuffer();
-          const audioBuf = await cloudAudioCtx.decodeAudioData(ab);
-          if (myToken === currentTalkToken) {
-            const srcNode = cloudAudioCtx.createBufferSource();
-            srcNode.buffer = audioBuf;
-            srcNode.connect(cloudAudioCtx.destination);
-            activeAudioSource = srcNode;
-            srcNode.start(0);
-          }
-        }
-      } catch (_) {}
-    }
-  }
-
-  // ===== 音声と 50fps v18 音素同期発話映像を 0.00ms ハードウェアクロックで完全同時再生 =====
+  // ===== 回答全文の実在人間肉声と 50fps 純粋 3D Neural 発話映像を 0.00ms ハードウェアクロックで完全同時再生 =====
   async function playRealVoiceWithSotaAvatar(entry, charObj, intentHint = "") {
     stopCloudVoice();
-    if (!entry || !entry.mp3_url || !charObj) return;
+    if (!entry || (!entry.mp3_url && !entry.liveMp3BlobUrl) || !charObj) return;
 
     const myToken = ++currentTalkToken;
 
@@ -1912,7 +1804,8 @@
     }
     queueNextIdleOnStandbyDecoder(currentIdleBranchId);
 
-    const cleanMp3Url = resolveAssetUrl(entry.mp3_url);
+    const isLiveBlob = Boolean(entry.liveMp3BlobUrl && entry.liveMp4BlobUrl);
+    const cleanMp3Url = isLiveBlob ? entry.liveMp3BlobUrl : resolveAssetUrl(entry.mp3_url);
     const charId = charObj.id || charObj.face_id || "face_f02_mio";
     const ck = entry.ck || "";
 
@@ -1926,13 +1819,17 @@
 
     ensureVideoDecoders();
 
-    const hasMioFmv = charId === "face_f02_mio" && ck && MIO_FMV_TALK_CKS.has(ck);
-    const talkRawUrl = hasMioFmv ? `assets/fmv_mio/talk_${ck}.mp4?v=${ASSET_VER}` : "";
+    const hasMioFmv = isLiveBlob || (charId === "face_f02_mio" && ck && MIO_FMV_TALK_CKS.has(ck));
+    const talkRawUrl = isLiveBlob
+      ? entry.liveMp4BlobUrl
+      : hasMioFmv
+      ? `assets/fmv_mio/talk_${ck}.mp4?v=${ASSET_VER}`
+      : "";
 
     const [audioBuf, talkReady] = await Promise.all([
       (async () => {
         try {
-          const res = await origFetch(cleanMp3Url, { cache: "force-cache" });
+          const res = await origFetch(cleanMp3Url, { cache: isLiveBlob ? "no-store" : "force-cache" });
           if (!res.ok || !cloudAudioCtx) return null;
           const ab = await res.arrayBuffer();
           return await cloudAudioCtx.decodeAudioData(ab);
@@ -1942,11 +1839,10 @@
       })(),
       (async () => {
         if (!hasMioFmv) return false;
-        const blobUrl = await fetchVideoBlobUrl(talkRawUrl);
+        const blobUrl = isLiveBlob ? entry.liveMp4BlobUrl : await fetchVideoBlobUrl(talkRawUrl);
         return await loadVideoIntoDecoder(talkDecoder, blobUrl);
       })(),
       loadCharacterVisemeSprite(charId, charObj.portrait_url),
-      ensureMioVisemeAtlasLoaded(),
     ]);
 
     if (myToken !== currentTalkToken) return;
@@ -1991,15 +1887,6 @@
         activeFmvVideo = talkDecoder;
         activeFmvType = "talk";
       } catch (_) {}
-    } else if (charId === "face_f02_mio") {
-      // 動画デコーダが万が一準備できなかった場合でも日本語音素アトラスで完璧にリップシンク
-      const timeline = buildJapaneseVisemeTimeline(entry.text || "");
-      activeVisemeTimeline = {
-        startPerfTime: performance.now(),
-        totalDuration: audioBuf.duration,
-        keyframes: timeline.keyframes,
-      };
-      activeFmvType = "ai_viseme";
     }
 
     talkAudioStartCtxTime = cloudAudioCtx.currentTime;
@@ -2079,65 +1966,7 @@
       }
 
       if (charObj.id === "face_f02_mio") {
-        // ★ モードA: AI自由回答の日本語 7大発音口形 (SIL/MBP/A/I/U/E/O) 60fps サブフレーム補間描画
-        if (activeFmvType === "ai_viseme" && activeVisemeTimeline && mioBase1280Img && mioVisemeAtlasImg) {
-          const elapsed = (now - activeVisemeTimeline.startPerfTime) / 1000.0;
-          if (elapsed >= activeVisemeTimeline.totalDuration) {
-            stopCloudVoice();
-            return;
-          }
-
-          if (roiCanvas.width !== MIO_VISEME_ROI.fullW || roiCanvas.height !== MIO_VISEME_ROI.fullH) {
-            roiCanvas.width = MIO_VISEME_ROI.fullW;
-            roiCanvas.height = MIO_VISEME_ROI.fullH;
-          }
-
-          const kfs = activeVisemeTimeline.keyframes;
-          let prevKf = kfs[0];
-          let currKf = kfs[0];
-          for (let i = 0; i < kfs.length; i++) {
-            if (kfs[i].t <= elapsed) {
-              prevKf = i > 0 ? kfs[i - 1] : kfs[0];
-              currKf = kfs[i];
-            } else {
-              break;
-            }
-          }
-
-          // 音素切り替わり直後の 52ms で前の口形から現在の口形へ滑らかにサブフレーム補間
-          const dt = Math.max(0.0, elapsed - currKf.t);
-          const transitionDur = 0.052;
-          const blendAlpha = Math.min(1.0, dt / transitionDur);
-
-          const { x, y, w, h, fullW, fullH } = MIO_VISEME_ROI;
-          roiCtx.globalAlpha = 1.0;
-          roiCtx.drawImage(mioBase1280Img, 0, 0, fullW, fullH);
-
-          // 直前の音素口形をベースとして描画
-          const sxPrev = prevKf.slot * w;
-          roiCtx.drawImage(mioVisemeAtlasImg, sxPrev, 0, w, h, x, y, w, h);
-
-          // 現在の音素口形を blendAlpha で滑らかに重ね描き
-          if (currKf.slot !== prevKf.slot) {
-            const sxCurr = currKf.slot * w;
-            roiCtx.globalAlpha = blendAlpha;
-            roiCtx.drawImage(mioVisemeAtlasImg, sxCurr, 0, w, h, x, y, w, h);
-          }
-
-          // 瞬き中は上半分（目元領域 y=0..235）に BLINK スロットをブレンド
-          if (isBlinking) {
-            const sxBlink = VISEME_SLOT.BLINK * w;
-            const eyeH = 235;
-            roiCtx.globalAlpha = 0.92;
-            roiCtx.drawImage(mioVisemeAtlasImg, sxBlink, 0, w, eyeH, x, y, w, eyeH);
-          }
-
-          roiCtx.globalAlpha = 1.0;
-          drawnBaseCharId = "face_f02_mio";
-          return;
-        }
-
-        // ★ モードB: 50fps 音素アライメント済み MP4 ストリーム & アイドル映像再生
+        // ★ 50fps 純粋 3D Neural MP4 ストリーム（2D引き延ばし0%・2Dブレンド0%）& アイドル映像再生
         if (activeFmvVideo && activeFmvVideo.readyState >= 2) {
           if (activeFmvType === "talk" && isSpeakingNow && cloudAudioCtx) {
             const audioElapsed = cloudAudioCtx.currentTime - talkAudioStartCtxTime;
@@ -2631,9 +2460,23 @@
 
       const userText = rawText || "今日あったこと聞いてよ";
       const resolved = await generateRealAiDialogueTurn(userText, mem);
-      const entry = selectRealVoiceEntry(mem.active_voice_id, resolved.ck, resolved.intent, false);
+      const entry = resolved.isLiveFullVoice3D
+        ? {
+            ck: resolved.ck,
+            text: resolved.spoken,
+            emo: resolved.emo || "happy",
+            mp3_url: resolved.liveMp3BlobUrl,
+            liveMp3BlobUrl: resolved.liveMp3BlobUrl,
+            liveMp4BlobUrl: resolved.liveMp4BlobUrl,
+          }
+        : selectRealVoiceEntry(mem.active_voice_id, resolved.ck, resolved.intent, false);
 
-      const spoken = resolved.spoken || (entry ? entry.text : "うんうん、わかるよ！");
+      // 回答テキストは必ず実際に再生されるフルボイス音声 (entry.text または Live AI spoken) と100%一致させる
+      const spoken = resolved.isLiveFullVoice3D
+        ? resolved.spoken
+        : entry && entry.text
+        ? entry.text
+        : resolved.spoken || "うんうん、わかるよ！";
       const emo = resolved.emo || (entry ? entry.emo : "happy");
       const thought = resolved.thought || "こうやって二人でゆっくり話してる時間が一番大好きだな。";
       const nextChoices = resolved.choices || [
@@ -2670,9 +2513,7 @@
           },
         ],
         () => {
-          if (resolved.isAiGenerated && !resolved.isExactPreRecorded) {
-            playAiVisemeSpeechWithReaction(resolved, activeChar, entry);
-          } else if (entry) {
+          if (entry) {
             playRealVoiceWithSotaAvatar(entry, activeChar, resolved.intent);
           }
         }
