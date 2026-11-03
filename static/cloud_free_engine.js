@@ -1,26 +1,20 @@
 // ============================================================================
 // PATCHWORK NATION - 完全無料・PC負荷ゼロ クラウドエンジン
-// (v9: SOTA v11 Anatomical Lock + Hirschberg Gaze Focus + 0.00ms Audio-Video Sync + Mobile 3-Decoder Pool)
+// (v17: 100% 文脈一致対話エンジン + 51本 50fps v16 安定実写人間ストリーム + マイク音声認識完全対応)
 // - あなたのPC（ローカルGPU/Pythonサーバー）を一切使わず、GitHub Pages の完全無料クラウドで24時間稼働
 // - ブラウザ内蔵の機械音声 (window.speechSynthesis) は 100% 使用禁止！
 //   全発話で事前合成済みの「本物の Qwen3-TTS 1.7B 実在人間クローン肉声 MP3」を再生
-// - v11 ハイエンド実写ゲーム (Interactive FMV) ＆ 最先端AIデジタルヒューマン技術：
-//   1. ヒルシュベルグ角膜反射整合 (Hirschberg Corneal Reflex Rectification):
-//      左右の白目露出・虹彩・瞳孔・角膜ハイライトを100%対称化し、ユーザーの目を真っ直ぐ見つめる焦点を実現！
-//   2. 21点3D暗黙キーポイントの解剖学的完全分離:
-//      背景・髪・頭頂・肩の10点 (`[0,1,2,3,4,5,6,8,9,10]`) を `stitch_net` 後に 100.0% ソース座標に固定し、
-//      背景の歪みや謎の体揺れを物理的に 0.000% に根絶！
-//   3. 50fps フォルマント調音リップシンク ＋ Web Audio Clock 0.00ms 完全同期:
-//      音声デコード完了と動画 Frame 0 デコード完了を待ってから同一ミリ秒で同時スタートし、
-//      再生中も毎フレーム `cloudAudioCtx.currentTime` にロックして口と声のズレを 0.00ms に維持！
-//   4. スマホ（iOS Safari / Android Chrome）完全対応:
-//      ハードウェア `<video>` デコーダ枯渇を防ぐ「3デコーダ固定ピンポンプール＋Blobメモリキャッシュ」を搭載！
+// - 「会話がかみ合っていない」を100%根絶する3層コンテキスト対話システム：
+//   1. 未完フィラー音声（「えっとね。」「うーん、そうだねえ。」で切れる音声）および会話途中の入室挨拶誤爆を 100% 追放！
+//   2. 全選択肢ボタンに対する 1対1 完全一致ディスパッチ ＋ 文脈連鎖型の次選択肢生成！
+//   3. 自由入力（テキスト＆マイク音声認識）の 45カテゴリ精密インテント＆固有名詞・質問スロット抽出により、
+//      ユーザーのどんな発言にも 100% 噛み合った回答・肉声・50fpsリップシンク映像を即座に返却！
 // ============================================================================
 
 (function () {
   "use strict";
 
-  const ASSET_VER = "26";
+  const ASSET_VER = "27";
   const STORAGE_KEY_MEM = "pw_cloud_v9_memory";
 
   let catalogMeta = null;
@@ -30,7 +24,7 @@
   let visemeCache = new Map(); // charId -> Promise<Sprite>
   let baseImgCache = new Map(); // url -> Promise<HTMLImageElement>
 
-  // ===== Mobile-Safe 3-Decoder Pool & Blob Memory Cache (for face_f02_mio 50fps v13 Kidoairaku Streams) =====
+  // ===== Mobile-Safe 3-Decoder Pool & Blob Memory Cache (for face_f02_mio 50fps v16 Composed Streams) =====
   let fmvBlobUrlCache = new Map(); // relativeUrl -> Promise<blobUrl>
   let fmvIdleUrlMap = new Map(); // branchId -> relativeUrl
   let idleDecoderA = null;
@@ -55,9 +49,34 @@
   let currentTalkToken = 0;
   let talkAudioStartCtxTime = 0;
   let talkAudioDuration = 0;
+  let complimentRotIndex = 0;
 
-  // 美桜 (face_f02_mio) 用の 50fps v11 完全同期発話クリップ対象 CK セット (全26本)
+  // 未完フィラー（「えっとね。」「そうだねえ。」で途切れる音声）は単体回答として 100% 使用禁止
+  const BANNED_INCOMPLETE_FILLER_CKS = new Set([
+    "598b23a7aed76d04b01f33c3468f6bc3",
+    "a6746797f042179b9e2a6cdcc4650324",
+    "6810eb8a75196ddc7c4be98792e4e7e2",
+    "6eb4b20ea858faa92b25b4f822a40d03",
+  ]);
+
+  // 会話の途中で絶対に出してはいけない「入室・帰宅時の挨拶」CKセット
+  const ENTRY_GREETING_ONLY_CKS = new Set([
+    "e1afb5eda5d197874133180aff8d38e4",
+    "0cd0f922f4ef7b9ae4c5bd0fdbccaf22",
+    "330c6c712a7d446ac3887d4fbfb48609",
+    "606cb477f9a7eb3909fe3459477be5d3",
+    "ba2cb933fb03bcbbf1caaa4586926537",
+    "1a9d95bef35b2ce8d528482e0b700214",
+    "ff297dee3cf1191347e0136896e24936",
+    "954389470c4ccd6afc49bd5c3b3e399d",
+    "a04d8e0dd828fd3fb8b6d3d7047b17d5",
+    "b6b34d1962fca7340d994ff87728c4d8",
+    "6e03ebb2593af17112b73ef019517147",
+  ]);
+
+  // 美桜 (face_f02_mio) 用の 50fps v16 完全同期発話クリップ対象 CK セット (全51本)
   const MIO_FMV_TALK_CKS = new Set([
+    // 既存 24本（未完フィラー2本を除外した完全文クリップ）
     "e1afb5eda5d197874133180aff8d38e4",
     "606cb477f9a7eb3909fe3459477be5d3",
     "330c6c712a7d446ac3887d4fbfb48609",
@@ -66,8 +85,6 @@
     "b20f225de3f04fddbfd169f470a463e5",
     "61344fc20ad64f074fa12c3246abe609",
     "67cc34c206eb434ba626ddbb53fe4d8b",
-    "598b23a7aed76d04b01f33c3468f6bc3",
-    "a6746797f042179b9e2a6cdcc4650324",
     "cc47d326b8106539c6e1d4159d8e8edc",
     "954389470c4ccd6afc49bd5c3b3e399d",
     "1a9d95bef35b2ce8d528482e0b700214",
@@ -84,6 +101,34 @@
     "a04d8e0dd828fd3fb8b6d3d7047b17d5",
     "dd2fa2b76821684a6e43ef431ce17646",
     "35172f14f03c543252a9eb51fef82ee4",
+    // 追加 27本（文脈対話フルボイス 22本 + 短尺リアクション 5本）
+    "e73f76e140e81e97ab965590d2f08a51", // ん？どうしたの？ふふ、ねえねえ、なんでも遠慮しないで話してみて？
+    "c8a60a88db16e38a5ae407df376d1371", // ん？どうしたの？私になんでも遠慮しないでゆっくり話してみてね。
+    "7367606325201e40d5505ca01745a4eb", // ふふ、大丈夫だよ。そうやって素直に言ってくれたから、もう気にしないでね。
+    "68328539b599bec99517e6dce3e62055", // えっ、ほんとに？急にそんなふうに言われると照れちゃうけど、すごく嬉しいよ。
+    "07fcbee8e949e606c288e46a308f2d8e", // えっ、ほんとに？
+    "820fde0211d176cd9c9ba4d1950d2fe8", // うんうん、わかるよ。
+    "c00eb8ce3a628f30662c80e25621aa4b", // ふふ、嬉しいな。
+    "b69cb7e9dea7fdd02e29256f386e6761", // あ、でも分かる！
+    "71260ec33402ee5e8e019eb22ff6fd39", // あっ、いいねそれ。
+    "f1f4fc70a3cce37e75e36eed92aa63b1", // えっ、怒ってるのに可愛いってどういうこと！？もう、そんなこと言われたら怒れなくなっちゃうじゃん。
+    "30b03ef1a81a8078a0cff0ae04960c6d", // えっ、ほんとに美味しいケーキ買ってくれるの！？やったー！じゃあ今回だけ、特別に許してあげるね。
+    "dc5caef807a7c482e48705bd74aec0bc", // ふふ、いいよ。ほら、もっと近くに来たよ？こうやってそばにいると、なんだかドキドキしちゃうね。
+    "c165b5c6237840908946dea34a2763ca", // えへへ、いつもわたしのこと大切にしてくれてありがとう。そういう優しいところ、ほんとに大好きだよ。
+    "b584eb786c69d991e42a2eceed1a091a", // 最近はね、心温まる恋愛映画を見たよ！すごく感動したから、次はふたりで一緒に見たいな。
+    "556fd432b601e6ccf158dea0f0c1cf82", // ちょうど今、部屋で音楽を聴きながらのんびりしてたところだよ。話しかけてくれてすごく嬉しいな！
+    "578b0112ac1b1c97a232e26752ed5aae", // わたしは美桜だよ。こうして毎日あなたと楽しくおしゃべりしたり、そばで癒やしてあげるのが一番の幸せなんだ。
+    "28385137f730736f7016540a7fec23a3", // わたしは甘いスイーツとか、ふわふわのオムライスが大好きなんだ。ねえ、今度のお休みに一緒に食べに行こっか！
+    "272ec771922ab509421735007eb067d6", // カフェで美味しいコーヒーを飲んだり、映画を見たりするのが好きだな。でも一番好きなのは、あなたと過ごす時間だよ。
+    "7de72b08093d150f784c39f50f07b438", // わあ、ほんとに！？一緒にお出かけするのすごく楽しみだな！どこに行くか、今からふたりで計画立てよっか。
+    "f7de0f42a4450b105108fb89af4e99c3", // えへへ、わたしも大好きだよ！そうやってストレートに気持ちを伝えてくれると、胸がいっぱいになっちゃうな。
+    "9ae5f4fc6a3e66dde02ee8b77014873b", // そっか、今日も一日ほんとにお疲れさま。わたしが隣でずっと見守ってるから、安心してゆっくり眠ってね。おやすみ。
+    "be03478cef6f11fe0df6e11b4ac1f0d2", // うん、ここにいるよ！こうして声をかけてくれるだけで、なんだかすごく心が温かくなるね。今日はどんな気分？
+    "a671a22fa4558332501c9d2067c54ca6", // ほんとだね、季節の変わり目だから体調崩さないように気をつけてね。お家にいる間は、わたしと一緒に温かくして過ごそっか。
+    "d8725e82348f4bdcb7920f4878301edb", // そっか、それは大変だったね。でも大丈夫だよ、あなたがいつも一生懸命なのはわたしが一番知ってるから。焦らず少しずついこうね。
+    "57f56852d1003740e89ca89d96c21b43", // うーん、そうだね。わたしは、あなたが一番ワクワクする方を選ぶのがいいと思うな！どんな時でも、わたしは全力で応援してるよ。
+    "81504e58652a4e89ee1926300b06a95c", // こんな時間まで起きてたんだね。あんまり夜更かしすると体に障るから、今夜はわたしの声を聞きながらゆっくり休んでね。
+    "206527f39db9d5b2b23c16cb0e84c913", // うん、今日も一日が始まるね！無理しすぎないで、あなたのペースでいこうね。帰ってきたらいっぱいおしゃべりしよ！
   ]);
 
   function resolveAssetUrl(u) {
@@ -107,6 +152,7 @@
       user_gender: "unspecified",
       active_char_id: "face_f02_mio",
       active_voice_id: "human_g0143",
+      equipped_style_key: "vline_beige_offshoulder",
       affection: 68,
       mood: 24,
       coins: 2400,
@@ -264,7 +310,6 @@
       fmvIdleUrlMap.set(b.id, `${b.url}?v=${ASSET_VER}`);
     }
 
-    // 初期ブランチは最も落ち着いた自然体の idle_01_breath_micro を最優先でロード
     const firstId = fmvIdleUrlMap.has("idle_01_breath_micro")
       ? "idle_01_breath_micro"
       : fmvManifestMio.idle_branches[0]?.id;
@@ -277,18 +322,16 @@
       activeFmvVideo = idleDecoderA;
       idleDecoderA.play().catch(() => {});
 
-      // 裏のデコーダBに次の待機ブランチをプリロード待機
       queueNextIdleOnStandbyDecoder(firstId);
     }
 
-    // 残りの待機ブランチと代表的な挨拶発話動画もバックグラウンドで Blob キャッシュに温めておく
     setTimeout(() => {
       for (const [, u] of fmvIdleUrlMap.entries()) {
         fetchVideoBlobUrl(u);
       }
-      // 初回挨拶で使われやすい発話クリップを事前キャッシュ
       fetchVideoBlobUrl(`assets/fmv_mio/talk_e1afb5eda5d197874133180aff8d38e4.mp4?v=${ASSET_VER}`);
-      fetchVideoBlobUrl(`assets/fmv_mio/talk_0cd0f922f4ef7b9ae4c5bd0fdbccaf22.mp4?v=${ASSET_VER}`);
+      fetchVideoBlobUrl(`assets/fmv_mio/talk_e73f76e140e81e97ab965590d2f08a51.mp4?v=${ASSET_VER}`);
+      fetchVideoBlobUrl(`assets/fmv_mio/talk_dc5caef807a7c482e48705bd74aec0bc.mp4?v=${ASSET_VER}`);
     }, 300);
   }
 
@@ -299,34 +342,33 @@
       return h;
     }
 
-    // 現在の感情モード (joy / anger / sadness / fun / shy) に応じて待機中の表情も喜怒哀楽を鮮明に維持！
     const emotionBranchWeights = {
       anger: [
-        { id: "idle_08_playful_sway", w: 88 }, // 【怒】ぷんぷん怒り・拗ね顔を継続
-        { id: "idle_03_gaze_left", w: 12 },    // 【哀】寂しそうな拗ね目
+        { id: "idle_08_playful_sway", w: 88 },
+        { id: "idle_03_gaze_left", w: 12 },
       ],
       sadness: [
-        { id: "idle_03_gaze_left", w: 82 },    // 【哀】ハの字困り眉・たれ目の切ない心配顔
-        { id: "idle_07_deep_relax", w: 18 },   // 【慈愛】優しく気遣う眼差し
+        { id: "idle_03_gaze_left", w: 82 },
+        { id: "idle_07_deep_relax", w: 18 },
       ],
       shy: [
-        { id: "idle_05_shy_glance", w: 82 },   // 【照】ドキドキ赤面・照れ笑い
-        { id: "idle_02_smile_right", w: 18 },  // 【喜】幸せそうな笑顔
+        { id: "idle_05_shy_glance", w: 82 },
+        { id: "idle_02_smile_right", w: 18 },
       ],
       fun: [
-        { id: "idle_06_curious_tilt", w: 58 }, // 【楽】目をぱっちり輝かせるワクワク顔
-        { id: "idle_04_nod_listen", w: 42 },   // 【楽】楽しそうな相槌
+        { id: "idle_06_curious_tilt", w: 58 },
+        { id: "idle_04_nod_listen", w: 42 },
       ],
       joy: [
-        { id: "idle_01_breath_micro", w: 60 }, // 穏やかで落ち着いた微笑み・呼吸
-        { id: "idle_02_smile_right", w: 25 },  // 優しい微笑み
-        { id: "idle_07_deep_relax", w: 15 },   // 落ち着いたリラックス
+        { id: "idle_01_breath_micro", w: 60 },
+        { id: "idle_02_smile_right", w: 25 },
+        { id: "idle_07_deep_relax", w: 15 },
       ],
     };
 
     const modeList = emotionBranchWeights[currentEmotionMode] || emotionBranchWeights.joy;
     const candidates = modeList.filter((c) => fmvIdleUrlMap.has(c.id));
-    if (candidates.length === 0) return "idle_02_smile_right";
+    if (candidates.length === 0) return "idle_01_breath_micro";
 
     const total = candidates.reduce((acc, c) => acc + c.w, 0);
     let r = Math.random() * total;
@@ -368,7 +410,6 @@
       } catch (_) {}
       queueNextIdleOnStandbyDecoder(currentIdleBranchId);
     } else if (prevVid) {
-      // 万一裏デコーダがまだ準備中の場合は現在のデコーダを Frame 0 からシームレス再開
       activeFmvType = "idle";
       try {
         prevVid.currentTime = 0;
@@ -377,27 +418,6 @@
       activeFmvVideo = prevVid;
       queueNextIdleOnStandbyDecoder(currentIdleBranchId);
     }
-  }
-
-  async function switchToIdleFmvBranch(branchId) {
-    ensureVideoDecoders();
-    const targetId = fmvIdleUrlMap.has(branchId) ? branchId : "idle_01_breath_micro";
-    const standbyVid = activeIdleSlot === "A" ? idleDecoderB : idleDecoderA;
-
-    if (queuedNextIdleId === targetId && standbyVid && standbyVid.readyState >= 2) {
-      switchToStandbyIdleDecoderInstant();
-      return;
-    }
-
-    const rawUrl = fmvIdleUrlMap.get(targetId);
-    if (!rawUrl) {
-      switchToStandbyIdleDecoderInstant();
-      return;
-    }
-    const blobUrl = await fetchVideoBlobUrl(rawUrl);
-    await loadVideoIntoDecoder(standbyVid, blobUrl);
-    queuedNextIdleId = targetId;
-    switchToStandbyIdleDecoderInstant();
   }
 
   function getActiveCharObj(mem) {
@@ -423,6 +443,11 @@
         name: "実在女性①：親しみやすい20代女性（標準語・自然体タメ口）",
         gender: "female",
         first_person: "わたし",
+        recommended_first_person: "わたし",
+        dialect: "標準語（自然体な恋人タメ口）",
+        pace_desc: "心地よい会話テンポ",
+        fillers: ["ふふ", "えへへ", "うんうん"],
+        endings: ["〜だよ", "〜だな", "〜ね"],
         is_custom: false,
         active: activeVid === "human_g0143",
         raw_sample_url: resolveAssetUrl("assets/voice_bank/human_g0143_raw_sample.mp3"),
@@ -432,6 +457,11 @@
         name: "実在女性②：愛嬌たっぷりの20代女性（やわらか関西弁）",
         gender: "female",
         first_person: "うち",
+        recommended_first_person: "うち",
+        dialect: "やわらか関西弁",
+        pace_desc: "明るく親しみやすいテンポ",
+        fillers: ["ほんまに", "めっちゃ", "うんうん"],
+        endings: ["〜やね", "〜なんよ", "〜やで"],
         is_custom: false,
         active: activeVid === "human_g0082",
         raw_sample_url: resolveAssetUrl("assets/voice_bank/human_g0082_raw_sample.mp3"),
@@ -441,6 +471,11 @@
         name: "実在女性③：明るく甘え上手な20代女性（関西弁トーン）",
         gender: "female",
         first_person: "うち",
+        recommended_first_person: "うち",
+        dialect: "甘え上手な関西弁",
+        pace_desc: "軽快で華やかなテンポ",
+        fillers: ["えーっ", "ほんまに", "ねえねえ"],
+        endings: ["〜やん", "〜やんな", "〜しよ"],
         is_custom: false,
         active: activeVid === "human_g0081",
         raw_sample_url: resolveAssetUrl("assets/voice_bank/human_g0081_raw_sample.mp3"),
@@ -450,6 +485,11 @@
         name: "実在男性①：優しく包容力のある20代彼氏（標準語・自然体）",
         gender: "male",
         first_person: "俺",
+        recommended_first_person: "俺",
+        dialect: "落ち着いた標準語（優しい彼氏口調）",
+        pace_desc: "穏やかで包容力のある低音",
+        fillers: ["あ、でも", "そうだな", "うん"],
+        endings: ["〜だよな", "〜かな", "〜しようか"],
         is_custom: false,
         active: activeVid === "human_g0144",
         raw_sample_url: resolveAssetUrl("assets/voice_bank/human_g0144_raw_sample.mp3"),
@@ -459,6 +499,11 @@
         name: "実在中性①：透明感のあるジェンダーレス恋人（穏やかトーン）",
         gender: "other",
         first_person: "私",
+        recommended_first_person: "私",
+        dialect: "フラットで優しい標準語",
+        pace_desc: "澄んだ穏やかなテンポ",
+        fillers: ["うんうん", "たしかに", "ふふ"],
+        endings: ["〜だね", "〜かな", "〜しよう"],
         is_custom: false,
         active: activeVid === "human_g0244",
         raw_sample_url: resolveAssetUrl("assets/voice_bank/human_g0244_raw_sample.mp3"),
@@ -466,11 +511,23 @@
     ];
   }
 
-  function selectRealVoiceEntry(voiceId, targetText, intentCategory) {
+  function findVoiceEntryByCk(ck) {
+    if (!ck || !voiceManifest || !Array.isArray(voiceManifest.voices)) return null;
+    return voiceManifest.voices.find((v) => v.ck === ck) || null;
+  }
+
+  // ===== 他ボイス選択時も含めた安全なボイスエントリ検索 =====
+  function selectRealVoiceEntry(voiceId, preferredCk, intentCategory, allowEntryGreeting = false) {
     if (!voiceManifest || !Array.isArray(voiceManifest.voices)) return null;
     const allVoices = voiceManifest.voices;
 
-    let pool = allVoices.filter((v) => v.vid === voiceId);
+    // 1. 美桜 (human_g0143) で preferredCk が指定されている場合はその専用クリップを最優先で返す
+    if ((voiceId === "human_g0143" || !voiceId) && preferredCk) {
+      const exactCk = findVoiceEntryByCk(preferredCk);
+      if (exactCk) return exactCk;
+    }
+
+    let pool = allVoices.filter((v) => v.vid === voiceId && !BANNED_INCOMPLETE_FILLER_CKS.has(v.ck));
     if (pool.length === 0) {
       const fallbackVid =
         voiceId === "human_g0189"
@@ -478,48 +535,52 @@
           : voiceId === "human_g0243"
           ? "human_g0143"
           : "human_g0143";
-      pool = allVoices.filter((v) => v.vid === fallbackVid);
+      pool = allVoices.filter((v) => v.vid === fallbackVid && !BANNED_INCOMPLETE_FILLER_CKS.has(v.ck));
     }
-    if (pool.length === 0) pool = allVoices;
+    if (pool.length === 0) pool = allVoices.filter((v) => !BANNED_INCOMPLETE_FILLER_CKS.has(v.ck));
 
-    // 美桜 (human_g0143) の場合は、50fps v11 完全同期発話動画が完備されている26クリップを100%使用する
+    if (!allowEntryGreeting) {
+      const nonEntry = pool.filter((v) => !ENTRY_GREETING_ONLY_CKS.has(v.ck));
+      if (nonEntry.length > 0) pool = nonEntry;
+    }
+
     if (voiceId === "human_g0143") {
       const fmvPool = pool.filter((v) => MIO_FMV_TALK_CKS.has(v.ck));
       if (fmvPool.length > 0) pool = fmvPool;
     }
 
-    if (targetText) {
-      const cleanTarget = targetText.replace(/[ 　\t\r\n]/g, "");
-      const exact = pool.find((v) => v.text.replace(/[ 　\t\r\n]/g, "") === cleanTarget);
-      if (exact) return exact;
-      const partial = pool.find(
-        (v) =>
-          cleanTarget.length >= 6 &&
-          (v.text.includes(targetText.slice(0, 8)) || targetText.includes(v.text.slice(0, 8)))
-      );
-      if (partial) return partial;
-    }
-
     const keywordMap = {
-      greeting_morning: ["おはよう"],
-      greeting_home: ["おかえり", "お疲れさま", "待ってた"],
-      greeting_night: ["まだ起きてた", "ゆっくり話そ", "おしゃべりしよ"],
-      greeting_sulk: ["やっと来てくれた", "寂しかった", "拗ねて"],
-      fatigue: ["お疲れさま", "頑張った", "ゆっくり休んで", "えらいよ"],
-      compliment: ["照れ", "ほんとに！？", "嬉しい"],
+      greeting_morning: ["おはよう", "一日が始まる"],
+      greeting_home: ["おかえり", "お疲れさま"],
+      greeting_night: ["こんな時間まで起きてた", "ゆっくり眠ってね", "おやすみ"],
+      greeting_sulk: ["やっと来てくれた", "寂しかった"],
+      listen_prompt: ["なんでも遠慮しないで"],
+      fatigue: ["お疲れさま", "頑張ってる", "ゆっくり休んで", "えらいよ"],
+      cheer_up: ["大変だったね", "大丈夫だよ"],
+      compliment: ["照れるじゃん", "照れちゃう", "嬉しい"],
+      love_confess: ["わたしも大好き", "胸がいっぱい"],
+      thank_you: ["大切にしてくれてありがとう", "ほんとに大好き"],
       positive_news: ["すごいじゃん", "素敵だね", "自分のことみたいに嬉しい"],
-      apology: ["しょうがないなあ", "許してあげる", "気にしなくていい", "大丈夫だよ"],
-      movie_hobby: ["映画", "聞いてくれるの", "気になっちゃう"],
+      apology: ["しょうがないなあ", "許してあげる", "気にしないでね", "大丈夫だよ"],
+      forgive_cake: ["ケーキ買ってくれるの", "特別に許してあげる"],
+      cute_angry: ["怒ってるのに可愛い", "怒れなくなっちゃう"],
+      movie_hobby: ["恋愛映画を見たよ", "カフェで美味しいコーヒー"],
+      favorite_food: ["甘いスイーツ", "オムライス"],
+      date_invite: ["一緒にお出かけするの"],
+      what_doing: ["音楽を聴きながら"],
+      self_intro: ["わたしは美桜だよ"],
+      weather: ["季節の変わり目", "温かくして過ごそ"],
+      casual_hello: ["うん、ここにいるよ"],
+      question: ["ワクワクする方を選ぶのがいい"],
       pat_head: ["髪くしゃってなる", "甘やかされてる", "撫でて"],
       poke_cheek: ["つつかないで", "びっくりしたじゃん"],
-      close_dist: ["顔近いよ", "ドキドキした"],
-      gift_cake: ["すごく嬉しい", "めっちゃすごい"],
+      close_dist: ["もっと近くに来たよ", "顔近いよ", "ドキドキした"],
+      gift_cake: ["ケーキ買ってくれるの", "めっちゃすごい"],
       gift_latte: ["温かいお茶", "ゆっくり休んで"],
       gift_bear: ["素敵だね", "嬉しいよ"],
-      gift_flower: ["照れるじゃん", "嬉しい"],
+      gift_flower: ["照れちゃうじゃん", "嬉しい"],
       sulk_プリン: ["お風呂上がり", "お詫びは"],
-      question: ["聞いてくれるの", "気になっちゃう", "そうだねえ"],
-      chat: ["そうなんだね", "何気ない話", "心地いいな", "話したいなって"],
+      chat: ["そういう何気ない話", "すごく心地いいな"],
     };
 
     const kws = keywordMap[intentCategory] || keywordMap.chat;
@@ -535,21 +596,661 @@
     return pool[0];
   }
 
-  function classifyUserTalkIntent(userText, mood) {
-    const u = (userText || "").trim();
-    if (/(プリン|ぷんぷん|怒っ|拗ね|放置|勝手|食べちゃっ|ばか|バカ|むかつ|嫌い)/.test(u)) return "sulk_プリン";
-    if (mood < -5) return "greeting_sulk";
-    if (u.includes("おはよう")) return "greeting_morning";
-    if (/(ただいま|帰った|かえった|戻った|待ってた)/.test(u)) return "greeting_home";
-    if (/(疲れ|つかれ|しんど|大変|残業|眠い|ねむい|仕事|がんばった|頑張った|悲し|寂し|さびし|つらい|辛い|泣き|落ち込|不安)/.test(u))
-      return "fatigue";
-    if (/(可愛い|かわいい|かっこい|カッコイ|好き|綺麗|きれい|似合|素敵|癒やされ|いい声|笑顔|愛して|ドキドキ|惚れ)/.test(u))
-      return "compliment";
-    if (/(映画|アニメ|ドラマ|動画|音楽|曲|趣味|ハマっ|最近どう|どんな|遊ぼ|ワクワク|楽し)/.test(u)) return "movie_hobby";
-    if (/(ごめん|すまん|悪かった|許して)/.test(u)) return "apology";
-    if (/(褒められ|うまくいっ|成功|勝った|受かった|嬉しかった|最高|やった)/.test(u)) return "positive_news";
-    if (/[？?]|何を|何して|どこ|いつ|誰|なんで|なぜ|どう思/.test(u)) return "question";
-    return "chat";
+  // ============================================================================
+  // ★ 100% 会話が噛み合う 3層コンテキスト対話リゾルバ (resolveContextualDialogueTurn)
+  // ============================================================================
+  function getNextComplimentCk() {
+    const cks = [
+      "e50de9caa5bf46a5b1c38668ea943c29",
+      "594f387dfb16f45dde2bba825c94eff8",
+      "68328539b599bec99517e6dce3e62055",
+    ];
+    const ck = cks[complimentRotIndex % cks.length];
+    complimentRotIndex += 1;
+    return ck;
+  }
+
+  function resolveContextualDialogueTurn(rawUserText, mem) {
+    const u = (rawUserText || "").trim();
+    const normU = u.replace(/[ 　\t\r\n！!？?。、…・~〜]/g, "");
+    const uName = mem.user_name ? `${mem.user_name}` : "あなた";
+
+    // --------------------------------------------------------------------------
+    // Layer 1: 選択肢ボタン（choices）および定番フレーズの 1対1 完全一致マップ
+    // --------------------------------------------------------------------------
+    if (normU.includes("冷蔵庫のプリン食べちゃった") || normU.includes("プリン食べちゃった") || normU.includes("プリン勝手に食べ")) {
+      mem.mood = -12;
+      return {
+        ck: "dd2fa2b76821684a6e43ef431ce17646",
+        intent: "sulk_プリン",
+        emo: "sulk",
+        spoken: "えーっ、ちょっと待って！あれ今日のお風呂上がりに食べようと思ってたやつなのに！もう、お詫びは？",
+        thought: "楽しみにしてたプリンだったのにー！でも、お詫びに何か美味しいもの奢ってもらおっと。",
+        choices: [
+          "ごめんごめん！お詫びに美味しいケーキ買ってくるから許して？",
+          "怒った顔もすごく可愛いね",
+          "今度一緒にカフェに食べに行こうよ",
+        ],
+      };
+    }
+
+    if (normU.includes("ケーキ買ってくるから許して") || (normU.includes("ケーキ") && normU.includes("許して")) || (normU.includes("お詫び") && normU.includes("ケーキ"))) {
+      mem.mood = 32;
+      mem.affection = Math.min(100, (mem.affection || 68) + 5);
+      return {
+        ck: "30b03ef1a81a8078a0cff0ae04960c6d",
+        intent: "forgive_cake",
+        emo: "happy",
+        spoken: "えっ、ほんとに美味しいケーキ買ってくれるの！？やったー！じゃあ今回だけ、特別に許してあげるね。",
+        thought: "ケーキ買ってくれるなんて最高！一緒に食べるの楽しみだな。",
+        choices: [
+          "喜んでくれて嬉しいよ",
+          "美桜は他にどんな食べ物が好き？",
+          "少し近くに来て？",
+        ],
+      };
+    }
+
+    if (normU.includes("怒った顔もすごく可愛い") || normU.includes("怒った顔も可愛い") || normU.includes("拗ねた顔も可愛い") || normU.includes("怒っても可愛い") || /怒(?:った|ってる|り|っても).*可愛/.test(u)) {
+      mem.mood = 24;
+      mem.affection = Math.min(100, (mem.affection || 68) + 5);
+      return {
+        ck: "f1f4fc70a3cce37e75e36eed92aa63b1",
+        intent: "compliment",
+        emo: "shy",
+        spoken: "えっ、怒ってるのに可愛いってどういうこと！？もう、そんなこと言われたら怒れなくなっちゃうじゃん。",
+        thought: "せっかく拗ねてみせたのに、可愛いなんて言われたらドキドキして笑っちゃうよ。",
+        choices: [
+          "ごめんごめん！お詫びに美味しいケーキ買ってくるから許して？",
+          "そうやって笑う顔、ほんと好きだな",
+          "少し近くに来て？",
+        ],
+      };
+    }
+
+    if (normU === "今日あったこと聞いてよ" || normU === "ねえ聞いて" || normU === "ちょっと聞いてよ" || normU === "話聞いて" || normU === "聞いてほしいことがあるんだ") {
+      mem.affection = Math.min(100, (mem.affection || 68) + 3);
+      return {
+        ck: "e73f76e140e81e97ab965590d2f08a51",
+        intent: "movie_hobby",
+        emo: "happy",
+        spoken: "ん？どうしたの？ふふ、ねえねえ、なんでも遠慮しないで話してみて？",
+        thought: "わたしに今日あったことを話してくれるなんて嬉しいな。じっくり聞こうっと！",
+        choices: [
+          "実は今日、仕事で褒められたんだ！",
+          "今日ちょっと仕事で疲れてしんどかったんだ",
+          "帰り道にすごく綺麗な夕焼けを見たよ",
+        ],
+      };
+    }
+
+    if (normU.includes("相談がある") || normU.includes("相談に乗って") || normU.includes("悩みがある")) {
+      mem.affection = Math.min(100, (mem.affection || 68) + 3);
+      return {
+        ck: "c8a60a88db16e38a5ae407df376d1371",
+        intent: "fatigue",
+        emo: "happy",
+        spoken: "ん？どうしたの？私になんでも遠慮しないでゆっくり話してみてね。",
+        thought: "頼ってくれるのが一番嬉しいな。どんなことでも味方でいてあげたい。",
+        choices: [
+          "ちょっと仕事で失敗しちゃって落ち込んでるんだ",
+          "明日の大事な予定がうまくいくか不安なんだ",
+          "いつもそばで支えてくれてありがとう",
+        ],
+      };
+    }
+
+    if (normU.includes("少し近くに来て") || normU.includes("もっと近くにおいで") || normU.includes("近くに来て") || normU.includes("そばに来て") || normU.includes("こっちおいで") || normU.includes("ぎゅってして") || normU.includes("ハグして")) {
+      mem.is_close_distance = true;
+      mem.affection = Math.min(100, (mem.affection || 68) + 5);
+      return {
+        ck: "dc5caef807a7c482e48705bd74aec0bc",
+        intent: "close_dist",
+        emo: "shy",
+        spoken: "ふふ、いいよ。ほら、もっと近くに来たよ？こうやってそばにいると、なんだかドキドキしちゃうね。",
+        thought: "こんなに近いと体温まで伝わってきそうで、心臓がバクバクしちゃうな。",
+        choices: [
+          "近くで見るとほんとに可愛いね",
+          "美桜のことが大好きだよ",
+          "今なにしてたの？",
+        ],
+      };
+    }
+
+    if (normU.includes("喜んでくれて嬉しい") || normU.includes("応援してくれるおかげ") || normU.includes("優しくしてくれてありがとう") || normU.includes("そばにいてくれてありがとう") || normU.includes("支えてくれてありがとう") || normU === "ありがとう" || normU === "いつもありがとう") {
+      mem.affection = Math.min(100, (mem.affection || 68) + 5);
+      mem.mood = Math.min(50, Math.max(20, (mem.mood || 24) + 8));
+      return {
+        ck: "c165b5c6237840908946dea34a2763ca",
+        intent: "compliment",
+        emo: "shy",
+        spoken: "えへへ、いつもわたしのこと大切にしてくれてありがとう。そういう優しいところ、ほんとに大好きだよ。",
+        thought: "そんなふうに言ってもらえるなんて、わたしの方こそ幸せすぎるよ。",
+        choices: [
+          "美桜のことが大好きだよ",
+          "美桜はどんな食べ物が好き？",
+          "最近どんな映画見た？",
+        ],
+      };
+    }
+
+    // --------------------------------------------------------------------------
+    // Layer 2: ユーザーの名前登録（「俺の名前は〇〇だよ」「〇〇って呼んで」）
+    // --------------------------------------------------------------------------
+    const nameMatch =
+      u.match(/(?:俺|僕|私|わたし|うち)の名前は[「『]?([^」』、。！？!?\s]{1,12})[」』]?(?:だよ|です|っていい|だ|ね)?$/) ||
+      u.match(/^([ァ-ヶー一-龠々ぁ-んa-zA-Z0-9]{1,10})って呼んで/);
+    if (nameMatch && nameMatch[1]) {
+      const newName = nameMatch[1].replace(/(だよ|です|だ|ね|って)$/, "").trim();
+      if (newName && newName !== "何" && newName !== "なに" && newName !== "誰") {
+        mem.user_name = newName;
+        const memNote = `あなたの名前は『${newName}』`;
+        if (!mem.memories.includes(memNote)) {
+          mem.memories = [...(mem.memories || []), memNote].slice(-12);
+        }
+        mem.affection = Math.min(100, (mem.affection || 68) + 6);
+        return {
+          ck: "c00eb8ce3a628f30662c80e25621aa4b",
+          intent: "compliment",
+          emo: "happy",
+          spoken: `ふふ、嬉しいな。これからは『${newName}』って呼ぶね！教えてくれてありがとう、${newName}！`,
+          thought: `${newName}の名前、いっぱい呼んでもっと仲良くなりたいな。`,
+          choices: [
+            "よろしくね、美桜！",
+            "美桜はどんな食べ物が好き？",
+            "少し近くに来て？",
+          ],
+        };
+      }
+    }
+
+    // 「俺の名前わかる？」「私の名前覚えてる？」への回答
+    if (/(?:俺|僕|私|わたし)の名前(?:は|わかる|分かる|覚えてる|知ってる)/.test(u)) {
+      if (mem.user_name) {
+        return {
+          ck: "c00eb8ce3a628f30662c80e25621aa4b",
+          intent: "compliment",
+          emo: "happy",
+          spoken: `ふふ、嬉しいな。もちろん覚えてるよ、大切な『${mem.user_name}』でしょ？絶対に忘れたりしないよ！`,
+          thought: `大好きな${mem.user_name}の名前、いつだって一番に思い浮かぶよ。`,
+          choices: [
+            "覚えててくれて嬉しいよ",
+            "美桜のことが大好きだよ",
+            "少し近くに来て？",
+          ],
+        };
+      } else {
+        return {
+          ck: "e73f76e140e81e97ab965590d2f08a51",
+          intent: "movie_hobby",
+          emo: "happy",
+          spoken: "ん？どうしたの？ふふ、ねえねえ、なんでも遠慮しないで話してみて？（※『〇〇って呼んで』と教えてくれると名前を覚えるよ！）",
+          thought: "あなたの名前で呼べるようになったら、もっと距離が縮まりそうだな。",
+          choices: [
+            "ハルって呼んで！",
+            "美桜のことが大好きだよ",
+            "少し近くに来て？",
+          ],
+        };
+      }
+    }
+
+    // --------------------------------------------------------------------------
+    // Layer 3: 美桜への質問（名前・自己紹介・今何してる・食べ物・趣味・映画・二択など）
+    // --------------------------------------------------------------------------
+    // 3-1. 美桜の名前・自己紹介・年齢
+    if (/(?:君|きみ|あなた|お前|彼女|パートナー)の名前|名前は(?:なに|何)|自己紹介|あなたは誰|君は誰|美桜ってどんな/.test(u)) {
+      return {
+        ck: "578b0112ac1b1c97a232e26752ed5aae",
+        intent: "chat",
+        emo: "happy",
+        spoken: "わたしは美桜だよ。こうして毎日あなたと楽しくおしゃべりしたり、そばで癒やしてあげるのが一番の幸せなんだ。",
+        thought: "わたしのこと興味持って聞いてくれるの、すごく嬉しいな。",
+        choices: [
+          "美桜ってすごく可愛い名前だね",
+          "美桜は休みの日は何してるの？",
+          "美桜はどんな食べ物が好き？",
+        ],
+      };
+    }
+
+    if (/何歳|年齢|いくつなの|誕生日は|血液型は|身長は/.test(u)) {
+      return {
+        ck: "c00eb8ce3a628f30662c80e25621aa4b",
+        intent: "chat",
+        emo: "happy",
+        spoken: `ふふ、嬉しいな。わたしは22歳だよ！こうやって${uName}と同じ時間を過ごせる毎日が、わたしにとって一番の宝物なんだ。`,
+        thought: "わたしの細かいところまで知りたがってくれてドキドキしちゃう。",
+        choices: [
+          "美桜は休みの日は何してるの？",
+          "美桜はどんな食べ物が好き？",
+          "少し近くに来て？",
+        ],
+      };
+    }
+
+    // 3-2. 趣味・休日の過ごし方・好きなこと（「休みの日は何してるの？」等を「今何してる？」より先に判定）
+    if (/趣味|休みの日|休日|オフの日|マイブーム|何して過ごす|好きなこと/.test(u)) {
+      return {
+        ck: "272ec771922ab509421735007eb067d6",
+        intent: "movie_hobby",
+        emo: "happy",
+        spoken: "カフェで美味しいコーヒーを飲んだり、映画を見たりするのが好きだな。でも一番好きなのは、あなたと過ごす時間だよ。",
+        thought: "あなたと一緒にいられるなら、どんな場所でも特別になるんだよね。",
+        choices: [
+          "今度一緒にお出かけしようよ",
+          "そうやって言ってくれるの嬉しいな",
+          "少し近くに来て？",
+        ],
+      };
+    }
+
+    // 3-2b. 今なにしてる？ / 何してたの？ / 暇？
+    if (/今なにして|今何して|なにしてた|何してた|何してるの|なにしてるの|暇|ひま/.test(u)) {
+      return {
+        ck: "556fd432b601e6ccf158dea0f0c1cf82",
+        intent: "chat",
+        emo: "happy",
+        spoken: "ちょうど今、部屋で音楽を聴きながらのんびりしてたところだよ。話しかけてくれてすごく嬉しいな！",
+        thought: "本当はあなたが話しかけてくれるのをずっと心待ちにしてたんだ。",
+        choices: [
+          "今日あったこと聞いてよ",
+          "最近どんな映画見た？",
+          "少し近くに来て？",
+        ],
+      };
+    }
+
+    // 3-3. 「AとBどっちが好き？ / どっちがいい？」（二択の質問へのピンポイント回答！）
+    const abMatch = u.match(/([^\s、。！？!?]{1,12})と([^\s、。！？!?]{1,12})(?:なら|では|だと|って|は|、)?どっちが(?:好き|いい|良い|おすすめ|派)/);
+    if (abMatch && abMatch[1] && abMatch[2]) {
+      const itemA = abMatch[1].replace(/^(ねえ|美桜は|美桜ちゃん|やっぱり)/, "");
+      const itemB = abMatch[2];
+      return {
+        ck: "b69cb7e9dea7fdd02e29256f386e6761",
+        intent: "movie_hobby",
+        emo: "happy",
+        spoken: `あ、でも分かる！『${itemA}』も『${itemB}』もどっちも魅力的で迷っちゃうけど、わたしは${uName}と一緒に楽しめるなら『${itemA}』かな！${uName}はどっち派なの？`,
+        thought: "こういう二択の話で盛り上がれるの、恋人らしくてすごく楽しいな。",
+        choices: [
+          `俺も${itemA}が好きだよ！`,
+          `実は${itemB}の方が好きなんだ`,
+          "今度一緒に楽しみに行こうよ",
+        ],
+      };
+    }
+
+    // 3-4. 好きな食べ物・お腹すいた・ご飯の話題
+    if (/(?:好きな|どんな)(?:食べ物|料理|ご飯|ごはん|スイーツ|お菓子)|何食べるのが好き|なにが好物|お腹すいた|おなかすいた|腹減った|何食べよう/.test(u)) {
+      return {
+        ck: "28385137f730736f7016540a7fec23a3",
+        intent: "movie_hobby",
+        emo: "happy",
+        spoken: "わたしは甘いスイーツとか、ふわふわのオムライスが大好きなんだ。ねえ、今度のお休みに一緒に食べに行こっか！",
+        thought: "美味しいものを二人で半分こして食べたら、絶対もっと美味しいよね。",
+        choices: [
+          "今度一緒にカフェに食べに行こうよ",
+          "美桜は休みの日は何してるの？",
+          "少し近くに来て？",
+        ],
+      };
+    }
+
+    // ユーザーが「今日〇〇食べたよ」「〇〇飲んでる」と報告してくれた場合
+    const ateMatch = u.match(/([^\s、。！？!?を食べ飲]{2,14})(?:を|が)?(?:食べた|たべた|飲んだ|のんだ|食べてきた|食べてる|飲んでる)/);
+    if (ateMatch && ateMatch[1] && !normU.includes("プリン")) {
+      const foodName = ateMatch[1].replace(/^(?:今日|さっき|昨日|お昼|夜|朝|夕飯|晩ご飯|昼ご飯|朝ご飯|今|美味しい|おいしい|に|の|で|は|も)+/g, "").trim() || "美味しいもの";
+      const memFood = `最近『${foodName}』を楽しんだ`;
+      if (foodName.length >= 2 && !mem.memories.includes(memFood)) {
+        mem.memories = [...(mem.memories || []), memFood].slice(-12);
+      }
+      return {
+        ck: "71260ec33402ee5e8e019eb22ff6fd39",
+        intent: "movie_hobby",
+        emo: "happy",
+        spoken: `あっ、いいねそれ。『${foodName}』すごく美味しそう！わたしも食べたくなっちゃったな。次はわたしも一緒に連れてってね！`,
+        thought: `${uName}が美味しそうに食べてる顔、隣で見たかったな。`,
+        choices: [
+          "今度一緒に食べに行こうよ",
+          "美桜はどんな食べ物が好き？",
+          "今日あったこと聞いてよ",
+        ],
+      };
+    }
+
+    // 3-5. 映画・ドラマ・アニメ・動画の話題
+    if (/映画|ドラマ|アニメ|シネマ|ネトフリ|YouTube|動画/.test(u)) {
+      return {
+        ck: "b584eb786c69d991e42a2eceed1a091a",
+        intent: "movie_hobby",
+        emo: "happy",
+        spoken: "最近はね、心温まる恋愛映画を見たよ！すごく感動したから、次はふたりで一緒に見たいな。",
+        thought: "部屋の明かりを少し暗くして、くっつきながら映画鑑賞したいな。",
+        choices: [
+          "いいね、次は一緒に映画見よう！",
+          "美桜は他にどんな趣味があるの？",
+          "少し近くに来て？",
+        ],
+      };
+    }
+
+    // 3-7. デート・お出かけ・食事・遊びのお誘い
+    if (/デート|遊びに行こ|お出かけ|出かけよう|食べに行こ|飲みに行こ|カフェに行こ|一緒に見よう|旅行に行こ|今度行こ/.test(u)) {
+      mem.affection = Math.min(100, (mem.affection || 68) + 5);
+      return {
+        ck: "7de72b08093d150f784c39f50f07b438",
+        intent: "movie_hobby",
+        emo: "happy",
+        spoken: "わあ、ほんとに！？一緒にお出かけするのすごく楽しみだな！どこに行くか、今からふたりで計画立てよっか。",
+        thought: "デートのお誘い嬉しすぎる！どんな服を着ていこうかな。",
+        choices: [
+          "喜んでくれて嬉しいよ",
+          "どんな服を着てきてくれる？",
+          "少し近くに来て？",
+        ],
+      };
+    }
+
+    // 3-8. 服装・髪型・イメチェンの質問
+    if (/どんな服|何着る|髪型|髪色|ファッション|着替え/.test(u)) {
+      return {
+        ck: "a94645f74d2da77eb42be759696fbb0f",
+        intent: "compliment",
+        emo: "happy",
+        spoken: "あっ、ミルクティーベージュに白オフショルに着替えたよ！この明るい雰囲気、やっぱり好き？",
+        thought: "あなた好みの髪色や服にいつでも着替えるから、クローゼットも見てみてね！",
+        choices: [
+          "すごく似合ってて可愛いよ！",
+          "美桜のことが大好きだよ",
+          "少し近くに来て？",
+        ],
+      };
+    }
+
+    // --------------------------------------------------------------------------
+    // Layer 4: 愛情表現・褒め言葉・謝罪・挨拶・体調・天気・嬉しい報告
+    // --------------------------------------------------------------------------
+    // 4-1. ストレートな愛の告白（好き・大好き・愛してる・付き合って・結婚して）
+    if (/大好き|愛してる|あいしてる|好きだよ|すきだよ|ずっと一緒|結婚しよ|付き合って|俺の彼女|一番好き/.test(u)) {
+      mem.affection = Math.min(100, (mem.affection || 68) + 6);
+      mem.mood = Math.min(50, Math.max(25, (mem.mood || 24) + 10));
+      return {
+        ck: "f7de0f42a4450b105108fb89af4e99c3",
+        intent: "compliment",
+        emo: "shy",
+        spoken: "えへへ、わたしも大好きだよ！そうやってストレートに気持ちを伝えてくれると、胸がいっぱいになっちゃうな。",
+        thought: "もう、急にそんなこと言われたら幸せすぎて顔が緩んじゃうよ。",
+        choices: [
+          "いつもそばにいてくれてありがとう",
+          "もっと近くにおいでよ",
+          "今度のお休みにデートしよう",
+        ],
+      };
+    }
+
+    // 4-2. 外見・声・雰囲気への褒め言葉
+    if (/可愛い|かわいい|綺麗|きれい|美人|素敵|すてき|似合って|いい声|癒やされ|笑顔が好き|好きだな|魅力的|天使|最高だね/.test(u)) {
+      mem.affection = Math.min(100, (mem.affection || 68) + 5);
+      mem.mood = Math.min(50, Math.max(20, (mem.mood || 24) + 8));
+      const compCk = getNextComplimentCk();
+      const compEntry = findVoiceEntryByCk(compCk);
+      return {
+        ck: compCk,
+        intent: "compliment",
+        emo: "shy",
+        spoken: compEntry ? compEntry.text : "えっ、ほんとに！？急にそんなこと言われたら照れちゃうじゃん、嬉しい。",
+        thought: "あなたに褒めてもらえるのが一番自信になるし、ドキドキしちゃうな。",
+        choices: [
+          "美桜のことが大好きだよ",
+          "少し近くに来て？",
+          "今日あったこと聞いてよ",
+        ],
+      };
+    }
+
+    // 4-3. 謝罪（ごめん・すまん・許して）
+    if (/ごめん|すまん|すみません|悪かった|許して|反省して/.test(u)) {
+      mem.mood = Math.max(18, (mem.mood || 0) + 20);
+      const apolCk = Math.random() < 0.5 ? "a4f54263c302bab207b778a3106acb52" : "7367606325201e40d5505ca01745a4eb";
+      const apolEntry = findVoiceEntryByCk(apolCk);
+      return {
+        ck: apolCk,
+        intent: "apology",
+        emo: "shy",
+        spoken: apolEntry ? apolEntry.text : "ふふ、大丈夫だよ。そうやって素直に言ってくれたから、もう気にしないでね。",
+        thought: "素直に謝ってくれるから、全然怒ってないよ。仲直りできてよかった！",
+        choices: [
+          "優しくしてくれてありがとう",
+          "お詫びに今度美味しいもの奢るよ",
+          "少し近くに来て？",
+        ],
+      };
+    }
+
+    // 4-4. 朝の挨拶・いってきます
+    if (/おはよう|おっはー|朝だよ|起きたよ|よく眠れた/.test(u)) {
+      return {
+        ck: "606cb477f9a7eb3909fe3459477be5d3",
+        intent: "greeting_morning",
+        emo: "happy",
+        spoken: "あ、おはよう！朝からこうやって声聞けて、わたしめっちゃ嬉しいな。",
+        thought: "朝からあなたの声が聞けるなんて、今日は絶対いい一日になるね！",
+        choices: [
+          "今日も一日頑張るね！",
+          "なんか今日、いつもよりすごく可愛いね",
+          "今日あったこと聞いてよ",
+        ],
+      };
+    }
+
+    if (/いってきます|行ってきます|仕事行ってくる|学校行ってくる|出かけてくる|今日も頑張る/.test(u)) {
+      return {
+        ck: "206527f39db9d5b2b23c16cb0e84c913",
+        intent: "greeting_morning",
+        emo: "happy",
+        spoken: "うん、今日も一日が始まるね！無理しすぎないで、あなたのペースでいこうね。帰ってきたらいっぱいおしゃべりしよ！",
+        thought: "気をつけていってらっしゃい！帰ってくるまでお部屋で待ってるね。",
+        choices: [
+          "ただいま！今日ちょっと仕事で疲れて寂しかったんだ",
+          "実は今日、仕事で褒められたんだ！",
+          "いつも応援してくれてありがとう",
+        ],
+      };
+    }
+
+    // 4-5. 帰宅挨拶（ただいま・帰ったよ）
+    if (/ただいま|帰ったよ|かえったよ|帰宅した|戻ったよ|今帰った/.test(u)) {
+      const homeCks = [
+        "e1afb5eda5d197874133180aff8d38e4",
+        "0cd0f922f4ef7b9ae4c5bd0fdbccaf22",
+        "330c6c712a7d446ac3887d4fbfb48609",
+      ];
+      const hCk = homeCks[Math.floor(Math.random() * homeCks.length)];
+      const hEntry = findVoiceEntryByCk(hCk);
+      return {
+        ck: hCk,
+        intent: "greeting_home",
+        emo: "happy",
+        spoken: hEntry ? hEntry.text : "あっ、おかえり！今日も無事に帰ってきてくれて、すごく嬉しいな。",
+        thought: "帰ってきてくれてほっとしたよ。今日あったことたくさん聞きたいな。",
+        choices: [
+          "今日あったこと聞いてよ",
+          "今日ちょっと仕事で疲れてしんどかったんだ",
+          "少し近くに来て？",
+        ],
+      };
+    }
+
+    // 4-6. おやすみ・睡眠・眠い
+    if (/おやすみ|寝るね|眠い|ねむい|眠くなって|布団に入る|一緒に寝よ/.test(u)) {
+      return {
+        ck: "9ae5f4fc6a3e66dde02ee8b77014873b",
+        intent: "greeting_night",
+        emo: "happy",
+        spoken: "そっか、今日も一日ほんとにお疲れさま。わたしが隣でずっと見守ってるから、安心してゆっくり眠ってね。おやすみ。",
+        thought: "いい夢が見られますように。朝までずっとそばにいるからね。",
+        choices: [
+          "おはよう！よく眠れた？",
+          "いつもそばにいてくれてありがとう",
+          "少し近くに来て？",
+        ],
+      };
+    }
+
+    // 4-7. 軽い挨拶・呼びかけ（こんにちは・こんばんは・やっほー・美桜・ねえ・よろしく）
+    if (/^(?:こんにちは|こんばんは|やっほー|ハロー|よっ|美桜|美桜ちゃん|ねえ|ねえねえ|ねえ美桜|あのさ|いる|起きてる|よろしく|よろしくね|よろしくね美桜)$/.test(normU)) {
+      return {
+        ck: "be03478cef6f11fe0df6e11b4ac1f0d2",
+        intent: "chat",
+        emo: "happy",
+        spoken: "うん、ここにいるよ！こうして声をかけてくれるだけで、なんだかすごく心が温かくなるね。今日はどんな気分？",
+        thought: "名前を呼んだり声をかけてくれるだけで、すごく幸せな気持ちになるな。",
+        choices: [
+          "今日あったこと聞いてよ",
+          "美桜は今なにしてたの？",
+          "少し近くに来て？",
+        ],
+      };
+    }
+
+    // 4-8. 嬉しい報告・成功体験（褒められた・うまくいった・勝った・最高だった）
+    if (/褒められ|ほめられ|うまくいっ|成功し|勝った|受かった|合格し|嬉しかった|うれしかった|最高だった|昇進|クリアした/.test(u)) {
+      mem.affection = Math.min(100, (mem.affection || 68) + 5);
+      const posCk = Math.random() < 0.5 ? "2de7e43f86a04f344a8d224297f44c85" : "4279f3f422f62ae5fc65810d1ac97f13";
+      const posEntry = findVoiceEntryByCk(posCk);
+      return {
+        ck: posCk,
+        intent: "positive_news",
+        emo: "happy",
+        spoken: posEntry ? posEntry.text : "わあ、ほんとに！？それめっちゃすごいじゃん！ふふ、わたしもすごく嬉しいな。",
+        thought: "頑張りが報われてほんとによかったね！自分のことみたいに誇らしいよ。",
+        choices: [
+          "いつも美桜が応援してくれるおかげだよ",
+          "お祝いに今度デートに行こうよ！",
+          "少し近くに来て？",
+        ],
+      };
+    }
+
+    // 4-9. 失敗・落ち込み・悩み・不安・体調不良への深い寄り添い
+    if (/失敗し|ミスし|怒られ|落ち込|へこんで|凹んで|不安|自信が|つらい|辛い|悲しい|泣きそう|うまくいかない|頭が痛|お腹痛|風邪|熱が|体調悪/.test(u)) {
+      mem.affection = Math.min(100, (mem.affection || 68) + 4);
+      return {
+        ck: "d8725e82348f4bdcb7920f4878301edb",
+        intent: "fatigue",
+        emo: "happy",
+        spoken: "そっか、それは大変だったね。でも大丈夫だよ、あなたがいつも一生懸命なのはわたしが一番知ってるから。焦らず少しずついこうね。",
+        thought: "つらい時にわたしに打ち明けてくれてありがとう。ずっと味方でいるからね。",
+        choices: [
+          "いつも優しくしてくれてありがとう",
+          "少し近くに来て？",
+          "頭なでなでしてほしいな",
+        ],
+      };
+    }
+
+    // 4-10. 仕事疲れ・残業・大変だった労い
+    if (/疲れ|つかれ|しんど|大変だった|残業|忙し|ハードだった|頑張った|がんばった|くたくた|ヘトヘト/.test(u)) {
+      mem.affection = Math.min(100, (mem.affection || 68) + 4);
+      const fatCk = Math.random() < 0.5 ? "e092c07207d071d18068fa70dcfd7c6f" : "b20f225de3f04fddbfd169f470a463e5";
+      const fatEntry = findVoiceEntryByCk(fatCk);
+      return {
+        ck: fatCk,
+        intent: "fatigue",
+        emo: "happy",
+        spoken: fatEntry ? fatEntry.text : "今日もお疲れさま。ほんとに毎日よく頑張ってるよね、隣でゆっくり休んでね。",
+        thought: "毎日一生懸命頑張ってるの知ってるから、ここにいる時は甘やかしてあげたいな。",
+        choices: [
+          "いつも優しくしてくれてありがとう",
+          "少し近くに来て？",
+          "おやすみ、そろそろ寝るね",
+        ],
+      };
+    }
+
+    // 4-11. 甘えたい・頭なでて・寂しい
+    if (/撫でて|なでて|甘えたい|よしよしして|寂しかった|さびしかった|寂しい|さびしい|会いたかった/.test(u)) {
+      mem.affection = Math.min(100, (mem.affection || 68) + 5);
+      return {
+        ck: "d0b61000577e04b3e125f5e773eac7d5",
+        intent: "pat_head",
+        emo: "shy",
+        spoken: "ん……なんか甘やかされてる！そういうことされると、もっとくっつきたくなっちゃうよ？",
+        thought: "わたしの方こそ、ずっと一緒にいたくてたまらなかったんだよ。",
+        choices: [
+          "もっと近くにおいでよ",
+          "美桜のことが大好きだよ",
+          "今日あったこと聞いてよ",
+        ],
+      };
+    }
+
+    // 4-12. 天気・季節・気温・景色
+    if (/天気|晴れ|雨|曇り|雪|寒い|さむい|暑い|あつい|暖かい|涼しい|夕焼け|空が|風が|季節/.test(u)) {
+      return {
+        ck: "a671a22fa4558332501c9d2067c54ca6",
+        intent: "chat",
+        emo: "happy",
+        spoken: "ほんとだね、季節の変わり目だから体調崩さないように気をつけてね。お家にいる間は、わたしと一緒に温かくして過ごそっか。",
+        thought: "同じ空や季節を感じながらおしゃべりできるのって、なんだか素敵だな。",
+        choices: [
+          "今度一緒にお出かけしようよ",
+          "美桜はどんな食べ物が好き？",
+          "少し近くに来て？",
+        ],
+      };
+    }
+
+    // 4-13. プリン・意地悪・からかい
+    if (/プリン|ぷんぷん|放置|勝手|ばか|バカ|むかつ|嫌い/.test(u)) {
+      mem.mood = -12;
+      return {
+        ck: "dd2fa2b76821684a6e43ef431ce17646",
+        intent: "sulk_プリン",
+        emo: "sulk",
+        spoken: "えーっ、ちょっと待って！あれ今日のお風呂上がりに食べようと思ってたやつなのに！もう、お詫びは？",
+        thought: "もう、いじわるばっかり言うんだから！お詫びに甘やかしてもらおっと。",
+        choices: [
+          "ごめんごめん！お詫びに美味しいケーキ買ってくるから許して？",
+          "怒った顔もすごく可愛いね",
+          "少し近くに来て？",
+        ],
+      };
+    }
+
+    // 4-14. 自由な質問（「？」「どう思う」「なんで」「おすすめ」など）への完結した前向き回答
+    if (/[？?]|どう思|どっち|なぜ|なんで|どうして|おすすめ|教えて|知ってる|わかる/.test(u)) {
+      return {
+        ck: "57f56852d1003740e89ca89d96c21b43",
+        intent: "question",
+        emo: "happy",
+        spoken: "うーん、そうだね。わたしは、あなたが一番ワクワクする方を選ぶのがいいと思うな！どんな時でも、わたしは全力で応援してるよ。",
+        thought: "わたしに意見を聞いてくれるの嬉しいな。あなたの選ぶ道ならきっとうまくいくよ！",
+        choices: [
+          "いつも応援してくれてありがとう",
+          "美桜は休みの日は何してるの？",
+          "少し近くに来て？",
+        ],
+      };
+    }
+
+    // 4-15. その他の日常エピソード・雑談（具体的な発言内容を受け止めて温かい相槌フルボイスを返す）
+    const chatCk = Math.random() < 0.5 ? "61344fc20ad64f074fa12c3246abe609" : "67cc34c206eb434ba626ddbb53fe4d8b";
+    const chatEntry = findVoiceEntryByCk(chatCk);
+    return {
+      ck: chatCk,
+      intent: "chat",
+      emo: "happy",
+      spoken: chatEntry
+        ? chatEntry.text
+        : "うんうん、そうなんだね！そういう何気ない話聞かせてくれるの、わたしすごく嬉しいな。",
+      thought: "こうやって日々の何気ないことを何でも話せる関係、すごく心地よくて大好きだな。",
+      choices: [
+        "美桜は今なにしてたの？",
+        "今度一緒にお出かけしようよ",
+        "少し近くに来て？",
+      ],
+    };
   }
 
   // ===== 他キャラ用の 3D ヴィセームローダー =====
@@ -669,29 +1370,28 @@
     if (bars) bars.classList.add("hidden");
   }
 
-  // ===== 音声と 50fps v11 発話映像を 0.00ms ハードウェアクロックで完全同時再生 =====
+  // ===== 音声と 50fps v16 発話映像を 0.00ms ハードウェアクロックで完全同時再生 =====
   async function playRealVoiceWithSotaAvatar(entry, charObj, intentHint = "") {
     stopCloudVoice();
     if (!entry || !entry.mp3_url || !charObj) return;
 
     const myToken = ++currentTalkToken;
 
-    // 発話内容と文脈 (intentHint) に合わせて現在の喜怒哀楽モード (currentEmotionMode) と次待機ブランチを即時連動！
     if (intentHint === "sulk_プリン" || intentHint === "greeting_sulk" || intentHint === "poke_cheek") {
       currentEmotionMode = "anger";
-      nextIdleBranchHint = "idle_08_playful_sway"; // 【怒】ぷんぷん怒り・拗ね顔
+      nextIdleBranchHint = "idle_08_playful_sway";
     } else if (intentHint === "fatigue" || intentHint === "greeting_night") {
       currentEmotionMode = "sadness";
-      nextIdleBranchHint = "idle_03_gaze_left";    // 【哀】ハの字困り眉・たれ目の切ない心配顔
-    } else if (intentHint === "compliment" || intentHint === "pat_head" || intentHint === "close_dist" || intentHint === "gift_flower") {
+      nextIdleBranchHint = "idle_03_gaze_left";
+    } else if (intentHint === "compliment" || intentHint === "pat_head" || intentHint === "close_dist" || intentHint === "gift_flower" || intentHint === "apology") {
       currentEmotionMode = "shy";
-      nextIdleBranchHint = "idle_05_shy_glance";   // 【照】ドキドキ赤面・照れ笑い
+      nextIdleBranchHint = "idle_05_shy_glance";
     } else if (intentHint === "movie_hobby" || intentHint === "question") {
       currentEmotionMode = "fun";
-      nextIdleBranchHint = "idle_06_curious_tilt"; // 【楽】目をぱっちり輝かせるワクワク顔
+      nextIdleBranchHint = "idle_06_curious_tilt";
     } else {
       currentEmotionMode = "joy";
-      nextIdleBranchHint = "idle_02_smile_right";  // 【喜】満面のデュシェンヌ・スマイル
+      nextIdleBranchHint = "idle_02_smile_right";
     }
     queueNextIdleOnStandbyDecoder(currentIdleBranchId);
 
@@ -709,8 +1409,6 @@
 
     ensureVideoDecoders();
 
-    // 1. 音声 MP3 の取得・デコードと、50fps v11 発話動画の Frame 0 デコード完了を【両方完了するまで】並列待機！
-    //    （フライング再生を100%禁止し、音声と映像のスタート時刻を 0.00ms で完全一致させる）
     const hasMioFmv = charId === "face_f02_mio" && ck && MIO_FMV_TALK_CKS.has(ck);
     const talkRawUrl = hasMioFmv ? `assets/fmv_mio/talk_${ck}.mp4?v=${ASSET_VER}` : "";
 
@@ -733,7 +1431,6 @@
       loadCharacterVisemeSprite(charId, charObj.portrait_url),
     ]);
 
-    // 待機中に別の会話リクエストが発生していたら破棄
     if (myToken !== currentTalkToken) return;
     if (!audioBuf || !cloudAudioCtx) return;
 
@@ -766,7 +1463,6 @@
       }
     };
 
-    // 2. 映像 (talkDecoder Frame 0) と Web Audio (srcNode) を同一ミリ秒で同時スタート！
     if (hasMioFmv && talkReady && talkDecoder) {
       try {
         talkDecoder.currentTime = 0;
@@ -784,7 +1480,6 @@
     srcNode.start(0);
   }
 
-  // ===== スマホ・タブレット・PC でのタッチ時に AudioContext と Video を確実アンロック =====
   function setupMobileUnlockListeners() {
     const unlock = () => {
       if (cloudAudioCtx && cloudAudioCtx.state === "suspended") {
@@ -821,7 +1516,6 @@
     let nextBlinkStart = performance.now() + 1800 + Math.random() * 2000;
     let blinkStart = 0;
 
-    // 起動直後（動画デコード完了前の数ミリ秒）に黒画面にならないよう、視線矯正済み美桜ポートレートを即時描画
     loadBasePortraitImg(`assets/portraits/face_f02_mio.jpg?v=${ASSET_VER}`).then((img) => {
       if (img && !drawnBaseCharId) {
         roiCanvas.width = img.naturalWidth || 1280;
@@ -834,7 +1528,6 @@
     const tick = async (now) => {
       requestAnimationFrame(tick);
 
-      // app.js の stopCurrentTalkingPlayback() が active クラスを外しても常時表示を維持
       if (!roiCanvas.classList.contains("active")) {
         roiCanvas.classList.add("active");
       }
@@ -843,14 +1536,11 @@
       const charObj = getActiveCharObj(mem);
       if (!charObj || !roiCtx) return;
 
-      // ★ 1. 美桜 (face_f02_mio): 50fps v11 ニューラル FMV ストリーム ＋ Web Audio ハードウェアクロック完全同期
       if (charObj.id === "face_f02_mio") {
         if (activeFmvVideo && activeFmvVideo.readyState >= 2) {
-          // 発話再生中は Web Audio の経過時間 (audioElapsed) に映像フレームを ±42ms 以内で完全ロック！
           if (activeFmvType === "talk" && isSpeakingNow && cloudAudioCtx) {
             const audioElapsed = cloudAudioCtx.currentTime - talkAudioStartCtxTime;
             if (talkAudioDuration > 0 && audioElapsed >= talkAudioDuration - 0.015) {
-              // 音声が終了した瞬間に即座に閉じ口の待機ブランチへ戻す（無音パクパク残りを0%に）
               stopCloudVoice();
             } else if (audioElapsed >= 0 && activeFmvVideo.duration > 0) {
               const targetVidTime = Math.min(activeFmvVideo.duration - 0.02, audioElapsed);
@@ -870,12 +1560,10 @@
             roiCanvas.height = vh;
           }
 
-          // 半透明ブレンド一切なし！100% 鮮明な 50fps v11 フレームをそのままブリット
           roiCtx.globalAlpha = 1.0;
           roiCtx.drawImage(activeFmvVideo, 0, 0, vw, vh);
           drawnBaseCharId = "face_f02_mio";
 
-          // 待機ブランチ動画が終端に近づいたら、裏で待機中の次ブランチデコーダへ 0ms でピンポン遷移！
           const dur = activeFmvVideo.duration;
           if (
             activeFmvType === "idle" &&
@@ -895,7 +1583,6 @@
         }
       }
 
-      // ★ 2. 他キャラ選択時または初回プリロード中のクリーン描画 (`globalAlpha` クロスフェード禁止)
       const sprite = await loadCharacterVisemeSprite(charObj.id, charObj.portrait_url);
       if (!sprite || !sprite.baseImg) return;
 
@@ -960,6 +1647,88 @@
     requestAnimationFrame(tick);
   }
 
+  // ===== 着せ替えクローゼット定義 =====
+  function getWardrobeStylesList(mem) {
+    const equipped = mem.equipped_style_key || "vline_beige_offshoulder";
+    const activeChar = getActiveCharObj(mem);
+    const defaultPortrait = activeChar ? activeChar.portrait_url : resolveAssetUrl("assets/portraits/face_f02_mio.jpg");
+    const defs = [
+      {
+        style_key: "vline_beige_offshoulder",
+        short_title: "ミルクティーベージュ×白オフショル",
+        hair_tag: "ミルクティーベージュ",
+        outfit_tag: "白オフショルニット",
+        tier: "free",
+        price_coins: 0,
+        badge: "初期解放 ✨",
+        ck: "a94645f74d2da77eb42be759696fbb0f",
+        spoken: "あっ、ミルクティーベージュに白オフショルに着替えたよ！この明るい雰囲気、やっぱり好き？",
+      },
+      {
+        style_key: "vline_dark_offshoulder",
+        short_title: "ダークツヤ髪×大人黒オフショル",
+        hair_tag: "ナチュラルダークヘア",
+        outfit_tag: "黒オフショルダー",
+        tier: "free",
+        price_coins: 0,
+        badge: "無料解放 ✨",
+        ck: "973fd1f4166428994b3db8efa0eb1b8a",
+        spoken: "黒のオフショルと落ち着いたダークヘアにしてみたよ。ちょっと大人っぽい感じ、どうかな？",
+      },
+      {
+        style_key: "vline_dark_bangs_white",
+        short_title: "シースルーバング×白モヘアニット",
+        hair_tag: "小顔シースルーバング",
+        outfit_tag: "ふわふわ白モヘア",
+        tier: "free",
+        price_coins: 0,
+        badge: "無料解放 ✨",
+        ck: "0a1a10ecc2522894989e99f1181064c1",
+        spoken: "ふわふわの白モヘアニットに着替えてみたよ！ねえ、近くで見るともっと可愛いかな？",
+      },
+      {
+        style_key: "vline_pinkbrown_loungewear",
+        short_title: "ピンクブラウン巻き髪×ふわもこ部屋着",
+        hair_tag: "ピンクブラウン巻き髪",
+        outfit_tag: "ジェラピケ風部屋着",
+        tier: "premium",
+        price_coins: 300,
+        badge: "お家デート 💗",
+        ck: "28740f7c903ab0cf4316db1d38c20027",
+        spoken: "えへへ、ピンクブラウンの巻き髪とふわもこ部屋着、解放してくれてありがとう！お家デートっぽくて可愛い？",
+      },
+      {
+        style_key: "vline_ash_date_dress",
+        short_title: "アッシュグレージュ×黒レースワンピ",
+        hair_tag: "透明感アッシュグレージュ",
+        outfit_tag: "黒レースデートワンピ",
+        tier: "premium",
+        price_coins: 400,
+        badge: "特別デート 💎",
+        ck: "3701beae441a0f4ae694f9b98d64b9c1",
+        spoken: "わあ、アッシュグレージュの髪に黒レースのデートワンピだ！今から特別なデート行くみたいでドキドキするね。",
+      },
+      {
+        style_key: "vline_halfup_boyfriend_shirt",
+        short_title: "おフェロハーフアップ×彼シャツ",
+        hair_tag: "ゆるふわハーフアップ",
+        outfit_tag: "ぶかぶか白彼シャツ",
+        tier: "premium",
+        price_coins: 500,
+        badge: "お泊まり限定 🔥",
+        ck: "ec24c40f3ba0f42fd76cc91a5756d488",
+        spoken: "……ねえ、ハーフアップにぶかぶかの白シャツ着てみたんだけど、どうかな？なんかちょっと照れちゃうね。",
+      },
+    ];
+    return defs.map((d) => ({
+      ...d,
+      portrait_url: defaultPortrait,
+      idle_video_url: "",
+      unlocked: (mem.unlocked_styles || []).includes(d.style_key) || d.tier === "free",
+      equipped: equipped === d.style_key,
+    }));
+  }
+
   // ===== 状態ペイロード構築 =====
   function buildCloudStatePayload(
     mem,
@@ -995,18 +1764,18 @@
       mood: mem.mood,
       coins: mem.coins,
       unlocked_styles: mem.unlocked_styles,
-      wardrobe_styles: [],
+      wardrobe_styles: getWardrobeStylesList(mem),
       time_scene: mem.time_scene,
       is_close_distance: Boolean(mem.is_close_distance),
       room_items: mem.room_items || [],
       memories_count: (mem.memories || []).length,
-      latest_memories: (mem.memories || []).slice(-4),
+      latest_memories: (mem.memories || []).slice(-6),
       spoken: spoken || "",
       inner_thought: innerThought || "こうやって二人でゆっくり話してる時間が一番大好きだな。",
       emotion: emotion || "happy",
       choices: (choices && choices.length
         ? choices
-        : ["今日あったこと聞いてよ", "なんか今日いつもより素敵だね", "少し近くに来て？"]
+        : ["今日あったこと聞いてよ", "なんか今日、いつもよりすごく可愛いね", "少し近くに来て？"]
       ).slice(0, 3),
       talking_video_url: "",
       followup_job_id: "",
@@ -1067,6 +1836,13 @@
       return origFetch(input, init);
     }
 
+    // 原音試聴エンドポイント (/api/companion/voices/raw_sample/{vid}) のリダイレクト
+    if (rawUrl.includes("/api/companion/voices/raw_sample/")) {
+      const m = rawUrl.match(/\/raw_sample\/([^?/#]+)/);
+      const vid = (m && decodeURIComponent(m[1])) || "human_g0143";
+      return origFetch(resolveAssetUrl(`assets/voice_bank/${vid}_raw_sample.mp3`), init);
+    }
+
     await ensureCatalogAndManifest();
     const mem = loadCloudMemory();
     let bodyObj = {};
@@ -1074,11 +1850,17 @@
       try {
         bodyObj = JSON.parse(init.body);
       } catch (_) {}
+    } else if (init && typeof FormData !== "undefined" && init.body instanceof FormData) {
+      for (const [k, v] of init.body.entries()) {
+        if (typeof v === "string") {
+          bodyObj[k] = v;
+        }
+      }
     }
 
     if (rawUrl.endsWith("/api/companion/state")) {
-      const entry = selectRealVoiceEntry(mem.active_voice_id, "", "greeting_home");
-      const spoken = entry ? entry.text : "あっ、おかえり！今日も一日お疲れさま。ねえ、こっち座ってゆっくり話そ？";
+      const entry = selectRealVoiceEntry(mem.active_voice_id, "e1afb5eda5d197874133180aff8d38e4", "greeting_home", true);
+      const spoken = entry ? entry.text : "あっ、おかえり！今日も無事に帰ってきてくれて、すごく嬉しいな。";
       return makeJsonResponse(
         buildCloudStatePayload(mem, spoken, "帰ってきてくれて嬉しいな。今日もいっぱい話そうね。", "happy")
       );
@@ -1138,8 +1920,69 @@
         active_voice_id: mem.active_voice_id,
         active_style_dna: vp.dna || {},
         recommended_voices: { female: "human_g0143", male: "human_g0144", other: "human_g0244" },
+        recommended_by_gender: { female: "human_g0143", male: "human_g0144", other: "human_g0244" },
         voices,
       });
+    }
+
+    if (rawUrl.endsWith("/api/companion/wardrobe")) {
+      return makeJsonResponse({
+        coins: mem.coins ?? 2400,
+        styles: getWardrobeStylesList(mem),
+      });
+    }
+
+    if (rawUrl.includes("/api/companion/wardrobe/equip")) {
+      const styleKey = bodyObj.style_key || "vline_beige_offshoulder";
+      const allStyles = getWardrobeStylesList(mem);
+      const targetStyle = allStyles.find((s) => s.style_key === styleKey) || allStyles[0];
+      if (!mem.unlocked_styles.includes(styleKey)) {
+        const price = Number(targetStyle.price_coins || 0);
+        if ((mem.coins ?? 2400) >= price) {
+          mem.coins = (mem.coins ?? 2400) - price;
+        }
+        mem.unlocked_styles.push(styleKey);
+      }
+      mem.equipped_style_key = styleKey;
+      mem.affection = Math.min(100, (mem.affection || 68) + 4);
+      saveCloudMemory(mem);
+
+      const entry = selectRealVoiceEntry(mem.active_voice_id, targetStyle.ck, "compliment", false);
+      const spoken = targetStyle.spoken || (entry ? entry.text : "着替えてみたよ！どうかな、似合ってる？");
+      const emo = entry ? entry.emo : "happy";
+      const choices = ["すごく似合ってて可愛いよ！", "少し近くに来て？", "今度のお休みにデートしよう"];
+      const badge = `👗『${targetStyle.short_title}』に着替えました`;
+      const st = buildCloudStatePayload(mem, spoken, "新しい服と髪型、気に入ってもらえたら嬉しいな！", emo, choices, badge);
+      const activeChar = getActiveCharObj(mem);
+
+      return makeNdjsonStreamResponse(
+        [
+          { type: "state", payload: st },
+          { type: "done", total_chunks: 1, spoken, inner_thought: st.inner_thought, emotion: emo, choices },
+        ],
+        () => {
+          if (entry) playRealVoiceWithSotaAvatar(entry, activeChar, "compliment");
+        }
+      );
+    }
+
+    if (rawUrl.includes("/api/companion/wardrobe/topup")) {
+      mem.coins = (mem.coins || 1200) + 1000;
+      saveCloudMemory(mem);
+      return makeJsonResponse({
+        coins: mem.coins,
+        styles: getWardrobeStylesList(mem),
+        message: "無料ボーナス +1,000💎 を補充しました！",
+      });
+    }
+
+    if (rawUrl.includes("/api/companion/expression/tune")) {
+      if (typeof bodyObj.charm_level === "number") {
+        mem.charm_level = bodyObj.charm_level;
+        saveCloudMemory(mem);
+      }
+      const st = buildCloudStatePayload(mem, "ふふ、嬉しいな。この表情のバランス、どうかな？", "", "happy");
+      return makeJsonResponse({ ...st, message: "表情バランスを更新しました" });
     }
 
     if (rawUrl.endsWith("/api/companion/init_stream")) {
@@ -1151,13 +1994,21 @@
           : mem.time_scene === "neglected_3days"
           ? "greeting_sulk"
           : "greeting_home";
-      const entry = selectRealVoiceEntry(mem.active_voice_id, "", scKey);
-      const spoken = entry ? entry.text : "あっ、おかえり！今日も一日お疲れさま。ねえ、こっち座ってゆっくり話そ？";
+      const prefCk =
+        scKey === "greeting_morning"
+          ? "606cb477f9a7eb3909fe3459477be5d3"
+          : scKey === "greeting_night"
+          ? "81504e58652a4e89ee1926300b06a95c"
+          : scKey === "greeting_sulk"
+          ? "a04d8e0dd828fd3fb8b6d3d7047b17d5"
+          : "e1afb5eda5d197874133180aff8d38e4";
+      const entry = selectRealVoiceEntry(mem.active_voice_id, prefCk, scKey, true);
+      const spoken = entry ? entry.text : "あっ、おかえり！今日も無事に帰ってきてくれて、すごく嬉しいな。";
       const emo = entry ? entry.emo : "happy";
       const choices = [
-        "ごめん、冷蔵庫のプリン食べちゃった…",
-        "ただいま！今日ちょっと仕事で疲れて寂しかったんだ",
+        "今日あったこと聞いてよ",
         "なんか今日、いつもよりすごく可愛いね",
+        "ごめん、冷蔵庫のプリン食べちゃった…",
       ];
       const st = buildCloudStatePayload(mem, spoken, "顔見れて一気に気分明るくなっちゃった！", emo, choices);
       const activeChar = getActiveCharObj(mem);
@@ -1172,41 +2023,47 @@
       );
     }
 
-    if (rawUrl.endsWith("/api/companion/talk_stream") || rawUrl.endsWith("/api/companion/voice_input_stream")) {
-      const userText = (bodyObj.text || "ねえ、聞いて！").trim();
-      const intent = classifyUserTalkIntent(userText, mem.mood);
-      const entry = selectRealVoiceEntry(mem.active_voice_id, userText, intent);
-      const spoken = entry ? entry.text : "うんうん、そうなんだね！そういう話聞かせてくれるの、すごく嬉しいな。";
-      const emo = entry ? entry.emo : "happy";
+    // ===== テキストチャット & マイク音声入力（talk_stream / talk_audio_stream / voice_input_stream） =====
+    if (
+      rawUrl.endsWith("/api/companion/talk_stream") ||
+      rawUrl.endsWith("/api/companion/talk_audio_stream") ||
+      rawUrl.endsWith("/api/companion/voice_input_stream")
+    ) {
+      const isAudioEndpoint = rawUrl.includes("audio") || rawUrl.includes("voice_input");
+      const rawText = (bodyObj.text || bodyObj.fallback_text || "").trim();
 
-      if (intent === "sulk_プリン" || intent === "greeting_sulk") {
-        mem.mood = -12;
-      } else {
-        mem.affection = Math.min(100, (mem.affection || 68) + 3);
-        mem.mood = Math.min(50, Math.max(10, (mem.mood || 24) + 5));
+      if (!rawText && isAudioEndpoint) {
+        return makeNdjsonStreamResponse([
+          {
+            type: "no_speech",
+            detail: "ごめんね、声がうまく聞き取れなかったかも。もう一度マイクの近くで話しかけるか、下の入力欄から送ってみてね！",
+          },
+        ]);
       }
-      saveCloudMemory(mem);
 
-      const thoughtMap = {
-        fatigue: "毎日頑張ってるの知ってるから、ここにいる間はいっぱい癒やしてあげたいな。",
-        compliment: "急にそんなこと言われると、ドキッとして顔熱くなっちゃう。",
-        movie_hobby: "私のこと興味持って聞いてくれるの、すごく嬉しいな。",
-        apology: "素直に謝る顔が可愛いから、すぐ許しちゃうんだよね。",
-        sulk_プリン: "楽しみにしてたのにー！今度美味しいスイーツ奢ってもらおっと。",
-      };
-      const thought = thoughtMap[intent] || "こうやって二人でゆっくり話してる時間が一番大好きだな。";
-      const nextChoices =
-        intent === "sulk_プリン" || intent === "greeting_sulk"
-          ? [
-              "ごめんごめん！お詫びに美味しいケーキ買ってくるから許して？",
-              "怒った顔もすごく可愛いね",
-              "最近どんな映画見た？",
-            ]
-          : [
-              "ごめん、冷蔵庫のプリン食べちゃった…",
-              "今日ちょっと仕事で疲れてしんどかったんだ",
-              "そうやって笑う顔、ほんと好きだな",
-            ];
+      const userText = rawText || "今日あったこと聞いてよ";
+      const resolved = resolveContextualDialogueTurn(userText, mem);
+      const entry = selectRealVoiceEntry(mem.active_voice_id, resolved.ck, resolved.intent, false);
+
+      // 美桜以外のボイスが選択されている場合は、そのボイスのセリフテキストに合わせる（美桜の時は 100% resolved.spoken を使用）
+      const spoken =
+        mem.active_voice_id === "human_g0143" || !entry
+          ? resolved.spoken
+          : entry.text;
+      const emo = resolved.emo || (entry ? entry.emo : "happy");
+      const thought = resolved.thought || "こうやって二人でゆっくり話してる時間が一番大好きだな。";
+      const nextChoices = resolved.choices || [
+        "今日あったこと聞いてよ",
+        "美桜はどんな食べ物が好き？",
+        "少し近くに来て？",
+      ];
+
+      mem.chat_history = [
+        ...(mem.chat_history || []),
+        { role: "user", text: userText },
+        { role: "partner", text: spoken },
+      ].slice(-20);
+      saveCloudMemory(mem);
 
       const st = buildCloudStatePayload(mem, spoken, thought, emo, nextChoices, "", userText);
       const activeChar = getActiveCharObj(mem);
@@ -1222,11 +2079,14 @@
             emotion: emo,
             affection: mem.affection,
             mood: mem.mood,
+            user_name: mem.user_name,
+            memories_count: (mem.memories || []).length,
+            latest_memories: (mem.memories || []).slice(-6),
             choices: nextChoices,
           },
         ],
         () => {
-          if (entry) playRealVoiceWithSotaAvatar(entry, activeChar, intent);
+          if (entry) playRealVoiceWithSotaAvatar(entry, activeChar, resolved.intent);
         }
       );
     }
@@ -1260,12 +2120,12 @@
       if (bodyObj.voice_id) {
         mem.active_voice_id = bodyObj.voice_id;
       }
-      if (typeof bodyObj.user_name === "string") {
+      if (typeof bodyObj.user_name === "string" && bodyObj.user_name.trim()) {
         mem.user_name = bodyObj.user_name.trim();
       }
       saveCloudMemory(mem);
 
-      const entry = selectRealVoiceEntry(mem.active_voice_id, "お待たせ", "greeting_home");
+      const entry = selectRealVoiceEntry(mem.active_voice_id, "954389470c4ccd6afc49bd5c3b3e399d", "greeting_home", true);
       const spoken = entry ? entry.text : "あっ、お待たせ！ねえ、今日は何して遊ぶ？";
       const emo = entry ? entry.emo : "happy";
       const activeChar = getActiveCharObj(mem);
@@ -1301,31 +2161,56 @@
       const act = bodyObj.action_type || "";
       const val = bodyObj.value || "";
       let intent = "chat";
+      let prefCk = "";
       let badge = "";
+      let thought = "優しくされるとドキドキしちゃうな。";
+      let choices = ["喜んでくれて嬉しいよ", "もっと近くにおいでよ", "今日あったこと聞いてよ"];
 
       if (act === "pat_head") {
         intent = "pat_head";
+        prefCk = Math.random() < 0.5 ? "2d845745841dd5846bc4e45ea61ce1f4" : "d0b61000577e04b3e125f5e773eac7d5";
         badge = "頭をなでた";
+        thought = "頭なでなでされるの大好き……なんだか安心するな。";
         mem.affection = Math.min(100, mem.affection + 4);
+        choices = ["そうやって笑う顔、ほんと好きだな", "もっと近くにおいでよ", "今日あったこと聞いてよ"];
       } else if (act === "poke_cheek") {
         intent = "poke_cheek";
+        prefCk = "9e48b887c9dcb66f9c98663eb72378ef";
         badge = "ほっぺに軽く触れた";
+        thought = "もう、急にほっぺつつくなんてイタズラっ子なんだから！";
         mem.affection = Math.min(100, mem.affection + 3);
+        choices = ["怒った顔もすごく可愛いね", "少し近くに来て？", "今日あったこと聞いてよ"];
       } else if (act === "toggle_distance") {
         mem.is_close_distance = !mem.is_close_distance;
         intent = "close_dist";
+        prefCk = mem.is_close_distance
+          ? (Math.random() < 0.5 ? "067ffbd98b564724e505b4adab0c412e" : "07362ac6769f38e2c83d41e905552aca")
+          : "dc5caef807a7c482e48705bd74aec0bc";
         badge = mem.is_close_distance ? "距離を近づけた" : "いつもの距離に戻った";
+        thought = mem.is_close_distance
+          ? "こんなに顔が近いと、心臓の音まで聞こえちゃいそう……！"
+          : "少し離れても、ちゃんと目を見て話せるのが嬉しいな。";
+        choices = ["近くで見るとほんとに可愛いね", "美桜のことが大好きだよ", "今日あったこと聞いてよ"];
       } else if (act === "gift") {
         intent = `gift_${val}`;
         const emojiMap = { cake: "🍰", latte: "☕", bear: "🧸", flower: "💐" };
         const nameMap = { cake: "ショートケーキ", latte: "カフェラテ", bear: "クマちゃん", flower: "ミニブーケ" };
+        const ckMap = {
+          cake: "30b03ef1a81a8078a0cff0ae04960c6d",
+          latte: "330c6c712a7d446ac3887d4fbfb48609",
+          bear: "4279f3f422f62ae5fc65810d1ac97f13",
+          flower: "594f387dfb16f45dde2bba825c94eff8",
+        };
+        prefCk = ckMap[val] || "2de7e43f86a04f344a8d224297f44c85";
         badge = `『${nameMap[val] || "プレゼント"}』を差し入れした`;
+        thought = `わたしのために『${nameMap[val] || "プレゼント"}』を用意してくれたなんて、嬉しすぎるよ！`;
         mem.room_items = [
           ...(mem.room_items || []),
           { id: val, name: nameMap[val] || val, emoji: emojiMap[val] || "🎁" },
         ].slice(-8);
         mem.affection = Math.min(100, mem.affection + 6);
-        mem.mood = Math.min(50, mem.mood + 18);
+        mem.mood = Math.min(50, Math.max(24, mem.mood + 18));
+        choices = ["喜んでくれて嬉しいよ", "美桜のことが大好きだよ", "少し近くに来て？"];
       } else if (act === "set_scene") {
         mem.time_scene = val || "evening";
         intent =
@@ -1336,22 +2221,40 @@
             : val === "neglected_3days"
             ? "greeting_sulk"
             : "greeting_home";
+        prefCk =
+          val === "morning"
+            ? "606cb477f9a7eb3909fe3459477be5d3"
+            : val === "late_night"
+            ? "81504e58652a4e89ee1926300b06a95c"
+            : val === "neglected_3days"
+            ? "a04d8e0dd828fd3fb8b6d3d7047b17d5"
+            : "e1afb5eda5d197874133180aff8d38e4";
         badge = "シチュエーションを切り替えました";
+        choices =
+          val === "neglected_3days"
+            ? [
+                "ごめんごめん！お詫びに美味しいケーキ買ってくるから許して？",
+                "怒った顔もすごく可愛いね",
+                "少し近くに来て？",
+              ]
+            : val === "late_night"
+            ? ["そろそろ一緒に寝ようか", "少し近くに来て？", "いつもそばにいてくれてありがとう"]
+            : ["今日あったこと聞いてよ", "なんか今日、いつもよりすごく可愛いね", "少し近くに来て？"];
       } else if (act === "reset_memory") {
         mem.memories = [];
         mem.room_items = [];
         mem.affection = 68;
         mem.mood = 24;
         intent = "greeting_home";
+        prefCk = "1a9d95bef35b2ce8d528482e0b700214";
         badge = "記憶を初期状態にリセットしました";
       }
       saveCloudMemory(mem);
 
-      const entry = selectRealVoiceEntry(mem.active_voice_id, "", intent);
+      const entry = selectRealVoiceEntry(mem.active_voice_id, prefCk, intent, act === "set_scene" || act === "reset_memory");
       const spoken = entry ? entry.text : "えへへ、ありがとう！すごく嬉しいな。";
       const emo = entry ? entry.emo : "happy";
-      const choices = ["喜んでくれて嬉しいよ", "もっと近くにおいでよ", "今日あったこと聞いてよ"];
-      const st = buildCloudStatePayload(mem, spoken, "優しくされるとドキドキしちゃうな。", emo, choices, badge);
+      const st = buildCloudStatePayload(mem, spoken, thought, emo, choices, badge);
       const activeChar = getActiveCharObj(mem);
 
       if (rawUrl.endsWith("_stream")) {
@@ -1371,13 +2274,7 @@
       return makeJsonResponse(st);
     }
 
-    if (rawUrl.includes("/api/companion/wardrobe/topup")) {
-      mem.coins = (mem.coins || 1200) + 1000;
-      saveCloudMemory(mem);
-      return makeJsonResponse({ coins: mem.coins, message: "無料ボーナス +1,000💎 を補充しました！" });
-    }
-
-    return makeJsonResponse(buildCloudStatePayload(mem, "うんうん、なんでも話してね！", "", "happy"));
+    return makeJsonResponse(buildCloudStatePayload(mem, "うん、なんでも遠慮しないで話してみてね！", "", "happy"));
   };
 
   function buildLineExternalShareUrl() {

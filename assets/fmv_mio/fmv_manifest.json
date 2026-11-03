@@ -234,6 +234,222 @@
       "fps": 50,
       "emo_start": "shy",
       "emo_end": "shy"
+    },
+    "e73f76e140e81e97ab965590d2f08a51": {
+      "url": "assets/fmv_mio/talk_e73f76e140e81e97ab965590d2f08a51.mp4",
+      "frames": 316,
+      "fps": 50,
+      "emo_start": "fun",
+      "emo_end": "fun",
+      "tag": "listen_prompt_1"
+    },
+    "c8a60a88db16e38a5ae407df376d1371": {
+      "url": "assets/fmv_mio/talk_c8a60a88db16e38a5ae407df376d1371.mp4",
+      "frames": 296,
+      "fps": 50,
+      "emo_start": "joy",
+      "emo_end": "joy",
+      "tag": "listen_prompt_2"
+    },
+    "7367606325201e40d5505ca01745a4eb": {
+      "url": "assets/fmv_mio/talk_7367606325201e40d5505ca01745a4eb.mp4",
+      "frames": 312,
+      "fps": 50,
+      "emo_start": "shy",
+      "emo_end": "shy",
+      "tag": "forgive_gentle"
+    },
+    "68328539b599bec99517e6dce3e62055": {
+      "url": "assets/fmv_mio/talk_68328539b599bec99517e6dce3e62055.mp4",
+      "frames": 288,
+      "fps": 50,
+      "emo_start": "shy",
+      "emo_end": "shy",
+      "tag": "compliment_shy_3"
+    },
+    "07fcbee8e949e606c288e46a308f2d8e": {
+      "url": "assets/fmv_mio/talk_07fcbee8e949e606c288e46a308f2d8e.mp4",
+      "frames": 56,
+      "fps": 50,
+      "emo_start": "fun",
+      "emo_end": "fun",
+      "tag": "react_really"
+    },
+    "820fde0211d176cd9c9ba4d1950d2fe8": {
+      "url": "assets/fmv_mio/talk_820fde0211d176cd9c9ba4d1950d2fe8.mp4",
+      "frames": 76,
+      "fps": 50,
+      "emo_start": "joy",
+      "emo_end": "joy",
+      "tag": "react_understand"
+    },
+    "c00eb8ce3a628f30662c80e25621aa4b": {
+      "url": "assets/fmv_mio/talk_c00eb8ce3a628f30662c80e25621aa4b.mp4",
+      "frames": 100,
+      "fps": 50,
+      "emo_start": "joy",
+      "emo_end": "joy",
+      "tag": "react_happy"
+    },
+    "b69cb7e9dea7fdd02e29256f386e6761": {
+      "url": "assets/fmv_mio/talk_b69cb7e9dea7fdd02e29256f386e6761.mp4",
+      "frames": 52,
+      "fps": 50,
+      "emo_start": "fun",
+      "emo_end": "fun",
+      "tag": "react_iknow"
+    },
+    "71260ec33402ee5e8e019eb22ff6fd39": {
+      "url": "assets/fmv_mio/talk_71260ec33402ee5e8e019eb22ff6fd39.mp4",
+      "frames": 56,
+      "fps": 50,
+      "emo_start": "fun",
+      "emo_end": "fun",
+      "tag": "react_nice"
+    },
+    "f1f4fc70a3cce37e75e36eed92aa63b1": {
+      "url": "assets/fmv_mio/talk_f1f4fc70a3cce37e75e36eed92aa63b1.mp4",
+      "frames": 248,
+      "fps": 50,
+      "emo_start": "shy",
+      "emo_end": "shy",
+      "tag": "cute_angry"
+    },
+    "30b03ef1a81a8078a0cff0ae04960c6d": {
+      "url": "assets/fmv_mio/talk_30b03ef1a81a8078a0cff0ae04960c6d.mp4",
+      "frames": 286,
+      "fps": 50,
+      "emo_start": "joy",
+      "emo_end": "joy",
+      "tag": "forgive_cake"
+    },
+    "dc5caef807a7c482e48705bd74aec0bc": {
+      "url": "assets/fmv_mio/talk_dc5caef807a7c482e48705bd74aec0bc.mp4",
+      "frames": 354,
+      "fps": 50,
+      "emo_start": "shy",
+      "emo_end": "shy",
+      "tag": "come_closer"
+    },
+    "c165b5c6237840908946dea34a2763ca": {
+      "url": "assets/fmv_mio/talk_c165b5c6237840908946dea34a2763ca.mp4",
+      "frames": 360,
+      "fps": 50,
+      "emo_start": "shy",
+      "emo_end": "shy",
+      "tag": "thank_you_affection"
+    },
+    "b584eb786c69d991e42a2eceed1a091a": {
+      "url": "assets/fmv_mio/talk_b584eb786c69d991e42a2eceed1a091a.mp4",
+      "frames": 378,
+      "fps": 50,
+      "emo_start": "fun",
+      "emo_end": "fun",
+      "tag": "movie_romance"
+    },
+    "556fd432b601e6ccf158dea0f0c1cf82": {
+      "url": "assets/fmv_mio/talk_556fd432b601e6ccf158dea0f0c1cf82.mp4",
+      "frames": 346,
+      "fps": 50,
+      "emo_start": "joy",
+      "emo_end": "joy",
+      "tag": "what_doing_now"
+    },
+    "578b0112ac1b1c97a232e26752ed5aae": {
+      "url": "assets/fmv_mio/talk_578b0112ac1b1c97a232e26752ed5aae.mp4",
+      "frames": 410,
+      "fps": 50,
+      "emo_start": "joy",
+      "emo_end": "joy",
+      "tag": "self_intro_mio"
+    },
+    "28385137f730736f7016540a7fec23a3": {
+      "url": "assets/fmv_mio/talk_28385137f730736f7016540a7fec23a3.mp4",
+      "frames": 334,
+      "fps": 50,
+      "emo_start": "fun",
+      "emo_end": "fun",
+      "tag": "favorite_food"
+    },
+    "272ec771922ab509421735007eb067d6": {
+      "url": "assets/fmv_mio/talk_272ec771922ab509421735007eb067d6.mp4",
+      "frames": 394,
+      "fps": 50,
+      "emo_start": "joy",
+      "emo_end": "joy",
+      "tag": "hobby_holiday"
+    },
+    "7de72b08093d150f784c39f50f07b438": {
+      "url": "assets/fmv_mio/talk_7de72b08093d150f784c39f50f07b438.mp4",
+      "frames": 378,
+      "fps": 50,
+      "emo_start": "fun",
+      "emo_end": "fun",
+      "tag": "date_invite"
+    },
+    "f7de0f42a4450b105108fb89af4e99c3": {
+      "url": "assets/fmv_mio/talk_f7de0f42a4450b105108fb89af4e99c3.mp4",
+      "frames": 362,
+      "fps": 50,
+      "emo_start": "shy",
+      "emo_end": "shy",
+      "tag": "love_confess"
+    },
+    "9ae5f4fc6a3e66dde02ee8b77014873b": {
+      "url": "assets/fmv_mio/talk_9ae5f4fc6a3e66dde02ee8b77014873b.mp4",
+      "frames": 420,
+      "fps": 50,
+      "emo_start": "joy",
+      "emo_end": "joy",
+      "tag": "goodnight_sleep"
+    },
+    "be03478cef6f11fe0df6e11b4ac1f0d2": {
+      "url": "assets/fmv_mio/talk_be03478cef6f11fe0df6e11b4ac1f0d2.mp4",
+      "frames": 384,
+      "fps": 50,
+      "emo_start": "joy",
+      "emo_end": "joy",
+      "tag": "casual_hello"
+    },
+    "a671a22fa4558332501c9d2067c54ca6": {
+      "url": "assets/fmv_mio/talk_a671a22fa4558332501c9d2067c54ca6.mp4",
+      "frames": 486,
+      "fps": 50,
+      "emo_start": "joy",
+      "emo_end": "joy",
+      "tag": "weather_season"
+    },
+    "d8725e82348f4bdcb7920f4878301edb": {
+      "url": "assets/fmv_mio/talk_d8725e82348f4bdcb7920f4878301edb.mp4",
+      "frames": 462,
+      "fps": 50,
+      "emo_start": "sadness",
+      "emo_end": "sadness",
+      "tag": "cheer_up_consult"
+    },
+    "57f56852d1003740e89ca89d96c21b43": {
+      "url": "assets/fmv_mio/talk_57f56852d1003740e89ca89d96c21b43.mp4",
+      "frames": 524,
+      "fps": 50,
+      "emo_start": "joy",
+      "emo_end": "joy",
+      "tag": "question_general"
+    },
+    "81504e58652a4e89ee1926300b06a95c": {
+      "url": "assets/fmv_mio/talk_81504e58652a4e89ee1926300b06a95c.mp4",
+      "frames": 422,
+      "fps": 50,
+      "emo_start": "sadness",
+      "emo_end": "sadness",
+      "tag": "late_night_care"
+    },
+    "206527f39db9d5b2b23c16cb0e84c913": {
+      "url": "assets/fmv_mio/talk_206527f39db9d5b2b23c16cb0e84c913.mp4",
+      "frames": 394,
+      "fps": 50,
+      "emo_start": "joy",
+      "emo_end": "joy",
+      "tag": "morning_cheer"
     }
   }
 }
