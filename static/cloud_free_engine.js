@@ -20,7 +20,7 @@
 (function () {
   "use strict";
 
-  const ASSET_VER = "23";
+  const ASSET_VER = "24";
   const STORAGE_KEY_MEM = "pw_cloud_v9_memory";
 
   let catalogMeta = null;
@@ -30,18 +30,19 @@
   let visemeCache = new Map(); // charId -> Promise<Sprite>
   let baseImgCache = new Map(); // url -> Promise<HTMLImageElement>
 
-  // ===== Mobile-Safe 3-Decoder Pool & Blob Memory Cache (for face_f02_mio 50fps v11 Streams) =====
+  // ===== Mobile-Safe 3-Decoder Pool & Blob Memory Cache (for face_f02_mio 50fps v13 Kidoairaku Streams) =====
   let fmvBlobUrlCache = new Map(); // relativeUrl -> Promise<blobUrl>
   let fmvIdleUrlMap = new Map(); // branchId -> relativeUrl
   let idleDecoderA = null;
   let idleDecoderB = null;
   let talkDecoder = null;
   let activeIdleSlot = "A"; // "A" | "B"
-  let queuedNextIdleId = "idle_01_breath_micro";
+  let queuedNextIdleId = "idle_02_smile_right";
 
   let activeFmvVideo = null;
   let activeFmvType = "idle"; // "idle" | "talk"
   let currentIdleBranchId = "idle_02_smile_right";
+  let currentEmotionMode = "joy"; // "joy" | "anger" | "sadness" | "fun" | "shy"
   let nextIdleBranchHint = null;
   let fmvSwitching = false;
 
@@ -297,30 +298,44 @@
       nextIdleBranchHint = null;
       return h;
     }
-    const candidates = [
-      { id: "idle_01_breath_micro", w: 24 },
-      { id: "idle_02_smile_right", w: 18 },
-      { id: "idle_03_gaze_left", w: 16 },
-      { id: "idle_04_nod_listen", w: 14 },
-      { id: "idle_07_deep_relax", w: 12 },
-      { id: "idle_08_playful_sway", w: 8 },
-      { id: "idle_06_curious_tilt", w: 4 },
-      { id: "idle_05_shy_glance", w: 4 },
-    ].filter((c) => fmvIdleUrlMap.has(c.id));
 
-    if (candidates.length === 0) return "idle_01_breath_micro";
+    // 現在の感情モード (joy / anger / sadness / fun / shy) に応じて待機中の表情も喜怒哀楽を鮮明に維持！
+    const emotionBranchWeights = {
+      anger: [
+        { id: "idle_08_playful_sway", w: 88 }, // 【怒】ぷんぷん怒り・拗ね顔を継続
+        { id: "idle_03_gaze_left", w: 12 },    // 【哀】寂しそうな拗ね目
+      ],
+      sadness: [
+        { id: "idle_03_gaze_left", w: 82 },    // 【哀】ハの字困り眉・たれ目の切ない心配顔
+        { id: "idle_07_deep_relax", w: 18 },   // 【慈愛】優しく気遣う眼差し
+      ],
+      shy: [
+        { id: "idle_05_shy_glance", w: 82 },   // 【照】ドキドキ赤面・照れ笑い
+        { id: "idle_02_smile_right", w: 18 },  // 【喜】幸せそうな笑顔
+      ],
+      fun: [
+        { id: "idle_06_curious_tilt", w: 58 }, // 【楽】目をぱっちり輝かせるワクワク顔
+        { id: "idle_04_nod_listen", w: 42 },   // 【楽】楽しそうな相槌
+      ],
+      joy: [
+        { id: "idle_02_smile_right", w: 56 },  // 【喜】満面のデュシェンヌ・スマイル
+        { id: "idle_04_nod_listen", w: 20 },   // 【楽】楽しそうな傾聴
+        { id: "idle_05_shy_glance", w: 14 },   // 【照】ほんのり照れ笑い
+        { id: "idle_01_breath_micro", w: 10 }, // 穏やかな微笑み
+      ],
+    };
 
-    const weighted = candidates.map((c) => ({
-      id: c.id,
-      w: c.id === lastBranchId ? c.w * 0.06 : c.w,
-    }));
-    const total = weighted.reduce((acc, c) => acc + c.w, 0);
+    const modeList = emotionBranchWeights[currentEmotionMode] || emotionBranchWeights.joy;
+    const candidates = modeList.filter((c) => fmvIdleUrlMap.has(c.id));
+    if (candidates.length === 0) return "idle_02_smile_right";
+
+    const total = candidates.reduce((acc, c) => acc + c.w, 0);
     let r = Math.random() * total;
-    for (const c of weighted) {
+    for (const c of candidates) {
       r -= c.w;
       if (r <= 0) return c.id;
     }
-    return weighted[0].id;
+    return candidates[0].id;
   }
 
   async function queueNextIdleOnStandbyDecoder(afterBranchId) {
@@ -523,16 +538,17 @@
 
   function classifyUserTalkIntent(userText, mood) {
     const u = (userText || "").trim();
+    if (/(プリン|ぷんぷん|怒っ|拗ね|放置|勝手|食べちゃっ|ばか|バカ|むかつ|嫌い)/.test(u)) return "sulk_プリン";
     if (mood < -5) return "greeting_sulk";
-    if (u.includes("プリン")) return "sulk_プリン";
     if (u.includes("おはよう")) return "greeting_morning";
     if (/(ただいま|帰った|かえった|戻った|待ってた)/.test(u)) return "greeting_home";
-    if (/(疲れ|つかれ|しんど|大変|残業|眠い|ねむい|仕事|がんばった|頑張った)/.test(u)) return "fatigue";
-    if (/(可愛い|かわいい|かっこい|カッコイ|好き|綺麗|きれい|似合|素敵|癒やされ|いい声|笑顔)/.test(u))
+    if (/(疲れ|つかれ|しんど|大変|残業|眠い|ねむい|仕事|がんばった|頑張った|悲し|寂し|さびし|つらい|辛い|泣き|落ち込|不安)/.test(u))
+      return "fatigue";
+    if (/(可愛い|かわいい|かっこい|カッコイ|好き|綺麗|きれい|似合|素敵|癒やされ|いい声|笑顔|愛して|ドキドキ|惚れ)/.test(u))
       return "compliment";
-    if (/(映画|アニメ|ドラマ|動画|音楽|曲|趣味|ハマっ|最近どう|どんな)/.test(u)) return "movie_hobby";
+    if (/(映画|アニメ|ドラマ|動画|音楽|曲|趣味|ハマっ|最近どう|どんな|遊ぼ|ワクワク|楽し)/.test(u)) return "movie_hobby";
     if (/(ごめん|すまん|悪かった|許して)/.test(u)) return "apology";
-    if (/(褒められ|うまくいっ|成功|勝った|受かった|嬉しかった|最高)/.test(u)) return "positive_news";
+    if (/(褒められ|うまくいっ|成功|勝った|受かった|嬉しかった|最高|やった)/.test(u)) return "positive_news";
     if (/[？?]|何を|何して|どこ|いつ|誰|なんで|なぜ|どう思/.test(u)) return "question";
     return "chat";
   }
@@ -661,13 +677,22 @@
 
     const myToken = ++currentTalkToken;
 
-    // 発話終了後に遷移する待機ブランチを文脈に合わせて予約し、裏デコーダに事前準備させる
-    if (intentHint === "compliment" || intentHint === "pat_head" || intentHint === "close_dist") {
-      nextIdleBranchHint = "idle_05_shy_glance";
-    } else if (intentHint === "greeting_home" || intentHint === "greeting_morning" || intentHint === "positive_news") {
-      nextIdleBranchHint = "idle_02_smile_right";
+    // 発話内容と文脈 (intentHint) に合わせて現在の喜怒哀楽モード (currentEmotionMode) と次待機ブランチを即時連動！
+    if (intentHint === "sulk_プリン" || intentHint === "greeting_sulk" || intentHint === "poke_cheek") {
+      currentEmotionMode = "anger";
+      nextIdleBranchHint = "idle_08_playful_sway"; // 【怒】ぷんぷん怒り・拗ね顔
+    } else if (intentHint === "fatigue" || intentHint === "greeting_night") {
+      currentEmotionMode = "sadness";
+      nextIdleBranchHint = "idle_03_gaze_left";    // 【哀】ハの字困り眉・たれ目の切ない心配顔
+    } else if (intentHint === "compliment" || intentHint === "pat_head" || intentHint === "close_dist" || intentHint === "gift_flower") {
+      currentEmotionMode = "shy";
+      nextIdleBranchHint = "idle_05_shy_glance";   // 【照】ドキドキ赤面・照れ笑い
+    } else if (intentHint === "movie_hobby" || intentHint === "question") {
+      currentEmotionMode = "fun";
+      nextIdleBranchHint = "idle_06_curious_tilt"; // 【楽】目をぱっちり輝かせるワクワク顔
     } else {
-      nextIdleBranchHint = "idle_04_nod_listen";
+      currentEmotionMode = "joy";
+      nextIdleBranchHint = "idle_02_smile_right";  // 【喜】満面のデュシェンヌ・スマイル
     }
     queueNextIdleOnStandbyDecoder(currentIdleBranchId);
 
@@ -1130,7 +1155,11 @@
       const entry = selectRealVoiceEntry(mem.active_voice_id, "", scKey);
       const spoken = entry ? entry.text : "あっ、おかえり！今日も一日お疲れさま。ねえ、こっち座ってゆっくり話そ？";
       const emo = entry ? entry.emo : "happy";
-      const choices = ["ただいま！今日ちょっと疲れたかも", "なんか今日、いつもより可愛いね", "最近どんな映画見た？"];
+      const choices = [
+        "ごめん、冷蔵庫のプリン食べちゃった…",
+        "ただいま！今日ちょっと仕事で疲れて寂しかったんだ",
+        "なんか今日、いつもよりすごく可愛いね",
+      ];
       const st = buildCloudStatePayload(mem, spoken, "顔見れて一気に気分明るくなっちゃった！", emo, choices);
       const activeChar = getActiveCharObj(mem);
       return makeNdjsonStreamResponse(
@@ -1151,8 +1180,12 @@
       const spoken = entry ? entry.text : "うんうん、そうなんだね！そういう話聞かせてくれるの、すごく嬉しいな。";
       const emo = entry ? entry.emo : "happy";
 
-      mem.affection = Math.min(100, (mem.affection || 68) + 3);
-      mem.mood = Math.min(50, (mem.mood || 24) + 5);
+      if (intent === "sulk_プリン" || intent === "greeting_sulk") {
+        mem.mood = -12;
+      } else {
+        mem.affection = Math.min(100, (mem.affection || 68) + 3);
+        mem.mood = Math.min(50, Math.max(10, (mem.mood || 24) + 5));
+      }
       saveCloudMemory(mem);
 
       const thoughtMap = {
@@ -1163,11 +1196,18 @@
         sulk_プリン: "楽しみにしてたのにー！今度美味しいスイーツ奢ってもらおっと。",
       };
       const thought = thoughtMap[intent] || "こうやって二人でゆっくり話してる時間が一番大好きだな。";
-      const nextChoices = [
-        "そうやって笑う顔、ほんと好きだな",
-        "今日は仕事すごく頑張ったよ！",
-        "最近どんな映画見た？",
-      ];
+      const nextChoices =
+        intent === "sulk_プリン" || intent === "greeting_sulk"
+          ? [
+              "ごめんごめん！お詫びに美味しいケーキ買ってくるから許して？",
+              "怒った顔もすごく可愛いね",
+              "最近どんな映画見た？",
+            ]
+          : [
+              "ごめん、冷蔵庫のプリン食べちゃった…",
+              "今日ちょっと仕事で疲れてしんどかったんだ",
+              "そうやって笑う顔、ほんと好きだな",
+            ];
 
       const st = buildCloudStatePayload(mem, spoken, thought, emo, nextChoices, "", userText);
       const activeChar = getActiveCharObj(mem);
