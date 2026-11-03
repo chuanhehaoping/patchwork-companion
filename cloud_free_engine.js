@@ -12,10 +12,19 @@
 
   const ASSET_VER = "29";
   const STORAGE_KEY_MEM = "pw_cloud_v9_memory";
-  const LIVE_AI_ENDPOINTS = [
-    { url: "http://127.0.0.1:8000/api/live_ai_talk", timeoutMs: 12000, tag: "local-live-3d" },
-    { url: "https://round-fri-roses-coupled.trycloudflare.com/api/live_ai_talk", timeoutMs: 15000, tag: "cloud-live-3d" },
-  ];
+  const IS_LOCAL_HOST =
+    typeof window !== "undefined" &&
+    window.location &&
+    (window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost");
+  const LIVE_AI_ENDPOINTS = IS_LOCAL_HOST
+    ? [
+        { url: "http://127.0.0.1:8000/api/live_ai_talk", timeoutMs: 25000, tag: "local-live-3d" },
+        { url: "https://round-fri-roses-coupled.trycloudflare.com/api/live_ai_talk", timeoutMs: 25000, tag: "cloud-live-3d" },
+      ]
+    : [
+        { url: "https://round-fri-roses-coupled.trycloudflare.com/api/live_ai_talk", timeoutMs: 25000, tag: "cloud-live-3d" },
+        { url: "http://127.0.0.1:8000/api/live_ai_talk", timeoutMs: 8000, tag: "local-live-3d" },
+      ];
 
   let catalogMeta = null;
   let voiceManifest = null;
@@ -314,18 +323,9 @@
     return { catalogMeta, voiceManifest, fmvManifestMio };
   }
 
-  // ===== 美桜の日本語 7大発音口形アトラス (mio_viseme_atlas.jpg + mio_base_1280.jpg) ローダー =====
+  // ===== 2Dアトラスは完全廃止（純粋 3D Neural MP4 のみ使用） =====
   function ensureMioVisemeAtlasLoaded() {
-    if (mioVisemeLoadProm) return mioVisemeLoadProm;
-    mioVisemeLoadProm = Promise.all([
-      loadBasePortraitImg(`assets/fmv_mio/mio_base_1280.jpg?v=${ASSET_VER}`),
-      loadBasePortraitImg(`assets/fmv_mio/mio_viseme_atlas.jpg?v=${ASSET_VER}`),
-    ]).then(([baseImg, atlasImg]) => {
-      mioBase1280Img = baseImg;
-      mioVisemeAtlasImg = atlasImg;
-      return { baseImg, atlasImg };
-    });
-    return mioVisemeLoadProm;
+    return Promise.resolve(null);
   }
 
   // ===== 日本語テキスト → 解剖学的 7大発音口形 (Viseme) タイムライン変換エンジン =====
