@@ -20,7 +20,7 @@
 (function () {
   "use strict";
 
-  const ASSET_VER = "22";
+  const ASSET_VER = "23";
   const STORAGE_KEY_MEM = "pw_cloud_v9_memory";
 
   let catalogMeta = null;
@@ -1341,54 +1341,72 @@
     return makeJsonResponse(buildCloudStatePayload(mem, "うんうん、なんでも話してね！", "", "happy"));
   };
 
+  function buildLineExternalShareUrl() {
+    try {
+      const u = new URL(window.location.href.split("#")[0]);
+      u.searchParams.set("openExternalBrowser", "1");
+      return u.toString();
+    } catch (_) {
+      const base = window.location.href.split("#")[0].split("?")[0];
+      return `${base}?openExternalBrowser=1`;
+    }
+  }
+
   function injectShareAndFeedbackButton() {
     if (document.getElementById("btn-open-beta-feedback")) return;
-    const topRight = document.querySelector(".top-right-controls") || document.querySelector(".hud-top");
+    const topRight =
+      document.querySelector(".top-right-tools") ||
+      document.querySelector(".top-right-controls") ||
+      document.querySelector(".hud-top");
     if (!topRight) return;
 
     const btn = document.createElement("button");
     btn.id = "btn-open-beta-feedback";
     btn.type = "button";
-    btn.className = "hud-pill-btn";
+    btn.className = "tool-pill";
     btn.style.cssText =
-      "background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-weight:700;border:1px solid rgba(255,255,255,0.35);box-shadow:0 4px 14px rgba(16,185,129,0.4);";
-    btn.innerHTML = "🌐 友人シェア / 感想を送る";
+      "background:linear-gradient(135deg,#06c755,#059669);color:#fff;font-weight:700;border:1px solid rgba(255,255,255,0.45);box-shadow:0 4px 14px rgba(6,199,85,0.4);";
+    btn.innerHTML = "💚 LINEで友人に送る";
     btn.onclick = openBetaShareModal;
     topRight.prepend(btn);
   }
 
   function openBetaShareModal() {
     let modal = document.getElementById("beta-share-modal");
-    const shareUrl = window.location.href.split("#")[0];
+    const shareUrl = buildLineExternalShareUrl();
     if (!modal) {
       modal = document.createElement("div");
       modal.id = "beta-share-modal";
       modal.className = "modal-backdrop";
       modal.innerHTML = `
         <div class="modal-card" style="max-width:540px;">
-          <div class="modal-header">
-            <h3>🌐 友人シェア ＆ 感想フィードバック（完全無料クラウド版）</h3>
-            <button type="button" class="modal-close-btn" id="btn-close-beta-modal">✕</button>
+          <div class="modal-header-row" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <h3>💚 LINEで友人に送る ＆ 感想シェア</h3>
+            <button type="button" class="btn-icon-close" id="btn-close-beta-modal">✕</button>
           </div>
-          <div style="padding:14px 18px;display:flex;flex-direction:column;gap:14px;">
-            <div style="background:rgba(16,185,129,0.14);border:1px solid rgba(16,185,129,0.4);border-radius:12px;padding:12px;">
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div style="background:rgba(6,199,85,0.14);border:1px solid rgba(6,199,85,0.45);border-radius:12px;padding:12px;">
               <div style="font-size:13px;font-weight:700;color:#6ee7b7;margin-bottom:6px;">
-                ✨ あなたのPC負荷ゼロ・完全無料で24時間使える公開URL
+                ✨ LINEでタップすると自動で標準ブラウザ(Safari/Chrome)が起動する専用URL
               </div>
-              <div style="display:flex;gap:8px;align-items:center;">
+              <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
                 <input id="beta-share-url-input" type="text" readonly value="${shareUrl}"
-                  style="flex:1;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(0,0,0,0.45);color:#fff;font-size:12px;" />
-                <button type="button" id="btn-copy-share-url" class="primary-btn" style="padding:8px 14px;white-space:nowrap;">
+                  style="flex:1;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(0,0,0,0.45);color:#fff;font-size:12px;user-select:all;" />
+                <button type="button" id="btn-copy-share-url" class="btn-primary" style="padding:8px 14px;white-space:nowrap;">
                   📋 URLコピー
                 </button>
               </div>
+              <button type="button" id="btn-send-line-direct" class="btn-primary full-width"
+                style="background:linear-gradient(135deg,#06c755,#059669);font-size:14.5px;padding:11px;">
+                💚 LINEアプリを開いて知り合いに送る
+              </button>
             </div>
             <div style="display:flex;flex-direction:column;gap:8px;">
               <label style="font-size:13px;font-weight:600;">💬 感想・お気に入りキャラ・改善アイデアをメモ＆コピー</label>
-              <textarea id="beta-feedback-text" rows="3" placeholder="例：F02美桜とM01レンの声がすごくリアル！こんな機能も欲しい！"
-                style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:rgba(0,0,0,0.4);color:#fff;font-size:13px;"></textarea>
-              <button type="button" id="btn-copy-feedback-report" class="primary-btn" style="padding:10px;">
-                💌 感想レポートをコピーして開発者（友人）に送る
+              <textarea id="beta-feedback-text" rows="3" placeholder="例：美桜の表情と声がすごく自然！スマホでもサクサク動いた！"
+                style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:rgba(0,0,0,0.4);color:#fff;font-size:16px;"></textarea>
+              <button type="button" id="btn-copy-feedback-report" class="btn-primary" style="padding:10px;">
+                💌 感想レポートをコピーして送る
               </button>
             </div>
           </div>
@@ -1397,18 +1415,29 @@
       document.body.appendChild(modal);
       document.getElementById("btn-close-beta-modal").onclick = () => modal.classList.add("hidden");
       document.getElementById("btn-copy-share-url").onclick = () => {
-        navigator.clipboard.writeText(shareUrl).catch(() => {});
+        const latestShareUrl = buildLineExternalShareUrl();
+        navigator.clipboard.writeText(latestShareUrl).catch(() => {});
         document.getElementById("btn-copy-share-url").textContent = "✅ コピー完了！";
         setTimeout(() => (document.getElementById("btn-copy-share-url").textContent = "📋 URLコピー"), 2000);
+      };
+      document.getElementById("btn-send-line-direct").onclick = () => {
+        const latestShareUrl = buildLineExternalShareUrl();
+        const lineShareText = `リアルパートナーAI（完全無料・スマホ対応）\n下のURLをタップすると自動でブラウザが起動してすぐ話せるよ👇\n${latestShareUrl}`;
+        const lineAppUrl = `https://line.me/R/share?text=${encodeURIComponent(lineShareText)}`;
+        window.open(lineAppUrl, "_blank", "noopener,noreferrer");
       };
       document.getElementById("btn-copy-feedback-report").onclick = () => {
         const mem = loadCloudMemory();
         const txt = document.getElementById("beta-feedback-text").value.trim();
-        const report = `【AIパートナー試遊レポート】\n・お気に入りキャラ: ${mem.partner_name} (${mem.active_char_id})\n・選抜お気に入り数: ${(mem.favorite_face_ids || []).length}人\n・感想: ${txt || "すごくリアルで楽しかった！"}\n・URL: ${shareUrl}`;
+        const latestShareUrl = buildLineExternalShareUrl();
+        const report = `【AIパートナー試遊レポート】\n・お気に入りキャラ: ${mem.partner_name} (${mem.active_char_id})\n・選抜お気に入り数: ${(mem.favorite_face_ids || []).length}人\n・感想: ${txt || "すごくリアルで楽しかった！"}\n・URL: ${latestShareUrl}`;
         navigator.clipboard.writeText(report).catch(() => {});
         document.getElementById("btn-copy-feedback-report").textContent =
           "✅ レポートをコピーしました！LINE等で貼り付けて送れます";
       };
+    } else {
+      const inp = document.getElementById("beta-share-url-input");
+      if (inp) inp.value = shareUrl;
     }
     modal.classList.remove("hidden");
   }

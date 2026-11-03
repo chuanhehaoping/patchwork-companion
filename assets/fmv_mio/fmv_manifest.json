@@ -1,299 +1,185 @@
 {
-  "char_id": "face_f02_mio",
-  "version": 11,
+  "version": "v12_smas_facs_12kp_master",
+  "character_id": "face_f02_mio",
   "fps": 50,
-  "frame_w": 1280,
-  "frame_h": 720,
   "idle_branches": [
     {
       "id": "idle_01_breath_micro",
       "url": "assets/fmv_mio/idle_01_breath_micro.mp4",
       "frames": 200,
-      "fps": 50,
-      "duration": 4.0
+      "fps": 50
     },
     {
       "id": "idle_02_smile_right",
       "url": "assets/fmv_mio/idle_02_smile_right.mp4",
       "frames": 230,
-      "fps": 50,
-      "duration": 4.6
+      "fps": 50
     },
     {
       "id": "idle_03_gaze_left",
       "url": "assets/fmv_mio/idle_03_gaze_left.mp4",
       "frames": 220,
-      "fps": 50,
-      "duration": 4.4
+      "fps": 50
     },
     {
       "id": "idle_04_nod_listen",
       "url": "assets/fmv_mio/idle_04_nod_listen.mp4",
       "frames": 210,
-      "fps": 50,
-      "duration": 4.2
+      "fps": 50
     },
     {
       "id": "idle_05_shy_glance",
       "url": "assets/fmv_mio/idle_05_shy_glance.mp4",
       "frames": 240,
-      "fps": 50,
-      "duration": 4.8
+      "fps": 50
     },
     {
       "id": "idle_06_curious_tilt",
       "url": "assets/fmv_mio/idle_06_curious_tilt.mp4",
       "frames": 220,
-      "fps": 50,
-      "duration": 4.4
+      "fps": 50
     },
     {
       "id": "idle_07_deep_relax",
       "url": "assets/fmv_mio/idle_07_deep_relax.mp4",
       "frames": 240,
-      "fps": 50,
-      "duration": 4.8
+      "fps": 50
     },
     {
       "id": "idle_08_playful_sway",
       "url": "assets/fmv_mio/idle_08_playful_sway.mp4",
       "frames": 230,
-      "fps": 50,
-      "duration": 4.6
+      "fps": 50
     }
   ],
-  "talking_clips": {
+  "talk_clips": {
     "e1afb5eda5d197874133180aff8d38e4": {
-      "ck": "e1afb5eda5d197874133180aff8d38e4",
       "url": "assets/fmv_mio/talk_e1afb5eda5d197874133180aff8d38e4.mp4",
-      "mp3_url": "assets/voice_bank/e1afb5eda5d197874133180aff8d38e4.mp3",
-      "text": "あっ、おかえり！今日も無事に帰ってきてくれて、すごく嬉しいな。",
-      "emo": "happy",
       "frames": 240,
       "fps": 50
     },
     "606cb477f9a7eb3909fe3459477be5d3": {
-      "ck": "606cb477f9a7eb3909fe3459477be5d3",
       "url": "assets/fmv_mio/talk_606cb477f9a7eb3909fe3459477be5d3.mp4",
-      "mp3_url": "assets/voice_bank/606cb477f9a7eb3909fe3459477be5d3.mp3",
-      "text": "あ、おはよう！朝からこうやって声聞けて、わたしめっちゃ嬉しいな。",
-      "emo": "happy",
       "frames": 184,
       "fps": 50
     },
     "330c6c712a7d446ac3887d4fbfb48609": {
-      "ck": "330c6c712a7d446ac3887d4fbfb48609",
       "url": "assets/fmv_mio/talk_330c6c712a7d446ac3887d4fbfb48609.mp4",
-      "mp3_url": "assets/voice_bank/330c6c712a7d446ac3887d4fbfb48609.mp3",
-      "text": "おかえり！今日もお疲れさま、頑張ったね。ほら、こっち座って？今すぐ温かいお茶いれるね。",
-      "emo": "happy",
       "frames": 316,
       "fps": 50
     },
     "0cd0f922f4ef7b9ae4c5bd0fdbccaf22": {
-      "ck": "0cd0f922f4ef7b9ae4c5bd0fdbccaf22",
       "url": "assets/fmv_mio/talk_0cd0f922f4ef7b9ae4c5bd0fdbccaf22.mp4",
-      "mp3_url": "assets/voice_bank/0cd0f922f4ef7b9ae4c5bd0fdbccaf22.mp3",
-      "text": "あ、おかえり！今日も無事に帰ってきてくれて、ほっとしたよ。",
-      "emo": "happy",
       "frames": 252,
       "fps": 50
     },
     "e092c07207d071d18068fa70dcfd7c6f": {
-      "ck": "e092c07207d071d18068fa70dcfd7c6f",
       "url": "assets/fmv_mio/talk_e092c07207d071d18068fa70dcfd7c6f.mp4",
-      "mp3_url": "assets/voice_bank/e092c07207d071d18068fa70dcfd7c6f.mp3",
-      "text": "今日もお疲れさま。ほんとに毎日よく頑張ってるよね、隣でゆっくり休んでね。",
-      "emo": "happy",
       "frames": 328,
       "fps": 50
     },
     "b20f225de3f04fddbfd169f470a463e5": {
-      "ck": "b20f225de3f04fddbfd169f470a463e5",
       "url": "assets/fmv_mio/talk_b20f225de3f04fddbfd169f470a463e5.mp4",
-      "mp3_url": "assets/voice_bank/b20f225de3f04fddbfd169f470a463e5.mp3",
-      "text": "今日もお疲れさま！ほんとに毎日よく頑張ってるよね、すごくえらいよ。",
-      "emo": "happy",
       "frames": 244,
       "fps": 50
     },
     "61344fc20ad64f074fa12c3246abe609": {
-      "ck": "61344fc20ad64f074fa12c3246abe609",
       "url": "assets/fmv_mio/talk_61344fc20ad64f074fa12c3246abe609.mp4",
-      "mp3_url": "assets/voice_bank/61344fc20ad64f074fa12c3246abe609.mp3",
-      "text": "うんうん、そうなんだね！そういう何気ない話聞かせてくれるの、わたしすごく嬉しいな。",
-      "emo": "happy",
       "frames": 320,
       "fps": 50
     },
     "67cc34c206eb434ba626ddbb53fe4d8b": {
-      "ck": "67cc34c206eb434ba626ddbb53fe4d8b",
       "url": "assets/fmv_mio/talk_67cc34c206eb434ba626ddbb53fe4d8b.mp4",
-      "mp3_url": "assets/voice_bank/67cc34c206eb434ba626ddbb53fe4d8b.mp3",
-      "text": "うんうん、そうなんだね。そういう話聞かせてくれるの、すごく心地いいな。",
-      "emo": "happy",
       "frames": 288,
       "fps": 50
     },
     "598b23a7aed76d04b01f33c3468f6bc3": {
-      "ck": "598b23a7aed76d04b01f33c3468f6bc3",
       "url": "assets/fmv_mio/talk_598b23a7aed76d04b01f33c3468f6bc3.mp4",
-      "mp3_url": "assets/voice_bank/598b23a7aed76d04b01f33c3468f6bc3.mp3",
-      "text": "あ、それ聞いてくれるのめっちゃ嬉しいな！ふふ、うーん、そうだねえ、えっとね。",
-      "emo": "happy",
       "frames": 320,
       "fps": 50
     },
     "a6746797f042179b9e2a6cdcc4650324": {
-      "ck": "a6746797f042179b9e2a6cdcc4650324",
       "url": "assets/fmv_mio/talk_a6746797f042179b9e2a6cdcc4650324.mp4",
-      "mp3_url": "assets/voice_bank/a6746797f042179b9e2a6cdcc4650324.mp3",
-      "text": "あー、それ気になっちゃうよね！ふふ、ちょっと待ってね、うーん、そうだねえ。",
-      "emo": "happy",
       "frames": 368,
       "fps": 50
     },
     "cc47d326b8106539c6e1d4159d8e8edc": {
-      "ck": "cc47d326b8106539c6e1d4159d8e8edc",
       "url": "assets/fmv_mio/talk_cc47d326b8106539c6e1d4159d8e8edc.mp4",
-      "mp3_url": "assets/voice_bank/cc47d326b8106539c6e1d4159d8e8edc.mp3",
-      "text": "最近はゆっくりとんでもない映画を見たよ！",
-      "emo": "happy",
       "frames": 160,
       "fps": 50
     },
     "954389470c4ccd6afc49bd5c3b3e399d": {
-      "ck": "954389470c4ccd6afc49bd5c3b3e399d",
       "url": "assets/fmv_mio/talk_954389470c4ccd6afc49bd5c3b3e399d.mp4",
-      "mp3_url": "assets/voice_bank/954389470c4ccd6afc49bd5c3b3e399d.mp3",
-      "text": "あっ、お待たせ！ねえ、今日は何して遊ぶ？",
-      "emo": "happy",
       "frames": 148,
       "fps": 50
     },
     "1a9d95bef35b2ce8d528482e0b700214": {
-      "ck": "1a9d95bef35b2ce8d528482e0b700214",
       "url": "assets/fmv_mio/talk_1a9d95bef35b2ce8d528482e0b700214.mp4",
-      "mp3_url": "assets/voice_bank/1a9d95bef35b2ce8d528482e0b700214.mp3",
-      "text": "あ、来てくれたんだね！ちょうど今、ゆっくり話したいなって思ってたところだよ。",
-      "emo": "happy",
       "frames": 248,
       "fps": 50
     },
     "2de7e43f86a04f344a8d224297f44c85": {
-      "ck": "2de7e43f86a04f344a8d224297f44c85",
       "url": "assets/fmv_mio/talk_2de7e43f86a04f344a8d224297f44c85.mp4",
-      "mp3_url": "assets/voice_bank/2de7e43f86a04f344a8d224297f44c85.mp3",
-      "text": "わあ、ほんとに！？それめっちゃすごいじゃん！ふふ、わたしもすごく嬉しいな。",
-      "emo": "happy",
       "frames": 316,
       "fps": 50
     },
     "4279f3f422f62ae5fc65810d1ac97f13": {
-      "ck": "4279f3f422f62ae5fc65810d1ac97f13",
       "url": "assets/fmv_mio/talk_4279f3f422f62ae5fc65810d1ac97f13.mp4",
-      "mp3_url": "assets/voice_bank/4279f3f422f62ae5fc65810d1ac97f13.mp3",
-      "text": "わあ、ほんとに！？それすごく素敵だね、私も自分のことみたいに嬉しいよ！",
-      "emo": "happy",
       "frames": 288,
       "fps": 50
     },
     "e50de9caa5bf46a5b1c38668ea943c29": {
-      "ck": "e50de9caa5bf46a5b1c38668ea943c29",
       "url": "assets/fmv_mio/talk_e50de9caa5bf46a5b1c38668ea943c29.mp4",
-      "mp3_url": "assets/voice_bank/e50de9caa5bf46a5b1c38668ea943c29.mp3",
-      "text": "えっ、なに急に！そんなストレートに言われたら照れるじゃん。……でも、気づいてくれて嬉しい。",
-      "emo": "shy",
       "frames": 280,
       "fps": 50
     },
     "594f387dfb16f45dde2bba825c94eff8": {
-      "ck": "594f387dfb16f45dde2bba825c94eff8",
       "url": "assets/fmv_mio/talk_594f387dfb16f45dde2bba825c94eff8.mp4",
-      "mp3_url": "assets/voice_bank/594f387dfb16f45dde2bba825c94eff8.mp3",
-      "text": "えっ、ほんとに！？急にそんなこと言われたら照れちゃうじゃん、嬉しい。",
-      "emo": "shy",
       "frames": 204,
       "fps": 50
     },
     "2d845745841dd5846bc4e45ea61ce1f4": {
-      "ck": "2d845745841dd5846bc4e45ea61ce1f4",
       "url": "assets/fmv_mio/talk_2d845745841dd5846bc4e45ea61ce1f4.mp4",
-      "mp3_url": "assets/voice_bank/2d845745841dd5846bc4e45ea61ce1f4.mp3",
-      "text": "えへへ、なに急に！髪くしゃってなるよ？……でも気持ちいいからもっと撫でて。",
-      "emo": "shy",
       "frames": 304,
       "fps": 50
     },
     "d0b61000577e04b3e125f5e773eac7d5": {
-      "ck": "d0b61000577e04b3e125f5e773eac7d5",
       "url": "assets/fmv_mio/talk_d0b61000577e04b3e125f5e773eac7d5.mp4",
-      "mp3_url": "assets/voice_bank/d0b61000577e04b3e125f5e773eac7d5.mp3",
-      "text": "ん……なんか甘やかされてる！そういうことされると、もっとくっつきたくなっちゃうよ？",
-      "emo": "shy",
       "frames": 268,
       "fps": 50
     },
     "9e48b887c9dcb66f9c98663eb72378ef": {
-      "ck": "9e48b887c9dcb66f9c98663eb72378ef",
       "url": "assets/fmv_mio/talk_9e48b887c9dcb66f9c98663eb72378ef.mp4",
-      "mp3_url": "assets/voice_bank/9e48b887c9dcb66f9c98663eb72378ef.mp3",
-      "text": "あっ、こら！いきなりつつかないでよ、びっくりしたじゃん。お返ししちゃうよ？",
-      "emo": "happy",
       "frames": 264,
       "fps": 50
     },
     "067ffbd98b564724e505b4adab0c412e": {
-      "ck": "067ffbd98b564724e505b4adab0c412e",
       "url": "assets/fmv_mio/talk_067ffbd98b564724e505b4adab0c412e.mp4",
-      "mp3_url": "assets/voice_bank/067ffbd98b564724e505b4adab0c412e.mp3",
-      "text": "わ、ちょっと顔近いよ！そんな近くでじっと見られたら照れるじゃん。",
-      "emo": "shy",
       "frames": 232,
       "fps": 50
     },
     "07362ac6769f38e2c83d41e905552aca": {
-      "ck": "07362ac6769f38e2c83d41e905552aca",
       "url": "assets/fmv_mio/talk_07362ac6769f38e2c83d41e905552aca.mp4",
-      "mp3_url": "assets/voice_bank/07362ac6769f38e2c83d41e905552aca.mp3",
-      "text": "ふぅ、ちょっとドキドキした！不意打ちで近づくの反則だよ。",
-      "emo": "happy",
       "frames": 200,
       "fps": 50
     },
     "a4f54263c302bab207b778a3106acb52": {
-      "ck": "a4f54263c302bab207b778a3106acb52",
       "url": "assets/fmv_mio/talk_a4f54263c302bab207b778a3106acb52.mp4",
-      "mp3_url": "assets/voice_bank/a4f54263c302bab207b778a3106acb52.mp3",
-      "text": "もう、しょうがないなあ。でも素直に謝ってくれたから、許してあげるね。",
-      "emo": "shy",
       "frames": 256,
       "fps": 50
     },
     "a04d8e0dd828fd3fb8b6d3d7047b17d5": {
-      "ck": "a04d8e0dd828fd3fb8b6d3d7047b17d5",
       "url": "assets/fmv_mio/talk_a04d8e0dd828fd3fb8b6d3d7047b17d5.mp4",
-      "mp3_url": "assets/voice_bank/a04d8e0dd828fd3fb8b6d3d7047b17d5.mp3",
-      "text": "あ、やっと来てくれた！ここ数日ずっと顔見れなかったから、ちょっと寂しかったんだよ？",
-      "emo": "sulk",
       "frames": 304,
       "fps": 50
     },
     "dd2fa2b76821684a6e43ef431ce17646": {
-      "ck": "dd2fa2b76821684a6e43ef431ce17646",
       "url": "assets/fmv_mio/talk_dd2fa2b76821684a6e43ef431ce17646.mp4",
-      "mp3_url": "assets/voice_bank/dd2fa2b76821684a6e43ef431ce17646.mp3",
-      "text": "えーっ、ちょっと待って！あれ今日のお風呂上がりに食べようと思ってたやつなのに！もう、お詫びは？",
-      "emo": "sulk",
       "frames": 340,
       "fps": 50
     },
     "35172f14f03c543252a9eb51fef82ee4": {
-      "ck": "35172f14f03c543252a9eb51fef82ee4",
       "url": "assets/fmv_mio/talk_35172f14f03c543252a9eb51fef82ee4.mp4",
-      "mp3_url": "assets/voice_bank/35172f14f03c543252a9eb51fef82ee4.mp3",
-      "text": "まだ起きてたんだね。",
-      "emo": "sleepy",
       "frames": 104,
       "fps": 50
     }

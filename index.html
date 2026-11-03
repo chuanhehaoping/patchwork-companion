@@ -3,8 +3,41 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>リアルパートナーAI — 厳選85種モデル・俳優級カタログ(女35・男30・中立20)×無料ベータ版</title>
-  <link rel="stylesheet" href="static/style.css?v=22" />
+  <title>リアルパートナーAI — 美桜が部屋であなたを待っています（完全無料クラウド版）</title>
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="リアルパートナーAI — 美桜が部屋であなたを待っています" />
+  <meta property="og:description" content="完全無料・スマホ＆PC対応！実在人間の生声と表情で今すぐ会話＆着せ替えを楽しめるリアルパートナーAI" />
+  <meta property="og:image" content="https://chuanhehaoping.github.io/patchwork-companion/assets/portraits/face_f02_mio.jpg?v=23" />
+  <meta property="og:url" content="https://chuanhehaoping.github.io/patchwork-companion/?openExternalBrowser=1" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <script>
+    // LINEトーク画面からURLをタップした際、LINE内ブラウザではなく標準ブラウザアプリ(Safari / Chrome)を自動起動する
+    (function () {
+      var ua = navigator.userAgent || "";
+      var isLineApp = /\bLine\//i.test(ua) || /\bLINE\b/i.test(ua);
+      if (!isLineApp) return;
+      try {
+        var u = new URL(window.location.href);
+        if (u.searchParams.get("openExternalBrowser") !== "1") {
+          u.searchParams.set("openExternalBrowser", "1");
+          window.location.replace(u.toString());
+          return;
+        }
+        if (/Android/i.test(ua) && !sessionStorage.getItem("pw_ext_launched")) {
+          sessionStorage.setItem("pw_ext_launched", "1");
+          var cleanUrl = u.toString();
+          var noScheme = cleanUrl.replace(/^https?:\/\//i, "");
+          window.location.href =
+            "intent://" +
+            noScheme +
+            "#Intent;scheme=https;action=android.intent.action.VIEW;S.browser_fallback_url=" +
+            encodeURIComponent(cleanUrl) +
+            ";end";
+        }
+      } catch (_) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="static/style.css?v=23" />
 </head>
 <body>
   <!-- 初回クリックで音声＆実写ビデオストリームを有効化する入室画面 -->
@@ -439,7 +472,7 @@
     </div>
   </div>
 
-  <script src="static/cloud_free_engine.js?v=22"></script>
-  <script src="static/app.js?v=22"></script>
+  <script src="static/cloud_free_engine.js?v=23"></script>
+  <script src="static/app.js?v=23"></script>
 </body>
 </html>
