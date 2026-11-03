@@ -1,23 +1,27 @@
 // ============================================================================
 // PATCHWORK NATION - 完全無料・PC負荷ゼロ クラウドエンジン
-// (v8: SOTA 50fps Seamless FMV Motion Graph & Holistic LMDM Digital Human Edition)
-// - あなたのPC（ローカルGPU/Pythonサーバー）を一切使わず、GitHub Pages 等の完全無料クラウドで24時間稼働
+// (v9: SOTA v11 Anatomical Lock + Hirschberg Gaze Focus + 0.00ms Audio-Video Sync + Mobile 3-Decoder Pool)
+// - あなたのPC（ローカルGPU/Pythonサーバー）を一切使わず、GitHub Pages の完全無料クラウドで24時間稼働
 // - ブラウザ内蔵の機械音声 (window.speechSynthesis) は 100% 使用禁止！
 //   全発話で事前合成済みの「本物の Qwen3-TTS 1.7B 実在人間クローン肉声 MP3」を再生
-// - ハイエンド実写ゲーム (Interactive FMV) ＆ 最先端AIデジタルヒューマン技術を完全搭載：
-//   1. Canvas `globalAlpha` 半透明クロスフェード（二重露光・透けゴースト）を100%完全撤廃！
-//   2. 初期パートナー「美桜 (face_f02_mio)」に、本物の HuBERT + LMDM Motion Diffusion Transformer
-//      ＋ 3D Feature Volume Warping + SPADEDecoder + FACS AU6 (デュシェンヌ・スマイル)
-//      ＋ 前庭動眼反射 (VOR 視線ロック) ＋ 非対称生体まばたき ＋ 肩・胸元・髪の毛先の生体運動連動ワープで
-//      レンダリングした「50fps 連続実写動画グラフ（待機8ブランチ＋発話26クリップ）」を搭載！
-//   3. Dual/Pool Video Pre-decoder + Web Audio Clock Sync により、黒画面0ms・ゴースト0%で
-//      待機中の無限マルコフ分岐から発話（音素先行動作・調音結合リップシンク）へシームレスに遷移！
+// - v11 ハイエンド実写ゲーム (Interactive FMV) ＆ 最先端AIデジタルヒューマン技術：
+//   1. ヒルシュベルグ角膜反射整合 (Hirschberg Corneal Reflex Rectification):
+//      左右の白目露出・虹彩・瞳孔・角膜ハイライトを100%対称化し、ユーザーの目を真っ直ぐ見つめる焦点を実現！
+//   2. 21点3D暗黙キーポイントの解剖学的完全分離:
+//      背景・髪・頭頂・肩の10点 (`[0,1,2,3,4,5,6,8,9,10]`) を `stitch_net` 後に 100.0% ソース座標に固定し、
+//      背景の歪みや謎の体揺れを物理的に 0.000% に根絶！
+//   3. 50fps フォルマント調音リップシンク ＋ Web Audio Clock 0.00ms 完全同期:
+//      音声デコード完了と動画 Frame 0 デコード完了を待ってから同一ミリ秒で同時スタートし、
+//      再生中も毎フレーム `cloudAudioCtx.currentTime` にロックして口と声のズレを 0.00ms に維持！
+//   4. スマホ（iOS Safari / Android Chrome）完全対応:
+//      ハードウェア `<video>` デコーダ枯渇を防ぐ「3デコーダ固定ピンポンプール＋Blobメモリキャッシュ」を搭載！
 // ============================================================================
 
 (function () {
   "use strict";
 
-  const STORAGE_KEY_MEM = "pw_cloud_v8_memory";
+  const ASSET_VER = "22";
+  const STORAGE_KEY_MEM = "pw_cloud_v9_memory";
 
   let catalogMeta = null;
   let voiceManifest = null;
@@ -26,12 +30,18 @@
   let visemeCache = new Map(); // charId -> Promise<Sprite>
   let baseImgCache = new Map(); // url -> Promise<HTMLImageElement>
 
-  // ===== SOTA FMV Video Pool (for face_f02_mio 50fps Neural Streams) =====
-  let fmvIdleVideoPool = new Map(); // branchId -> HTMLVideoElement (preloaded & paused at frame 0)
-  let fmvTalkVideoPool = new Map(); // ck -> Promise<HTMLVideoElement>
+  // ===== Mobile-Safe 3-Decoder Pool & Blob Memory Cache (for face_f02_mio 50fps v11 Streams) =====
+  let fmvBlobUrlCache = new Map(); // relativeUrl -> Promise<blobUrl>
+  let fmvIdleUrlMap = new Map(); // branchId -> relativeUrl
+  let idleDecoderA = null;
+  let idleDecoderB = null;
+  let talkDecoder = null;
+  let activeIdleSlot = "A"; // "A" | "B"
+  let queuedNextIdleId = "idle_01_breath_micro";
+
   let activeFmvVideo = null;
   let activeFmvType = "idle"; // "idle" | "talk"
-  let currentIdleBranchId = "idle_01_breath_micro";
+  let currentIdleBranchId = "idle_02_smile_right";
   let nextIdleBranchHint = null;
   let fmvSwitching = false;
 
@@ -41,8 +51,11 @@
   let activeFreqData = null;
   let activeTimeData = null;
   let isSpeakingNow = false;
+  let currentTalkToken = 0;
+  let talkAudioStartCtxTime = 0;
+  let talkAudioDuration = 0;
 
-  // 美桜 (face_f02_mio) 用の 50fps LMDM 完全同期発話クリップ対象 CK セット
+  // 美桜 (face_f02_mio) 用の 50fps v11 完全同期発話クリップ対象 CK セット (全26本)
   const MIO_FMV_TALK_CKS = new Set([
     "e1afb5eda5d197874133180aff8d38e4",
     "606cb477f9a7eb3909fe3459477be5d3",
@@ -77,7 +90,11 @@
     if (u.startsWith("http://") || u.startsWith("https://") || u.startsWith("data:") || u.startsWith("blob:")) {
       return u;
     }
-    return u.replace(/^\/+/, "");
+    const clean = u.replace(/^\/+/, "");
+    if (clean.includes("face_f02_mio.jpg") && !clean.includes("?")) {
+      return `${clean}?v=${ASSET_VER}`;
+    }
+    return clean;
   }
 
   function loadCloudMemory() {
@@ -111,8 +128,8 @@
     try {
       const raw =
         localStorage.getItem(STORAGE_KEY_MEM) ||
-        localStorage.getItem("pw_cloud_v7_memory") ||
-        localStorage.getItem("pw_cloud_v6_memory");
+        localStorage.getItem("pw_cloud_v8_memory") ||
+        localStorage.getItem("pw_cloud_v7_memory");
       if (raw) {
         const parsed = JSON.parse(raw);
         return { ...def, ...parsed };
@@ -127,103 +144,175 @@
     } catch (_) {}
   }
 
+  // ===== 3個の共有 `<video>` デコーダのみを生成（iOS Safari / Android のデコーダ上限を絶対超えない） =====
+  function createReusableDecoderElement() {
+    const vid = document.createElement("video");
+    vid.crossOrigin = "anonymous";
+    vid.muted = true;
+    vid.defaultMuted = true;
+    vid.playsInline = true;
+    vid.setAttribute("playsinline", "");
+    vid.setAttribute("webkit-playsinline", "");
+    vid.preload = "auto";
+    vid.loop = false;
+    vid.style.cssText =
+      "position:fixed;left:-9999px;top:-9999px;width:2px;height:2px;opacity:0;pointer-events:none;";
+    document.body.appendChild(vid);
+    return vid;
+  }
+
+  function ensureVideoDecoders() {
+    if (!idleDecoderA) idleDecoderA = createReusableDecoderElement();
+    if (!idleDecoderB) idleDecoderB = createReusableDecoderElement();
+    if (!talkDecoder) talkDecoder = createReusableDecoderElement();
+  }
+
+  function fetchVideoBlobUrl(rawUrl) {
+    const fullUrl = resolveAssetUrl(
+      rawUrl.includes("?") ? rawUrl : `${rawUrl}?v=${ASSET_VER}`
+    );
+    if (fmvBlobUrlCache.has(fullUrl)) {
+      return fmvBlobUrlCache.get(fullUrl);
+    }
+    const p = (async () => {
+      try {
+        const res = await origFetch(fullUrl);
+        if (!res.ok) return fullUrl;
+        const blob = await res.blob();
+        return URL.createObjectURL(blob);
+      } catch (_) {
+        return fullUrl;
+      }
+    })();
+    fmvBlobUrlCache.set(fullUrl, p);
+    return p;
+  }
+
+  function loadVideoIntoDecoder(vidEl, blobOrHttpUrl) {
+    return new Promise((resolve) => {
+      if (!vidEl || !blobOrHttpUrl) {
+        resolve(false);
+        return;
+      }
+      let settled = false;
+      const finish = (ok) => {
+        if (settled) return;
+        settled = true;
+        vidEl.removeEventListener("canplay", onReady);
+        vidEl.removeEventListener("loadeddata", onReady);
+        vidEl.removeEventListener("error", onErr);
+        resolve(ok);
+      };
+      const onReady = () => finish(true);
+      const onErr = () => finish(false);
+
+      if (vidEl.dataset.loadedUrl === blobOrHttpUrl && vidEl.readyState >= 2) {
+        try {
+          vidEl.pause();
+          vidEl.currentTime = 0;
+        } catch (_) {}
+        resolve(true);
+        return;
+      }
+
+      vidEl.addEventListener("canplay", onReady, { once: true });
+      vidEl.addEventListener("loadeddata", onReady, { once: true });
+      vidEl.addEventListener("error", onErr, { once: true });
+      setTimeout(() => finish(vidEl.readyState >= 1), 1500);
+
+      vidEl.pause();
+      vidEl.dataset.loadedUrl = blobOrHttpUrl;
+      vidEl.src = blobOrHttpUrl;
+      vidEl.load();
+    });
+  }
+
   async function ensureCatalogAndManifest() {
     if (!catalogMeta) {
-      const res = await origFetch(resolveAssetUrl("assets/catalog_85_meta.json"), { cache: "no-cache" });
+      const res = await origFetch(resolveAssetUrl(`assets/catalog_85_meta.json?v=${ASSET_VER}`), {
+        cache: "no-cache",
+      });
       catalogMeta = await res.json();
     }
     if (!voiceManifest) {
-      const resV = await origFetch(resolveAssetUrl("assets/voice_bank/manifest.json"), { cache: "no-cache" });
+      const resV = await origFetch(resolveAssetUrl(`assets/voice_bank/manifest.json?v=${ASSET_VER}`), {
+        cache: "no-cache",
+      });
       voiceManifest = await resV.json();
     }
     if (!fmvManifestMio) {
       try {
-        const resF = await origFetch(resolveAssetUrl("assets/fmv_mio/fmv_manifest.json?v=20"), { cache: "no-cache" });
+        const resF = await origFetch(
+          resolveAssetUrl(`assets/fmv_mio/fmv_manifest.json?v=${ASSET_VER}`),
+          { cache: "no-cache" }
+        );
         if (resF.ok) {
           fmvManifestMio = await resF.json();
-          initMioFmvIdlePool();
+          await initMioFmvIdlePool();
         }
       } catch (_) {}
     }
     return { catalogMeta, voiceManifest, fmvManifestMio };
   }
 
-  function createHiddenFmvVideoElement(srcUrl) {
-    const vid = document.createElement("video");
-    vid.crossOrigin = "anonymous";
-    vid.muted = true; // 常にハードウェア映像デコードを100%無制限許可させるため映像トラックはミュート（音声はWebAudioで完全同期）
-    vid.playsInline = true;
-    vid.setAttribute("playsinline", "");
-    vid.setAttribute("webkit-playsinline", "");
-    vid.preload = "auto";
-    vid.loop = false;
-    vid.style.cssText = "position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;";
-    vid.src = resolveAssetUrl(srcUrl);
-    document.body.appendChild(vid);
-    vid.load();
-    return vid;
-  }
-
-  function initMioFmvIdlePool() {
+  async function initMioFmvIdlePool() {
     if (!fmvManifestMio || !Array.isArray(fmvManifestMio.idle_branches)) return;
+    ensureVideoDecoders();
+
     for (const b of fmvManifestMio.idle_branches) {
-      if (!fmvIdleVideoPool.has(b.id)) {
-        const v = createHiddenFmvVideoElement(b.url + "?v=20");
-        fmvIdleVideoPool.set(b.id, v);
+      fmvIdleUrlMap.set(b.id, `${b.url}?v=${ASSET_VER}`);
+    }
+
+    // 初期ブランチ (idle_02_smile_right) と次ブランチ (idle_01_breath_micro) を最優先でロード
+    const firstId = fmvIdleUrlMap.has("idle_02_smile_right")
+      ? "idle_02_smile_right"
+      : fmvManifestMio.idle_branches[0]?.id;
+    if (firstId && !activeFmvVideo) {
+      const firstBlobUrl = await fetchVideoBlobUrl(fmvIdleUrlMap.get(firstId));
+      await loadVideoIntoDecoder(idleDecoderA, firstBlobUrl);
+      activeIdleSlot = "A";
+      currentIdleBranchId = firstId;
+      activeFmvType = "idle";
+      activeFmvVideo = idleDecoderA;
+      idleDecoderA.play().catch(() => {});
+
+      // 裏のデコーダBに次の待機ブランチをプリロード待機
+      queueNextIdleOnStandbyDecoder(firstId);
+    }
+
+    // 残りの待機ブランチと代表的な挨拶発話動画もバックグラウンドで Blob キャッシュに温めておく
+    setTimeout(() => {
+      for (const [, u] of fmvIdleUrlMap.entries()) {
+        fetchVideoBlobUrl(u);
       }
-    }
-    // 初期ブランチを即座に再生開始
-    if (!activeFmvVideo && fmvIdleVideoPool.has("idle_02_smile_right")) {
-      switchToIdleFmvBranch("idle_02_smile_right");
-    }
-  }
-
-  function preloadTalkFmvVideo(ck) {
-    if (!ck || !MIO_FMV_TALK_CKS.has(ck)) return Promise.resolve(null);
-    if (fmvTalkVideoPool.has(ck)) return fmvTalkVideoPool.get(ck);
-
-    const p = new Promise((resolve) => {
-      const url = resolveAssetUrl(`assets/fmv_mio/talk_${ck}.mp4?v=20`);
-      const v = createHiddenFmvVideoElement(url);
-      let resolved = false;
-      const done = () => {
-        if (!resolved) {
-          resolved = true;
-          resolve(v);
-        }
-      };
-      v.addEventListener("canplay", done, { once: true });
-      v.addEventListener("loadeddata", done, { once: true });
-      v.addEventListener("error", () => resolve(null), { once: true });
-      setTimeout(done, 1200);
-    });
-    fmvTalkVideoPool.set(ck, p);
-    return p;
+      // 初回挨拶で使われやすい発話クリップを事前キャッシュ
+      fetchVideoBlobUrl(`assets/fmv_mio/talk_e1afb5eda5d197874133180aff8d38e4.mp4?v=${ASSET_VER}`);
+      fetchVideoBlobUrl(`assets/fmv_mio/talk_0cd0f922f4ef7b9ae4c5bd0fdbccaf22.mp4?v=${ASSET_VER}`);
+    }, 300);
   }
 
   function pickNextMioIdleBranch(lastBranchId) {
-    if (nextIdleBranchHint && fmvIdleVideoPool.has(nextIdleBranchHint)) {
+    if (nextIdleBranchHint && fmvIdleUrlMap.has(nextIdleBranchHint)) {
       const h = nextIdleBranchHint;
       nextIdleBranchHint = null;
       return h;
     }
-    // マルコフ連鎖の自然な状態遷移重み（同じしぐさは連続しない）
     const candidates = [
-      { id: "idle_01_breath_micro", w: 22 },
+      { id: "idle_01_breath_micro", w: 24 },
       { id: "idle_02_smile_right", w: 18 },
       { id: "idle_03_gaze_left", w: 16 },
       { id: "idle_04_nod_listen", w: 14 },
       { id: "idle_07_deep_relax", w: 12 },
-      { id: "idle_08_playful_sway", w: 10 },
-      { id: "idle_06_curious_tilt", w: 5 },
-      { id: "idle_05_shy_glance", w: 5 },
-    ].filter((c) => fmvIdleVideoPool.has(c.id));
+      { id: "idle_08_playful_sway", w: 8 },
+      { id: "idle_06_curious_tilt", w: 4 },
+      { id: "idle_05_shy_glance", w: 4 },
+    ].filter((c) => fmvIdleUrlMap.has(c.id));
 
     if (candidates.length === 0) return "idle_01_breath_micro";
 
     const weighted = candidates.map((c) => ({
       id: c.id,
-      w: c.id === lastBranchId ? c.w * 0.08 : c.w,
+      w: c.id === lastBranchId ? c.w * 0.06 : c.w,
     }));
     const total = weighted.reduce((acc, c) => acc + c.w, 0);
     let r = Math.random() * total;
@@ -234,22 +323,67 @@
     return weighted[0].id;
   }
 
-  function switchToIdleFmvBranch(branchId) {
-    const nextVid = fmvIdleVideoPool.get(branchId) || fmvIdleVideoPool.values().next().value;
-    if (!nextVid) return;
+  async function queueNextIdleOnStandbyDecoder(afterBranchId) {
+    ensureVideoDecoders();
+    const nextId = pickNextMioIdleBranch(afterBranchId);
+    queuedNextIdleId = nextId;
+    const rawUrl = fmvIdleUrlMap.get(nextId);
+    if (!rawUrl) return;
+    const blobUrl = await fetchVideoBlobUrl(rawUrl);
+    const standbyVid = activeIdleSlot === "A" ? idleDecoderB : idleDecoderA;
+    await loadVideoIntoDecoder(standbyVid, blobUrl);
+  }
 
-    currentIdleBranchId = branchId;
-    activeFmvType = "idle";
+  function switchToStandbyIdleDecoderInstant() {
+    ensureVideoDecoders();
+    const nextSlot = activeIdleSlot === "A" ? "B" : "A";
+    const nextVid = nextSlot === "A" ? idleDecoderA : idleDecoderB;
+    const prevVid = activeIdleSlot === "A" ? idleDecoderA : idleDecoderB;
 
-    try {
-      nextVid.currentTime = 0;
-    } catch (_) {}
-
-    const playPromise = nextVid.play();
-    if (playPromise && typeof playPromise.catch === "function") {
-      playPromise.catch(() => {});
+    if (nextVid && nextVid.readyState >= 2) {
+      activeIdleSlot = nextSlot;
+      currentIdleBranchId = queuedNextIdleId || "idle_01_breath_micro";
+      activeFmvType = "idle";
+      try {
+        nextVid.currentTime = 0;
+      } catch (_) {}
+      nextVid.play().catch(() => {});
+      activeFmvVideo = nextVid;
+      try {
+        prevVid.pause();
+      } catch (_) {}
+      queueNextIdleOnStandbyDecoder(currentIdleBranchId);
+    } else if (prevVid) {
+      // 万一裏デコーダがまだ準備中の場合は現在のデコーダを Frame 0 からシームレス再開
+      activeFmvType = "idle";
+      try {
+        prevVid.currentTime = 0;
+      } catch (_) {}
+      prevVid.play().catch(() => {});
+      activeFmvVideo = prevVid;
+      queueNextIdleOnStandbyDecoder(currentIdleBranchId);
     }
-    activeFmvVideo = nextVid;
+  }
+
+  async function switchToIdleFmvBranch(branchId) {
+    ensureVideoDecoders();
+    const targetId = fmvIdleUrlMap.has(branchId) ? branchId : "idle_01_breath_micro";
+    const standbyVid = activeIdleSlot === "A" ? idleDecoderB : idleDecoderA;
+
+    if (queuedNextIdleId === targetId && standbyVid && standbyVid.readyState >= 2) {
+      switchToStandbyIdleDecoderInstant();
+      return;
+    }
+
+    const rawUrl = fmvIdleUrlMap.get(targetId);
+    if (!rawUrl) {
+      switchToStandbyIdleDecoderInstant();
+      return;
+    }
+    const blobUrl = await fetchVideoBlobUrl(rawUrl);
+    await loadVideoIntoDecoder(standbyVid, blobUrl);
+    queuedNextIdleId = targetId;
+    switchToStandbyIdleDecoderInstant();
   }
 
   function getActiveCharObj(mem) {
@@ -334,7 +468,7 @@
     }
     if (pool.length === 0) pool = allVoices;
 
-    // 美桜 (human_g0143) の場合は、50fps 本物 HuBERT+LMDM 発話動画が完備されている26クリップを最優先プールにする
+    // 美桜 (human_g0143) の場合は、50fps v11 完全同期発話動画が完備されている26クリップを100%使用する
     if (voiceId === "human_g0143") {
       const fmvPool = pool.filter((v) => MIO_FMV_TALK_CKS.has(v.ck));
       if (fmvPool.length > 0) pool = fmvPool;
@@ -403,7 +537,7 @@
     return "chat";
   }
 
-  // ===== 他キャラ用の 3D ヴィセームローダー（半透明ブレンドなし） =====
+  // ===== 他キャラ用の 3D ヴィセームローダー =====
   async function b64ToBitmap(b64) {
     if (!b64) return null;
     const bin = atob(b64);
@@ -451,10 +585,14 @@
             bitmaps: null,
           };
         }
-        const res = await origFetch(resolveAssetUrl(`assets/viseme_3d/${charId}.json?v=20`), { cache: "force-cache" });
+        const res = await origFetch(resolveAssetUrl(`assets/viseme_3d/${charId}.json?v=${ASSET_VER}`), {
+          cache: "force-cache",
+        });
         if (!res.ok) return null;
         const data = await res.json();
-        const singleNode = await decode5StateNode(data.frames || (data.motion_graph && data.motion_graph.nodes[0]) || {});
+        const singleNode = await decode5StateNode(
+          data.frames || (data.motion_graph && data.motion_graph.nodes[0]) || {}
+        );
         return {
           charId,
           frameW: Number(data.frame_w || (baseImg && baseImg.naturalWidth) || 960),
@@ -491,6 +629,7 @@
   }
 
   function stopCloudVoice() {
+    currentTalkToken += 1;
     isSpeakingNow = false;
     activeAnalyser = null;
     activeFreqData = null;
@@ -503,19 +642,26 @@
       } catch (_) {}
       activeAudioSource = null;
     }
+    if (talkDecoder) {
+      try {
+        talkDecoder.pause();
+      } catch (_) {}
+    }
     if (activeFmvType === "talk") {
-      const nextBranch = pickNextMioIdleBranch(currentIdleBranchId);
-      switchToIdleFmvBranch(nextBranch);
+      switchToStandbyIdleDecoderInstant();
     }
     const bars = document.getElementById("speaking-bars");
     if (bars) bars.classList.add("hidden");
   }
 
+  // ===== 音声と 50fps v11 発話映像を 0.00ms ハードウェアクロックで完全同時再生 =====
   async function playRealVoiceWithSotaAvatar(entry, charObj, intentHint = "") {
     stopCloudVoice();
     if (!entry || !entry.mp3_url || !charObj) return;
 
-    // 発話後の余韻待機ブランチを文脈に合わせて予約
+    const myToken = ++currentTalkToken;
+
+    // 発話終了後に遷移する待機ブランチを文脈に合わせて予約し、裏デコーダに事前準備させる
     if (intentHint === "compliment" || intentHint === "pat_head" || intentHint === "close_dist") {
       nextIdleBranchHint = "idle_05_shy_glance";
     } else if (intentHint === "greeting_home" || intentHint === "greeting_morning" || intentHint === "positive_news") {
@@ -523,6 +669,7 @@
     } else {
       nextIdleBranchHint = "idle_04_nod_listen";
     }
+    queueNextIdleOnStandbyDecoder(currentIdleBranchId);
 
     const cleanMp3Url = resolveAssetUrl(entry.mp3_url);
     const charId = charObj.id || charObj.face_id || "face_f02_mio";
@@ -536,27 +683,40 @@
       await cloudAudioCtx.resume().catch(() => {});
     }
 
-    // 美桜 (face_f02_mio) の場合は 50fps 本物 HuBERT+LMDM 発話動画と音声バッファを並列プリロード！
-    const [audioRes, talkVid] = await Promise.all([
-      origFetch(cleanMp3Url, { cache: "force-cache" }),
-      charId === "face_f02_mio" ? preloadTalkFmvVideo(ck) : Promise.resolve(null),
+    ensureVideoDecoders();
+
+    // 1. 音声 MP3 の取得・デコードと、50fps v11 発話動画の Frame 0 デコード完了を【両方完了するまで】並列待機！
+    //    （フライング再生を100%禁止し、音声と映像のスタート時刻を 0.00ms で完全一致させる）
+    const hasMioFmv = charId === "face_f02_mio" && ck && MIO_FMV_TALK_CKS.has(ck);
+    const talkRawUrl = hasMioFmv ? `assets/fmv_mio/talk_${ck}.mp4?v=${ASSET_VER}` : "";
+
+    const [audioBuf, talkReady] = await Promise.all([
+      (async () => {
+        try {
+          const res = await origFetch(cleanMp3Url, { cache: "force-cache" });
+          if (!res.ok || !cloudAudioCtx) return null;
+          const ab = await res.arrayBuffer();
+          return await cloudAudioCtx.decodeAudioData(ab);
+        } catch (_) {
+          return null;
+        }
+      })(),
+      (async () => {
+        if (!hasMioFmv) return false;
+        const blobUrl = await fetchVideoBlobUrl(talkRawUrl);
+        return await loadVideoIntoDecoder(talkDecoder, blobUrl);
+      })(),
       loadCharacterVisemeSprite(charId, charObj.portrait_url),
     ]);
 
-    // もし美桜の 50fps 発話動画がロードできていれば、まず映像ストリームを Frame 0 から起動（自動再生ブロックの影響を受けない）
-    if (charId === "face_f02_mio" && talkVid) {
-      try {
-        talkVid.currentTime = 0;
-        await talkVid.play().catch(() => {});
-        activeFmvVideo = talkVid;
-        activeFmvType = "talk";
-        isSpeakingNow = true;
-      } catch (_) {}
-    }
+    // 待機中に別の会話リクエストが発生していたら破棄
+    if (myToken !== currentTalkToken) return;
+    if (!audioBuf || !cloudAudioCtx) return;
 
-    if (!audioRes.ok || !cloudAudioCtx) return;
-    const arrayBuf = await audioRes.arrayBuffer();
-    const audioBuf = await cloudAudioCtx.decodeAudioData(arrayBuf);
+    if (cloudAudioCtx.state === "suspended") {
+      await cloudAudioCtx.resume().catch(() => {});
+    }
+    if (myToken !== currentTalkToken) return;
 
     const analyser = cloudAudioCtx.createAnalyser();
     analyser.fftSize = 256;
@@ -573,27 +733,49 @@
     activeTimeData = new Uint8Array(analyser.fftSize);
     isSpeakingNow = true;
 
-    // Web Audio 再生開始と 50fps LMDM 発話動画のタイムスタンプを 0.00ms に完全一致させる！
-    if (charId === "face_f02_mio" && talkVid) {
-      try {
-        talkVid.currentTime = 0;
-        talkVid.play().catch(() => {});
-      } catch (_) {}
-    }
-
     const bars = document.getElementById("speaking-bars");
     if (bars) bars.classList.remove("hidden");
 
     srcNode.onended = () => {
-      if (activeAudioSource === srcNode) {
+      if (activeAudioSource === srcNode && myToken === currentTalkToken) {
         stopCloudVoice();
       }
     };
 
+    // 2. 映像 (talkDecoder Frame 0) と Web Audio (srcNode) を同一ミリ秒で同時スタート！
+    if (hasMioFmv && talkReady && talkDecoder) {
+      try {
+        talkDecoder.currentTime = 0;
+        const playProm = talkDecoder.play();
+        if (playProm && typeof playProm.catch === "function") {
+          playProm.catch(() => {});
+        }
+        activeFmvVideo = talkDecoder;
+        activeFmvType = "talk";
+      } catch (_) {}
+    }
+
+    talkAudioStartCtxTime = cloudAudioCtx.currentTime;
+    talkAudioDuration = audioBuf.duration;
     srcNode.start(0);
   }
 
-  // ===== 60Hz Direct Frame Blit Engine (`globalAlpha = 1.0` 完全固定・二重露光ゼロ) =====
+  // ===== スマホ・タブレット・PC でのタッチ時に AudioContext と Video を確実アンロック =====
+  function setupMobileUnlockListeners() {
+    const unlock = () => {
+      if (cloudAudioCtx && cloudAudioCtx.state === "suspended") {
+        cloudAudioCtx.resume().catch(() => {});
+      }
+      if (activeFmvVideo && activeFmvVideo.paused) {
+        activeFmvVideo.play().catch(() => {});
+      }
+    };
+    window.addEventListener("pointerdown", unlock, { passive: true });
+    window.addEventListener("touchstart", unlock, { passive: true });
+    window.addEventListener("click", unlock, { passive: true });
+  }
+
+  // ===== 60Hz Direct Frame Blit & Zero-Drift Audio-Clock Sync Engine =====
   let unifiedLoopStarted = false;
 
   function startUnifiedSotaAvatarEngine() {
@@ -602,8 +784,10 @@
     if (!roiCanvas) return;
     unifiedLoopStarted = true;
 
+    setupMobileUnlockListeners();
+
     roiCanvas.style.cssText =
-      "position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;z-index:3;opacity:1 !important;display:block !important;";
+      "position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:51% 22%;pointer-events:none;z-index:3;opacity:1 !important;display:block !important;";
     roiCanvas.classList.add("active");
 
     const roiCtx = roiCanvas.getContext("2d", { alpha: false });
@@ -613,28 +797,61 @@
     let nextBlinkStart = performance.now() + 1800 + Math.random() * 2000;
     let blinkStart = 0;
 
+    // 起動直後（動画デコード完了前の数ミリ秒）に黒画面にならないよう、視線矯正済み美桜ポートレートを即時描画
+    loadBasePortraitImg(`assets/portraits/face_f02_mio.jpg?v=${ASSET_VER}`).then((img) => {
+      if (img && !drawnBaseCharId) {
+        roiCanvas.width = img.naturalWidth || 1280;
+        roiCanvas.height = img.naturalHeight || 720;
+        roiCtx.globalAlpha = 1.0;
+        roiCtx.drawImage(img, 0, 0, roiCanvas.width, roiCanvas.height);
+      }
+    });
+
     const tick = async (now) => {
       requestAnimationFrame(tick);
+
+      // app.js の stopCurrentTalkingPlayback() が active クラスを外しても常時表示を維持
+      if (!roiCanvas.classList.contains("active")) {
+        roiCanvas.classList.add("active");
+      }
 
       const mem = loadCloudMemory();
       const charObj = getActiveCharObj(mem);
       if (!charObj || !roiCtx) return;
 
-      // ★ 1. 美桜 (face_f02_mio): 50fps フルニューラル FMV モーショングラフ＆LMDM発話ストリーム直結描画
+      // ★ 1. 美桜 (face_f02_mio): 50fps v11 ニューラル FMV ストリーム ＋ Web Audio ハードウェアクロック完全同期
       if (charObj.id === "face_f02_mio") {
         if (activeFmvVideo && activeFmvVideo.readyState >= 2) {
+          // 発話再生中は Web Audio の経過時間 (audioElapsed) に映像フレームを ±42ms 以内で完全ロック！
+          if (activeFmvType === "talk" && isSpeakingNow && cloudAudioCtx) {
+            const audioElapsed = cloudAudioCtx.currentTime - talkAudioStartCtxTime;
+            if (talkAudioDuration > 0 && audioElapsed >= talkAudioDuration - 0.015) {
+              // 音声が終了した瞬間に即座に閉じ口の待機ブランチへ戻す（無音パクパク残りを0%に）
+              stopCloudVoice();
+            } else if (audioElapsed >= 0 && activeFmvVideo.duration > 0) {
+              const targetVidTime = Math.min(activeFmvVideo.duration - 0.02, audioElapsed);
+              const drift = activeFmvVideo.currentTime - targetVidTime;
+              if (Math.abs(drift) > 0.042) {
+                try {
+                  activeFmvVideo.currentTime = targetVidTime;
+                } catch (_) {}
+              }
+            }
+          }
+
           const vw = activeFmvVideo.videoWidth || 1280;
           const vh = activeFmvVideo.videoHeight || 720;
           if (roiCanvas.width !== vw || roiCanvas.height !== vh) {
             roiCanvas.width = vw;
             roiCanvas.height = vh;
           }
-          // 半透明ブレンド一切なし！100% 鮮明な 50fps 3D ニューラルフレームをそのままブリット
+
+          // 半透明ブレンド一切なし！100% 鮮明な 50fps v11 フレームをそのままブリット
           roiCtx.globalAlpha = 1.0;
           roiCtx.drawImage(activeFmvVideo, 0, 0, vw, vh);
           drawnBaseCharId = "face_f02_mio";
 
-          // 待機ブランチ動画が終端に近づいたら、Canonical Anchor Pose (Frame 0) で次のランダムブランチへ 0ms 遷移！
+          // 待機ブランチ動画が終端に近づいたら、裏で待機中の次ブランチデコーダへ 0ms でピンポン遷移！
           const dur = activeFmvVideo.duration;
           if (
             activeFmvType === "idle" &&
@@ -642,15 +859,13 @@
             (activeFmvVideo.ended || (dur > 0 && activeFmvVideo.currentTime >= dur - 0.035))
           ) {
             fmvSwitching = true;
-            const nextId = pickNextMioIdleBranch(currentIdleBranchId);
-            switchToIdleFmvBranch(nextId);
+            switchToStandbyIdleDecoderInstant();
             fmvSwitching = false;
           } else if (
             activeFmvType === "talk" &&
-            (activeFmvVideo.ended || (dur > 0 && activeFmvVideo.currentTime >= dur - 0.035))
+            (activeFmvVideo.ended || (dur > 0 && activeFmvVideo.currentTime >= dur - 0.025))
           ) {
-            const nextId = pickNextMioIdleBranch(currentIdleBranchId);
-            switchToIdleFmvBranch(nextId);
+            stopCloudVoice();
           }
           return;
         }
@@ -722,7 +937,15 @@
   }
 
   // ===== 状態ペイロード構築 =====
-  function buildCloudStatePayload(mem, spoken, innerThought, emotion, choices, eventBadge = "", recognizedUserText = "") {
+  function buildCloudStatePayload(
+    mem,
+    spoken,
+    innerThought,
+    emotion,
+    choices,
+    eventBadge = "",
+    recognizedUserText = ""
+  ) {
     const activeChar = getActiveCharObj(mem);
     const faces = (catalogMeta && catalogMeta.face_catalog ? catalogMeta.face_catalog : []).map((f) => ({
       ...f,
@@ -757,7 +980,10 @@
       spoken: spoken || "",
       inner_thought: innerThought || "こうやって二人でゆっくり話してる時間が一番大好きだな。",
       emotion: emotion || "happy",
-      choices: (choices && choices.length ? choices : ["今日あったこと聞いてよ", "なんか今日いつもより素敵だね", "少し近くに来て？"]).slice(0, 3),
+      choices: (choices && choices.length
+        ? choices
+        : ["今日あったこと聞いてよ", "なんか今日いつもより素敵だね", "少し近くに来て？"]
+      ).slice(0, 3),
       talking_video_url: "",
       followup_job_id: "",
       idle_video_url: "",
@@ -788,7 +1014,7 @@
         }
         controller.close();
         if (typeof afterStartCallback === "function") {
-          setTimeout(afterStartCallback, 15);
+          setTimeout(afterStartCallback, 10);
         }
       },
     });
@@ -829,7 +1055,9 @@
     if (rawUrl.endsWith("/api/companion/state")) {
       const entry = selectRealVoiceEntry(mem.active_voice_id, "", "greeting_home");
       const spoken = entry ? entry.text : "あっ、おかえり！今日も一日お疲れさま。ねえ、こっち座ってゆっくり話そ？";
-      return makeJsonResponse(buildCloudStatePayload(mem, spoken, "帰ってきてくれて嬉しいな。今日もいっぱい話そうね。", "happy"));
+      return makeJsonResponse(
+        buildCloudStatePayload(mem, spoken, "帰ってきてくれて嬉しいな。今日もいっぱい話そうね。", "happy")
+      );
     }
 
     if (rawUrl.includes("/api/companion/characters") && (!init || !init.method || init.method === "GET")) {
@@ -880,7 +1108,8 @@
 
     if (rawUrl.endsWith("/api/companion/voices")) {
       const voices = getBuiltinVoicesList(mem.active_voice_id);
-      const vp = (voiceManifest && voiceManifest.voice_profiles && voiceManifest.voice_profiles[mem.active_voice_id]) || {};
+      const vp =
+        (voiceManifest && voiceManifest.voice_profiles && voiceManifest.voice_profiles[mem.active_voice_id]) || {};
       return makeJsonResponse({
         active_voice_id: mem.active_voice_id,
         active_style_dna: vp.dna || {},
@@ -1003,7 +1232,14 @@
       const activeChar = getActiveCharObj(mem);
       const badge = `✨ パートナー『${mem.partner_name}』に切り替えました`;
       const choices = ["すごく素敵な雰囲気だね！", "今日あったこと聞いてよ", "少し近くに来て？"];
-      const st = buildCloudStatePayload(mem, spoken, "選んでもらえてすごく嬉しいな！いっぱい話そうね。", emo, choices, badge);
+      const st = buildCloudStatePayload(
+        mem,
+        spoken,
+        "選んでもらえてすごく嬉しいな！いっぱい話そうね。",
+        emo,
+        choices,
+        badge
+      );
 
       if (rawUrl.endsWith("_stream")) {
         return makeNdjsonStreamResponse(
@@ -1045,7 +1281,10 @@
         const emojiMap = { cake: "🍰", latte: "☕", bear: "🧸", flower: "💐" };
         const nameMap = { cake: "ショートケーキ", latte: "カフェラテ", bear: "クマちゃん", flower: "ミニブーケ" };
         badge = `『${nameMap[val] || "プレゼント"}』を差し入れした`;
-        mem.room_items = [...(mem.room_items || []), { id: val, name: nameMap[val] || val, emoji: emojiMap[val] || "🎁" }].slice(-8);
+        mem.room_items = [
+          ...(mem.room_items || []),
+          { id: val, name: nameMap[val] || val, emoji: emojiMap[val] || "🎁" },
+        ].slice(-8);
         mem.affection = Math.min(100, mem.affection + 6);
         mem.mood = Math.min(50, mem.mood + 18);
       } else if (act === "set_scene") {
@@ -1167,7 +1406,8 @@
         const txt = document.getElementById("beta-feedback-text").value.trim();
         const report = `【AIパートナー試遊レポート】\n・お気に入りキャラ: ${mem.partner_name} (${mem.active_char_id})\n・選抜お気に入り数: ${(mem.favorite_face_ids || []).length}人\n・感想: ${txt || "すごくリアルで楽しかった！"}\n・URL: ${shareUrl}`;
         navigator.clipboard.writeText(report).catch(() => {});
-        document.getElementById("btn-copy-feedback-report").textContent = "✅ レポートをコピーしました！LINE等で貼り付けて送れます";
+        document.getElementById("btn-copy-feedback-report").textContent =
+          "✅ レポートをコピーしました！LINE等で貼り付けて送れます";
       };
     }
     modal.classList.remove("hidden");

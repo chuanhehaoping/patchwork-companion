@@ -1,5 +1,6 @@
 {
   "char_id": "face_f02_mio",
+  "version": 11,
   "fps": 50,
   "frame_w": 1280,
   "frame_h": 720,
@@ -21,9 +22,9 @@
     {
       "id": "idle_03_gaze_left",
       "url": "assets/fmv_mio/idle_03_gaze_left.mp4",
-      "frames": 230,
+      "frames": 220,
       "fps": 50,
-      "duration": 4.6
+      "duration": 4.4
     },
     {
       "id": "idle_04_nod_listen",
@@ -56,9 +57,9 @@
     {
       "id": "idle_08_playful_sway",
       "url": "assets/fmv_mio/idle_08_playful_sway.mp4",
-      "frames": 240,
+      "frames": 230,
       "fps": 50,
-      "duration": 4.8
+      "duration": 4.6
     }
   ],
   "talking_clips": {

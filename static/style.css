@@ -12,6 +12,9 @@ body {
   overflow: hidden;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .hidden {
@@ -104,6 +107,7 @@ body {
   position: relative;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
 }
 
@@ -126,11 +130,18 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 20%;
+  object-position: 51% 22%;
   opacity: 0;
   z-index: 1;
   transition: opacity 0.32s ease-in-out;
   pointer-events: none;
+}
+
+#roi-talk-canvas {
+  opacity: 1 !important;
+  z-index: 3 !important;
+  object-fit: cover !important;
+  object-position: 51% 22% !important;
 }
 
 .partner-video.active {
@@ -1902,3 +1913,312 @@ body {
   border: 1px solid rgba(250, 204, 21, 0.45);
 }
 
+
+/* ============================================================================
+   スマートフォン・モバイル完全対応レスポンシブレイアウト (iOS Safari / Android Chrome)
+   ============================================================================ */
+@media (max-width: 768px) {
+  /* 入室オーバーレイ */
+  .enter-overlay {
+    padding: 14px;
+    overflow-y: auto;
+  }
+
+  .enter-card {
+    padding: 22px 18px;
+    border-radius: 22px;
+    width: 100%;
+    max-width: 94vw;
+  }
+
+  .enter-avatar-preview {
+    width: 96px;
+    height: 96px;
+    margin-bottom: 14px;
+  }
+
+  .enter-card h1 {
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+
+  .enter-card p {
+    font-size: 12.5px;
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+
+  .btn-enter-room {
+    width: 100%;
+    padding: 13px 20px;
+    font-size: 15.5px;
+  }
+
+  .enter-sub-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .btn-enter-sub {
+    width: 100%;
+    padding: 9px 14px;
+    font-size: 12.5px;
+  }
+
+  /* 映像・Canvas のフレーミング：スマホ縦画面でも美桜の顔と瞳が中央上部のベスト位置に収まる */
+  .partner-video,
+  #roi-talk-canvas {
+    object-fit: cover !important;
+    object-position: 51% 22% !important;
+  }
+
+  .camera-rig.close-up {
+    transform: scale(1.16) translateY(3%);
+  }
+
+  /* 左上ステータスバッジ（1段目：スリム化） */
+  .top-left-badge {
+    top: max(8px, env(safe-area-inset-top));
+    left: 8px;
+    right: 8px;
+    padding: 6px 11px;
+    gap: 6px;
+    justify-content: space-between;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: none;
+  }
+  .top-left-badge::-webkit-scrollbar {
+    display: none;
+  }
+
+  .partner-name-label {
+    font-size: 13.5px;
+  }
+
+  .gender-pill,
+  .heart-meter,
+  .coin-pill,
+  .memory-pill {
+    font-size: 11px !important;
+    padding: 2px 7px !important;
+  }
+
+  /* 右上ツールバー（2段目：横スクロール可能なスリムピル列にして顔に一切被せない） */
+  .top-right-tools {
+    top: calc(max(8px, env(safe-area-inset-top)) + 40px);
+    left: 8px;
+    right: 8px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    white-space: nowrap;
+    gap: 5px;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+  .top-right-tools::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tool-pill {
+    padding: 5px 10px;
+    font-size: 11.5px;
+    flex-shrink: 0;
+  }
+
+  .scene-switcher {
+    flex-shrink: 0;
+    padding: 2px;
+  }
+
+  .scene-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  /* スキンシップ当たり判定をスマホ画面の顔位置に合わせる */
+  .touch-head {
+    top: 13%;
+    width: 160px;
+    height: 85px;
+  }
+
+  .touch-cheek {
+    top: 26%;
+    width: 160px;
+    height: 95px;
+  }
+
+  /* 脳内のホンネ吹き出し：スマホでは顔に被らないよう下部字幕のすぐ右上にコンパクト配置 */
+  .thought-bubble {
+    top: auto;
+    bottom: 220px;
+    right: 8px;
+    left: auto;
+    max-width: 215px;
+    padding: 8px 11px;
+    border-radius: 14px 14px 4px 14px;
+    background: rgba(24, 16, 38, 0.76);
+  }
+
+  .thought-tag {
+    font-size: 10px;
+    margin-bottom: 2px;
+  }
+
+  #thought-text {
+    font-size: 11.5px;
+    line-height: 1.38;
+  }
+
+  /* プレゼント棚 */
+  .table-gifts {
+    bottom: 220px;
+    left: 8px;
+    max-width: 140px;
+    gap: 4px;
+  }
+
+  .table-gift-chip {
+    padding: 4px 7px;
+    font-size: 16px;
+  }
+
+  /* 下部HUD（字幕＋選択肢＋マイク＆入力バー）：下部にコンパクト集約して美桜の顔〜胸元を広く見せる */
+  .bottom-hud {
+    bottom: max(8px, env(safe-area-inset-bottom));
+    width: 96vw;
+    gap: 6px;
+  }
+
+  .subtitle-box {
+    padding: 8px 12px;
+    border-radius: 14px;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .spoken-subtitle {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  /* 3択ボタン：横スクロールまたはコンパクト表示 */
+  .choices-row {
+    width: 100%;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    gap: 6px;
+    padding: 2px 2px;
+    scrollbar-width: none;
+  }
+  .choices-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .choice-chip {
+    padding: 7px 12px;
+    font-size: 12px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* テキスト入力フォーム：iOS Safari の自動ズーム防止のため input font-size は 16px 必須 */
+  .free-input-form,
+  .always-chat-bar {
+    width: 100% !important;
+    gap: 6px !important;
+  }
+
+  .free-input-form input {
+    font-size: 16px !important;
+    padding: 8px 11px !important;
+    border-radius: 10px;
+  }
+
+  .btn-send-text {
+    padding: 8px 13px !important;
+    font-size: 13px !important;
+    white-space: nowrap;
+  }
+
+  /* アクションボタン列 */
+  .action-bar {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .btn-mic {
+    padding: 8px 14px;
+    font-size: 12.5px;
+    gap: 5px;
+  }
+
+  .btn-sub-action {
+    padding: 7px 11px;
+    font-size: 11.5px;
+  }
+
+  /* 各種モーダルのスマホ最適化 */
+  .modal-card,
+  .voice-modal-card,
+  .char-modal-card,
+  .wardrobe-modal-card {
+    width: 96vw !important;
+    max-height: 88dvh !important;
+    padding: 16px 14px !important;
+    border-radius: 18px !important;
+    overflow-y: auto !important;
+  }
+
+  .char-grid,
+  .face-catalog-grid,
+  .wardrobe-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .lover-builder-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .voice-select-input,
+  .voice-text-input {
+    font-size: 16px !important;
+  }
+}
+
+/* スマホ横画面（ランドスケープ）対応 */
+@media (max-height: 500px) and (orientation: landscape) {
+  .top-left-badge {
+    top: 6px;
+    left: 8px;
+    padding: 4px 10px;
+  }
+  .top-right-tools {
+    top: 6px;
+    right: 8px;
+    max-width: 55vw;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+  .thought-bubble {
+    display: none;
+  }
+  .bottom-hud {
+    bottom: 6px;
+    gap: 4px;
+  }
+  .subtitle-box {
+    padding: 5px 12px;
+  }
+  .spoken-subtitle {
+    font-size: 13.5px;
+  }
+}
