@@ -20,7 +20,7 @@
 (function () {
   "use strict";
 
-  const ASSET_VER = "25";
+  const ASSET_VER = "26";
   const STORAGE_KEY_MEM = "pw_cloud_v9_memory";
 
   let catalogMeta = null;
@@ -37,11 +37,11 @@
   let idleDecoderB = null;
   let talkDecoder = null;
   let activeIdleSlot = "A"; // "A" | "B"
-  let queuedNextIdleId = "idle_02_smile_right";
+  let queuedNextIdleId = "idle_01_breath_micro";
 
   let activeFmvVideo = null;
   let activeFmvType = "idle"; // "idle" | "talk"
-  let currentIdleBranchId = "idle_02_smile_right";
+  let currentIdleBranchId = "idle_01_breath_micro";
   let currentEmotionMode = "joy"; // "joy" | "anger" | "sadness" | "fun" | "shy"
   let nextIdleBranchHint = null;
   let fmvSwitching = false;
@@ -264,9 +264,9 @@
       fmvIdleUrlMap.set(b.id, `${b.url}?v=${ASSET_VER}`);
     }
 
-    // 初期ブランチ (idle_02_smile_right) と次ブランチ (idle_01_breath_micro) を最優先でロード
-    const firstId = fmvIdleUrlMap.has("idle_02_smile_right")
-      ? "idle_02_smile_right"
+    // 初期ブランチは最も落ち着いた自然体の idle_01_breath_micro を最優先でロード
+    const firstId = fmvIdleUrlMap.has("idle_01_breath_micro")
+      ? "idle_01_breath_micro"
       : fmvManifestMio.idle_branches[0]?.id;
     if (firstId && !activeFmvVideo) {
       const firstBlobUrl = await fetchVideoBlobUrl(fmvIdleUrlMap.get(firstId));
@@ -318,10 +318,9 @@
         { id: "idle_04_nod_listen", w: 42 },   // 【楽】楽しそうな相槌
       ],
       joy: [
-        { id: "idle_02_smile_right", w: 56 },  // 【喜】満面のデュシェンヌ・スマイル
-        { id: "idle_04_nod_listen", w: 20 },   // 【楽】楽しそうな傾聴
-        { id: "idle_05_shy_glance", w: 14 },   // 【照】ほんのり照れ笑い
-        { id: "idle_01_breath_micro", w: 10 }, // 穏やかな微笑み
+        { id: "idle_01_breath_micro", w: 60 }, // 穏やかで落ち着いた微笑み・呼吸
+        { id: "idle_02_smile_right", w: 25 },  // 優しい微笑み
+        { id: "idle_07_deep_relax", w: 15 },   // 落ち着いたリラックス
       ],
     };
 
